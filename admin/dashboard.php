@@ -6523,8 +6523,9 @@ try {
                 </div>
             </div>
 
-            <div id="presencaHistoryPanel" style="display:none;">
-                <div class="data-table">
+            <div id="presencaHistoryPanel"
+                style="max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease; margin-top: 0;">
+                <div class="data-table" style="margin-top: 1.25rem;">
                     <div class="table-header"
                         style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
                         <h3
@@ -6861,7 +6862,7 @@ try {
                 </button>
             </div>
 
-            <div class="data-table" id="presencaMainTableWrap">
+            <div class="data-table">
                 <div class="pa-toolbar">
                     <div class="pa-toolbar-row1">
                         <span class="pa-tbar-title">Registos de Presença e Ponto</span>

@@ -5354,7 +5354,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('profile_photo', file);
 
-            fetch('upload_foto.php', {
+            fetch('controllers/upload_foto.php', {
                 method: 'POST',
                 body: formData
             })

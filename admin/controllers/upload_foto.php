@@ -39,7 +39,7 @@ if ($file['size'] > 2 * 1024 * 1024) { // 2MB
     exit;
 }
 
-$folder = '../uploads/profile/';
+$folder = '../../uploads/profile/';
 if (!is_dir($folder)) {
     mkdir($folder, 0755, true);
 }

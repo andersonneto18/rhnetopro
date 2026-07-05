@@ -3249,6 +3249,52 @@ try {
         exit;
     }
 
+    // ── Reverter pagamento (permitir nova edição das variáveis) ──
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'unmark_as_paid') {
+        header('Content-Type: application/json; charset=utf-8');
+        $upYear  = (int)($_POST['fiscal_year']  ?? 0);
+        $upMonth = (int)($_POST['fiscal_month'] ?? 0);
+        $upEmpId = (int)($_POST['employee_id']  ?? 0);
+
+        if ($upYear < 2000 || $upYear > 2100 || $upMonth < 1 || $upMonth > 12 || $upEmpId <= 0) {
+            echo json_encode(['ok' => false, 'error' => 'Parâmetros inválidos.']);
+            exit;
+        }
+
+        // ── Verificar se folha está fechada ──
+        $chkCloseUp = $pdo->prepare(
+            "SELECT is_closed FROM folha_fechamentos_mensais
+             WHERE client_id = ? AND fiscal_year = ? AND fiscal_month = ?
+             LIMIT 1"
+        );
+        $chkCloseUp->execute([(int)$loggedInClientId, $upYear, $upMonth]);
+        $isClosedForUnpay = (int)$chkCloseUp->fetchColumn() === 1;
+
+        if ($isClosedForUnpay) {
+            echo json_encode(['ok' => false, 'error' => 'Folha fechada. Não é possível alterar status de pagamento.']);
+            exit;
+        }
+
+        // Verificar que o funcionário pertence ao cliente autenticado
+        $chkEmpUp = $pdo->prepare('SELECT id FROM employees WHERE id = ? AND client_id = ? LIMIT 1');
+        $chkEmpUp->execute([$upEmpId, (int)$loggedInClientId]);
+        if (!$chkEmpUp->fetch()) {
+            echo json_encode(['ok' => false, 'error' => 'Acesso negado.']);
+            exit;
+        }
+
+        if (payrollTableExists($pdo, 'folha_pagamento') && payrollColumnExists($pdo, 'folha_pagamento', 'status_pagamento')) {
+            $updUnpay = $pdo->prepare(
+                "UPDATE folha_pagamento
+                 SET status_pagamento = 'pendente', data_pagamento = NULL, updated_at = NOW()
+                 WHERE client_id = ? AND employee_id = ? AND fiscal_year = ? AND fiscal_month = ?"
+            );
+            $updUnpay->execute([(int)$loggedInClientId, $upEmpId, $upYear, $upMonth]);
+        }
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
     // ── Marcar todos como pagos (POST redirect) ──
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mark_all_paid') {
         $maYear  = (int)($_POST['fiscal_year']  ?? $folhaFiscalYear);
@@ -11959,8 +12005,10 @@ try {
                 <i class="fas fa-eye"></i>
             </button>
         <button type="button" class="fr-btn fr-btn-edit btn-folha-edit employee-action-btn"
-                data-id="<?php echo $employeeId; ?>" title="Editar Variáveis Mensais"
-                <?php echo ($folhaFechada || ($folha && (int)($folha['is_locked'] ?? 0) === 1) || $pagStatus === 'pago') ? 'disabled' : ''; ?>>
+                data-id="<?php echo $employeeId; ?>"
+                data-pago="<?php echo $pagStatus === 'pago' ? '1' : '0'; ?>"
+                title="<?php echo $pagStatus === 'pago' ? 'Pagamento já efetuado — clique para reverter e editar' : 'Editar Variáveis Mensais'; ?>"
+                <?php echo ($folhaFechada || ($folha && (int)($folha['is_locked'] ?? 0) === 1)) ? 'disabled' : ''; ?>>
                 <i class="fas fa-edit"></i>
             </button>
             <?php if ($pagStatus === 'pendente' && $folha && !$folhaFechada): ?>

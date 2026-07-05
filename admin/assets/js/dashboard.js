@@ -11055,7 +11055,64 @@ function closeBulkActionsBar() {
         if (editBtn) {
             if (editBtn.disabled) return;
             var editRow = editBtn.closest('tr');
-            if (editRow) openVariaveisModal(editRow);
+            if (!editRow) return;
+
+            if (editBtn.getAttribute('data-pago') === '1') {
+                if (editBtn.dataset.unpaying === '1') return;
+
+                var confirmPromise = (typeof showConfirm === 'function')
+                    ? showConfirm(
+                        'Reverter pagamento?',
+                        'Esta folha já foi marcada como paga. Para editar as variáveis é preciso reverter o pagamento para pendente. Deseja continuar?',
+                        'Sim, reverter e editar',
+                        'Cancelar'
+                    )
+                    : Promise.resolve(
+                        window.confirm('Esta folha já foi marcada como paga. Deseja reverter o pagamento para pendente e editar?')
+                            ? { isConfirmed: true }
+                            : { isConfirmed: false }
+                    );
+
+                Promise.resolve(confirmPromise).then(function (result) {
+                    if (!result || !result.isConfirmed) return;
+
+                    editBtn.dataset.unpaying = '1';
+                    var empId  = editBtn.getAttribute('data-id');
+                    var fyear  = editRow.getAttribute('data-fiscal-year');
+                    var fmonth = editRow.getAttribute('data-fiscal-month');
+                    var body = new URLSearchParams();
+                    body.append('action', 'unmark_as_paid');
+                    body.append('employee_id', empId);
+                    body.append('fiscal_year', fyear);
+                    body.append('fiscal_month', fmonth);
+
+                    fetch(window.location.pathname, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: body.toString()
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        delete editBtn.dataset.unpaying;
+                        if (!data || !data.ok) {
+                            if (typeof showError === 'function') showError((data && data.error) || 'Não foi possível reverter o pagamento.');
+                            return;
+                        }
+                        if (typeof showSuccess === 'function') {
+                            showSuccess('Pagamento revertido. A página vai atualizar para liberar a edição.');
+                        }
+                        window.setTimeout(function () { window.location.reload(); }, 500);
+                    })
+                    .catch(function (err) {
+                        delete editBtn.dataset.unpaying;
+                        console.error('Erro ao reverter pagamento:', err);
+                        if (typeof showError === 'function') showError('Erro ao comunicar com o servidor ao reverter pagamento.');
+                    });
+                });
+                return;
+            }
+
+            openVariaveisModal(editRow);
             return;
         }
 
@@ -11093,12 +11150,11 @@ function closeBulkActionsBar() {
                         }
                         // Atualizar data attribute
                         row.setAttribute('data-status-pagamento', 'pago');
-                        // Bloquear edição após pagamento
+                        // Marcar edição como sujeita a reverter pagamento (mas continua clicável)
                         var rowEditBtn = row.querySelector('.btn-folha-edit');
                         if (rowEditBtn) {
-                            rowEditBtn.disabled = true;
-                            rowEditBtn.classList.add('btn-disabled');
-                            rowEditBtn.title = 'Funcionário já pago neste período';
+                            rowEditBtn.setAttribute('data-pago', '1');
+                            rowEditBtn.title = 'Pagamento já efetuado — clique para reverter e editar';
                         }
                         // Remover botão Pagar
                         pagarBtn.remove();

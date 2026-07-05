@@ -4945,6 +4945,7 @@ try {
                 /* ── Add Employee Modal (am-*) ────────────────── */
                 #addEmployeeModal { overflow-y:auto; padding:24px 16px 48px; }
                 #turnoModal, #bulkTurnoModal, #turnoSwapModal { overflow-y:auto; padding:24px 16px 48px; }
+                #gorjetaModal, #gorjetaViewModal { overflow-y:auto; padding:24px 16px 48px; }
                 .am-sheet {
                     background:#0f172a;
                     border:1px solid rgba(255,255,255,.1);
@@ -12241,63 +12242,52 @@ try {
 
         <!-- Gorjetas Section -->
         <section id="gorjetas-section" class="content-section">
-            <div class="section-header">
-                <div class="section-title">
-                    <div class="section-icon">
-                        <i class="fas fa-hand-holding-usd"></i>
+            <div class="frhd">
+                <div class="frhd-left">
+                    <div class="frhd-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 4px 14px rgba(217,119,6,.35);"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div>
+                        <h2 class="frhd-title">Gorjetas</h2>
+                        <p class="frhd-sub">Registos de gorjetas dos colaboradores</p>
                     </div>
-                    <span>Gorjetas</span>
                 </div>
-                <button id="btnAddGorjeta" class="btn btn-primary"
+                <button type="button" id="btnAddGorjeta" class="frhd-add-btn"
                     onclick="document.getElementById('gorjetaModal').style.display='block'; document.getElementById('gorjetaModalTitle').textContent='Adicionar Gorjeta'; document.getElementById('gorjetaForm').reset(); document.getElementById('gorjetaId').value='';">
-                    <i class="fas fa-plus"></i>
-                    <span>Adicionar Gorjeta</span>
+                    <i class="fas fa-plus"></i> Adicionar Gorjeta
                 </button>
-
             </div>
 
-            <div class="data-table">
-                <div class="table-header"
-                    style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                    <h3
-                        style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--text-primary); white-space: nowrap;">
-                        Registros de Gorjetas
-                    </h3>
-
-
-
-
-
-
-
-
-
-
-
-                    <div class="table-controls" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-
-
-
-
-
-
-                        <input type="text" id="searchGorjetas" placeholder="Pesquisar funcionários..."
-                            class="search-input" style="width: 260px; min-width: 200px;">
-                        <span id="resultCountGorjetas"
-                            style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; white-space: nowrap;"></span>
-                        <button type="button" class="fr-filter-toggle" id="gorjetasFilterToggle"
-                            onclick="document.getElementById('gorjetasAdvFilters').classList.toggle('fr-adv-open'); this.classList.toggle('pa-filter-open')">
-                            <i class="fas fa-sliders-h"></i> Filtros
-                            <span class="fr-filter-badge" id="gorjetasFilterBadge" style="display:none"></span>
-                        </button>
-                        <button id="exportGorjetasBtn" class="btn btn-accent" style="white-space: nowrap;"
-                            onclick="exportGorjetas()">
-                            <i class="fas fa-download"></i>
-                            <span>Exportar</span>
-                        </button>
-
-
+            <div class="data-table fr-table-wrap">
+                <div class="fr-toolbar">
+                    <div class="fr-toolbar-top">
+                        <div class="fr-search-wrap">
+                            <i class="fas fa-search fr-search-icon"></i>
+                            <input type="text" id="searchGorjetas" placeholder="Pesquisar funcionários..." class="fr-search">
+                        </div>
+                        <div class="fr-toolbar-right" style="gap:.65rem;flex-wrap:wrap;">
+                            <span id="resultCountGorjetas"
+                                style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; white-space: nowrap;"></span>
+                            <button type="button" class="fr-filter-toggle" id="gorjetasFilterToggle"
+                                onclick="document.getElementById('gorjetasAdvFilters').classList.toggle('fr-adv-open'); this.classList.toggle('pa-filter-open')">
+                                <i class="fas fa-sliders-h"></i> Filtros
+                                <span class="fr-filter-badge" id="gorjetasFilterBadge" style="display:none"></span>
+                            </button>
+                            <button id="exportGorjetasBtn" type="button" class="fr-export-btn"
+                                onclick="exportGorjetas()">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                        </div>
                     </div>
+
+
+
+
+
+
+
+
+
+
+
                     <div class="fr-adv-filters" id="gorjetasAdvFilters">
                         <input type="number" id="filtro-dia" class="fr-select" style="width:75px;" min="1" max="31" placeholder="Dia">
                         <select id="filtro-mes" class="fr-select" style="width:110px;">
@@ -12475,7 +12465,7 @@ try {
                         </script>
                 </div>
 
-                <table class="table">
+                <table class="table fr-table">
                     <thead>
                         <tr>
                             <th>Avatar</th>
@@ -12584,16 +12574,15 @@ try {
 
                             <!-- AÇÕES -->
                             <td>
-                                <div class="gorjeta-actions employee-actions" style="display:flex; gap:.5rem;">
-                                    <button type="button" class="btn btn-view btn-sm btn-folha-ver btn-view-gorjeta employee-action-btn"
-                                        data-id="<?php echo (int)$gorjeta['id']; ?>" title="Ver detalhes"
-                                        style="background: linear-gradient(145deg,#3498db,#2980b9); color:#fff;">
-                                        <i class="fas fa-eye"></i> Ver
+                                <div class="gorjeta-actions employee-actions" style="display:flex;align-items:center;gap:.4rem;">
+                                    <button type="button" class="fr-btn fr-btn-view btn-view-gorjeta employee-action-btn"
+                                        data-id="<?php echo (int)$gorjeta['id']; ?>" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
                                     </button>
 
-                                    <button class="btn btn-edit btn-sm employee-action-btn" data-id="<?php echo (int)$gorjeta['id']; ?>"
+                                    <button type="button" class="fr-btn fr-btn-edit btn-edit employee-action-btn" data-id="<?php echo (int)$gorjeta['id']; ?>"
                                         title="Editar">
-                                        <i class="fas fa-edit"></i> Editar
+                                        <i class="fas fa-edit"></i>
                                     </button>
                                 </div>
                             </td>
@@ -12613,127 +12602,141 @@ try {
 
 
             <!-- Modal para criar/editar gorjeta -->
-            <div id="gorjetaModal" class="modal" style="display:none;">
-                <div class="modal-content" style="max-width:560px;">
-                    <span class="close-btn" id="closeGorjetaModal">&times;</span>
-                    <h3 id="gorjetaModalTitle">Adicionar Gorjeta</h3>
+            <div id="gorjetaModal" class="modal" style="display:none; overflow-y:auto; padding:24px 16px 48px;">
+                <div class="am-sheet">
+                    <button class="am-close" type="button" id="closeGorjetaModal" aria-label="Fechar">&times;</button>
+
+                    <div class="am-header">
+                        <div class="am-header-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 6px 16px rgba(217,119,6,.35);">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <div>
+                            <h2 class="am-title" id="gorjetaModalTitle">Adicionar Gorjeta</h2>
+                            <p class="am-subtitle">Registe a gorjeta recebida pelo colaborador</p>
+                        </div>
+                    </div>
 
                     <form id="gorjetaForm">
                         <input type="hidden" name="id" id="gorjetaId">
 
-                        <!-- Funcionário -->
-                        <div class="form-group">
-                            <label for="gorjetaFuncionario">Funcionário</label>
-                            <select id="gorjetaFuncionario" name="funcionario_id" required>
-                                <option value="">Selecione o funcionário...</option>
-                                <?php foreach ($employees as $emp):
-                                // Filtrar funcionários inativos e de férias
-                                $empStatus = mb_strtolower(trim((string)($emp['status'] ?? '')));
-                                if (in_array($empStatus, ['inactive', 'inativo', 'ferias', 'férias'], true)) continue;
-                            ?>
-                                <option value="<?php echo (int)$emp['id']; ?>">
-                                    <?php echo htmlspecialchars($emp['name']); ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
+                        <div class="am-section">
+                            <div class="am-sec-lbl"><i class="fas fa-user"></i> Funcionário</div>
+                            <div class="am-f am-f-full">
+                                <label class="am-lbl" for="gorjetaFuncionario">Funcionário *</label>
+                                <select id="gorjetaFuncionario" name="funcionario_id" class="am-inp am-sel" required>
+                                    <option value="">Selecione o funcionário...</option>
+                                    <?php foreach ($employees as $emp):
+                                    // Filtrar funcionários inativos e de férias
+                                    $empStatus = mb_strtolower(trim((string)($emp['status'] ?? '')));
+                                    if (in_array($empStatus, ['inactive', 'inativo', 'ferias', 'férias'], true)) continue;
+                                ?>
+                                    <option value="<?php echo (int)$emp['id']; ?>">
+                                        <?php echo htmlspecialchars($emp['name']); ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
 
-                        <!-- Data -->
-                        <div class="form-group">
-                            <label for="gorjetaData">Data</label>
-                            <input type="date" id="gorjetaData" name="data" required>
+                        <div class="am-section">
+                            <div class="am-sec-lbl"><i class="fas fa-euro-sign"></i> Detalhes da Gorjeta</div>
+                            <div class="am-g2">
+                                <div class="am-f">
+                                    <label class="am-lbl" for="gorjetaData">Data *</label>
+                                    <input type="date" id="gorjetaData" name="data" class="am-inp" required>
+                                </div>
+                                <div class="am-f">
+                                    <label class="am-lbl" for="gorjetaTurno">Turno *</label>
+                                    <select id="gorjetaTurno" name="turno" class="am-inp am-sel" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="Manhã">Manhã</option>
+                                        <option value="Tarde">Tarde</option>
+                                        <option value="Noite">Noite</option>
+                                    </select>
+                                </div>
+                                <div class="am-f">
+                                    <label class="am-lbl" for="gorjetaValor">Valor (€) *</label>
+                                    <input type="number" id="gorjetaValor" name="valor" step="0.01" min="0" class="am-inp" required>
+                                </div>
+                                <div class="am-f">
+                                    <label class="am-lbl" for="gorjetaPagamento">Forma de Pagamento *</label>
+                                    <select id="gorjetaPagamento" name="forma_pagamento" class="am-inp am-sel" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="Dinheiro">Dinheiro</option>
+                                        <option value="Cartão">Cartão</option>
+                                        <option value="MB Way">MB Way</option>
+                                        <option value="Transferência">Transferência</option>
+                                    </select>
+                                </div>
+                                <div class="am-f am-f-full">
+                                    <label class="am-lbl" for="gorjetaOrigem">Origem</label>
+                                    <input type="text" id="gorjetaOrigem" name="origem" class="am-inp" placeholder="Ex: Mesa 5, Entrega, etc.">
+                                </div>
+                                <div class="am-f am-f-full">
+                                    <label class="am-lbl" for="gorjetaStatus">Status *</label>
+                                    <select id="gorjetaStatus" name="status" class="am-inp am-sel" required>
+                                        <option value="pago" selected>Pago</option>
+                                        <option value="pendente">Pendente</option>
+                                        <option value="rejeitado">Rejeitado</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Turno -->
-                        <div class="form-group">
-                            <label for="gorjetaTurno">Turno</label>
-                            <select id="gorjetaTurno" name="turno" required>
-                                <option value="">Selecione...</option>
-                                <option value="Manhã">Manhã</option>
-                                <option value="Tarde">Tarde</option>
-                                <option value="Noite">Noite</option>
-                            </select>
+                        <div class="am-footer">
+                            <button type="button" class="am-btn-cancel" onclick="document.getElementById('gorjetaModal').style.display='none'">Cancelar</button>
+                            <button type="submit" class="am-btn-submit">
+                                <i class="fas fa-save"></i> Salvar Gorjeta
+                            </button>
                         </div>
-
-                        <!-- Valor -->
-                        <div class="form-group">
-                            <label for="gorjetaValor">Valor (€)</label>
-                            <input type="number" id="gorjetaValor" name="valor" step="0.01" min="0" required>
-                        </div>
-
-                        <!-- Forma de Pagamento -->
-                        <div class="form-group">
-                            <label for="gorjetaPagamento">Forma de Pagamento</label>
-                            <select id="gorjetaPagamento" name="forma_pagamento" required>
-                                <option value="">Selecione...</option>
-                                <option value="Dinheiro">Dinheiro</option>
-                                <option value="Cartão">Cartão</option>
-                                <option value="MB Way">MB Way</option>
-                                <option value="Transferência">Transferência</option>
-                            </select>
-                        </div>
-
-                        <!-- Origem -->
-                        <div class="form-group">
-                            <label for="gorjetaOrigem">Origem</label>
-                            <input type="text" id="gorjetaOrigem" name="origem" placeholder="Ex: Mesa 5, Entrega, etc.">
-                        </div>
-
-                        <!-- Status -->
-                        <div class="form-group">
-                            <label for="gorjetaStatus">Status</label>
-                            <select id="gorjetaStatus" name="status" required>
-                                <option value="pago" selected>Pago</option>
-                                <option value="pendente">Pendente</option>
-                                <option value="rejeitado">Rejeitado</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Salvar Gorjeta</button>
                     </form>
                 </div>
             </div>
 
-            <div id="gorjetaViewModal" class="modal" style="display:none;">
-                <div class="modal-content" style="max-width:620px; border:1px solid #dbeafe; box-shadow:0 18px 45px rgba(15, 23, 42, 0.18);">
-                    <span class="close-btn" id="closeGorjetaViewModal" style="float:right; cursor:pointer;">&times;</span>
-                    <h3 style="margin:0 0 1rem 0; color:#1e3a8a; display:flex; align-items:center; gap:.55rem;">
-                        <i class="fas fa-receipt" style="color:#2563eb;"></i>
-                        Detalhes da Gorjeta
-                    </h3>
+            <div id="gorjetaViewModal" class="modal" style="display:none; overflow-y:auto; padding:24px 16px 48px;">
+                <div class="am-sheet" style="max-width:520px;">
+                    <button class="am-close" type="button" id="closeGorjetaViewModal" aria-label="Fechar">&times;</button>
 
-                    <div style="display:flex; align-items:center; gap:.85rem; padding:.8rem; border-radius:12px; background:linear-gradient(135deg,#eff6ff,#f8fafc); border:1px solid #dbeafe; margin-bottom:1rem;">
-                        <div id="gv-avatar" style="width:52px; height:52px; border-radius:999px; overflow:hidden; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; background:linear-gradient(135deg,#1d4ed8,#2563eb);">--</div>
+                    <div class="am-header">
+                        <div class="am-header-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 6px 16px rgba(37,99,235,.35);">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div>
+                            <h2 class="am-title">Detalhes da Gorjeta</h2>
+                            <p class="am-subtitle">Informação completa do registo</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:.85rem; padding:14px 16px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); margin-bottom:18px;">
+                        <div id="gv-avatar" style="width:52px; height:52px; border-radius:999px; overflow:hidden; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; background:linear-gradient(135deg,#1d4ed8,#2563eb); flex-shrink:0;">--</div>
                         <div style="min-width:0;">
-                            <div id="gv-nome" style="font-size:1.02rem; font-weight:800; color:#0f172a;">Funcionário</div>
-                            <div id="gv-data" style="font-size:.84rem; color:#475569;">Data</div>
+                            <div id="gv-nome" style="font-size:1rem; font-weight:700; color:#e2e8f0;">Funcionário</div>
+                            <div id="gv-data" style="font-size:.82rem; color:#94a3b8;">Data</div>
                         </div>
-                        <span id="gv-status" style="margin-left:auto; font-size:.78rem; font-weight:800; padding:.35rem .6rem; border-radius:999px; color:#92400e; background:#fef3c7; border:1px solid #fcd34d;">Pendente</span>
+                        <span id="gv-status" style="margin-left:auto; font-size:.75rem; font-weight:700; padding:.35rem .7rem; border-radius:999px; color:#fbbf24; background:rgba(245,158,11,.15); border:1px solid rgba(251,191,36,.35); white-space:nowrap;">Pendente</span>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.7rem;">
-                        <div style="padding:.65rem .75rem; border-radius:10px; border:1px solid #e2e8f0; background:#fff;">
-                            <div style="font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:#64748b;">Turno</div>
-                            <div id="gv-turno" style="font-size:.95rem; font-weight:700; color:#0f172a; margin-top:.15rem;">-</div>
+                    <div class="am-g2">
+                        <div class="am-f" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;">
+                            <span class="am-lbl" style="margin-bottom:2px;">Turno</span>
+                            <div id="gv-turno" style="font-size:.9rem;font-weight:700;color:#e2e8f0;">-</div>
                         </div>
-                        <div style="padding:.65rem .75rem; border-radius:10px; border:1px solid #e2e8f0; background:#fff;">
-                            <div style="font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:#64748b;">Valor</div>
-                            <div id="gv-valor" style="font-size:1rem; font-weight:900; color:#166534; margin-top:.15rem;">EUR 0,00</div>
+                        <div class="am-f" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;">
+                            <span class="am-lbl" style="margin-bottom:2px;">Valor</span>
+                            <div id="gv-valor" style="font-size:.95rem;font-weight:800;color:#4ade80;">EUR 0,00</div>
                         </div>
-                        <div style="padding:.65rem .75rem; border-radius:10px; border:1px solid #e2e8f0; background:#fff;">
-                            <div style="font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:#64748b;">Forma de Pagamento</div>
-                            <div id="gv-pagamento" style="font-size:.95rem; font-weight:700; color:#0f172a; margin-top:.15rem;">-</div>
+                        <div class="am-f" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;">
+                            <span class="am-lbl" style="margin-bottom:2px;">Forma de Pagamento</span>
+                            <div id="gv-pagamento" style="font-size:.9rem;font-weight:700;color:#e2e8f0;">-</div>
                         </div>
-                        <div style="padding:.65rem .75rem; border-radius:10px; border:1px solid #e2e8f0; background:#fff;">
-                            <div style="font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:#64748b;">Origem</div>
-                            <div id="gv-origem" style="font-size:.95rem; font-weight:700; color:#0f172a; margin-top:.15rem;">-</div>
+                        <div class="am-f" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;">
+                            <span class="am-lbl" style="margin-bottom:2px;">Origem</span>
+                            <div id="gv-origem" style="font-size:.9rem;font-weight:700;color:#e2e8f0;">-</div>
                         </div>
                     </div>
 
-                    <div style="display:flex; justify-content:flex-end; margin-top:1rem;">
-                        <button type="button" id="closeGorjetaViewFooter" class="btn btn-secondary" style="min-width:120px;">
-                            Fechar
-                        </button>
+                    <div class="am-footer">
+                        <button type="button" id="closeGorjetaViewFooter" class="am-btn-cancel">Fechar</button>
                     </div>
                 </div>
             </div>

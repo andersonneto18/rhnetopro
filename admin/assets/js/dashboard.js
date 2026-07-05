@@ -4905,12 +4905,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function getGorjetaStatusView(statusRaw) {
         const status = (statusRaw || 'pendente').toString().toLowerCase();
         if (status === 'pago') {
-            return { label: 'Pago', color: '#166534', bg: '#dcfce7', border: '#86efac' };
+            return { label: 'Pago', color: '#4ade80', bg: 'rgba(22,163,74,.18)', border: 'rgba(74,222,128,.35)' };
         }
         if (status === 'rejeitado' || status === 'rejeitada' || status === 'cancelado' || status === 'cancelada') {
-            return { label: 'Rejeitado', color: '#991b1b', bg: '#fee2e2', border: '#fca5a5' };
+            return { label: 'Rejeitado', color: '#fca5a5', bg: 'rgba(239,68,68,.15)', border: 'rgba(252,165,165,.35)' };
         }
-        return { label: 'Pendente', color: '#92400e', bg: '#fef3c7', border: '#fcd34d' };
+        return { label: 'Pendente', color: '#fbbf24', bg: 'rgba(245,158,11,.15)', border: 'rgba(251,191,36,.35)' };
     }
 
     function openGorjetaViewDetails(data) {

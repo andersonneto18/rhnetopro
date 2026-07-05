@@ -12412,10 +12412,10 @@ try {
                             linhas.forEach(tr => {
                                 let mostrar = true;
                                 const tds = tr.querySelectorAll('td');
-                                if (tds.length < 9) return;
-                                const nomeFunc = tds[1].innerText.trim().toLowerCase();
-                                const data = tds[2].innerText.trim();
-                                const statusCol = tds[7].innerText.trim().toLowerCase();
+                                if (tds.length < 8) return;
+                                const nomeFunc = tds[0].innerText.trim().toLowerCase();
+                                const data = tds[1].innerText.trim();
+                                const statusCol = tds[6].innerText.trim().toLowerCase();
                                 let [d, m, a] = data.split('/');
                                 if (dia && d !== dia.padStart(2, '0')) mostrar = false;
                                 if (mes && m !== mes.padStart(2, '0')) mostrar = false;
@@ -12432,7 +12432,7 @@ try {
                                     semResultado = document.createElement('tr');
                                     semResultado.className = 'tr-sem-resultado';
                                     let td = document.createElement('td');
-                                    td.colSpan = 9;
+                                    td.colSpan = 8;
                                     td.style.textAlign = 'center';
                                     td.style.color = 'var(--text-secondary)';
                                     td.style.padding = '1rem';
@@ -12467,16 +12467,15 @@ try {
 
                 <table class="table fr-table">
                     <thead>
-                        <tr>
-                            <th>Avatar</th>
-                            <th>Funcionário</th>
+                        <tr class="fr-thead-row">
+                            <th class="fr-th-emp">Funcionário</th>
                             <th>Data</th>
                             <th>Turno</th>
                             <th>Valor €</th>
                             <th>Forma de Pagamento</th>
                             <th>Origem</th>
-                            <th>Status</th>
-                            <th>Ações</th>
+                            <th class="fr-th-status">Status</th>
+                            <th class="fr-th-acts">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -12525,27 +12524,24 @@ try {
                     $statusLabel = 'Cancelado';
                 }
         ?>
-                        <tr>
+                        <tr class="fr-row">
 
-                            <!-- AVATAR -->
-                            <td>
-                                <div class="employee-avatar"
-                                    style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600;">
-
-                                    <?php if (!empty($gorjeta['funcionario_profile_picture'])): ?>
-                                    <img src="../<?php echo $gorjeta['funcionario_profile_picture']; ?>"
-                                        alt="<?php echo htmlspecialchars($gorjeta['funcionario_nome']); ?>"
-                                        style="width: 100%; height: 100%; object-fit: cover;">
-                                    <?php else: ?>
-                                    <?php echo strtoupper(substr($gorjeta['funcionario_nome'], 0, 2)); ?>
-                                    <?php endif; ?>
-
+                            <!-- FUNCIONÁRIO: avatar + nome -->
+                            <td class="fr-td-emp">
+                                <div class="fr-emp-cell">
+                                    <div class="fr-av" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+                                        <?php if (!empty($gorjeta['funcionario_profile_picture'])): ?>
+                                        <img src="../<?php echo $gorjeta['funcionario_profile_picture']; ?>"
+                                            alt="<?php echo htmlspecialchars($gorjeta['funcionario_nome']); ?>"
+                                            class="fr-av-img">
+                                        <?php else: ?>
+                                        <?php echo strtoupper(substr($gorjeta['funcionario_nome'], 0, 2)); ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="fr-emp-info">
+                                        <span class="fr-emp-name"><?php echo htmlspecialchars($gorjeta['funcionario_nome']); ?></span>
+                                    </div>
                                 </div>
-                            </td>
-
-                            <!-- FUNCIONÁRIO -->
-                            <td style="font-weight: 600;">
-                                <?php echo htmlspecialchars($gorjeta['funcionario_nome']); ?>
                             </td>
 
                             <!-- DATA -->
@@ -12566,21 +12562,21 @@ try {
                             <td><?php echo htmlspecialchars($gorjeta['origem'] ?? '-'); ?></td>
 
                             <!-- STATUS -->
-                            <td>
+                            <td class="fr-td-status">
                                 <span class="status-badge <?php echo $statusClass; ?>">
                                     <?php echo $statusLabel; ?>
                                 </span>
                             </td>
 
                             <!-- AÇÕES -->
-                            <td>
-                                <div class="gorjeta-actions employee-actions" style="display:flex;align-items:center;gap:.4rem;">
-                                    <button type="button" class="fr-btn fr-btn-view btn-view-gorjeta employee-action-btn"
+                            <td class="fr-td-acts">
+                                <div class="fr-acts">
+                                    <button type="button" class="fr-btn fr-btn-view btn-view-gorjeta"
                                         data-id="<?php echo (int)$gorjeta['id']; ?>" title="Ver detalhes">
                                         <i class="fas fa-eye"></i>
                                     </button>
 
-                                    <button type="button" class="fr-btn fr-btn-edit btn-edit employee-action-btn" data-id="<?php echo (int)$gorjeta['id']; ?>"
+                                    <button type="button" class="fr-btn fr-btn-edit btn-edit" data-id="<?php echo (int)$gorjeta['id']; ?>"
                                         title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>

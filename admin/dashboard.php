@@ -6893,15 +6893,15 @@ try {
                     </div>
                 </div>
 
-                <table class="table" id="presencaTable">
+                <table class="table fr-table" id="presencaTable">
                     <thead>
-                        <tr>
-                            <th>Funcionário</th>
-                            <th>Status</th>
+                        <tr class="fr-thead-row">
+                            <th class="fr-th-emp">Funcionário</th>
+                            <th class="fr-th-status">Status</th>
                             <th>Data</th>
                             <th>Entrada</th>
                             <th>Saída</th>
-                            <th style="text-align:center;">Ações</th>
+                            <th class="fr-th-acts">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -7234,7 +7234,7 @@ try {
                                 ? trim((string)($justificativaAtual['anexo_path'] ?? ''))
                                 : '';
                         ?>
-                        <tr data-employee-id="<?php echo (int)$employee['id']; ?>"
+                        <tr class="fr-row" data-employee-id="<?php echo (int)$employee['id']; ?>"
                             data-funcionario-nome="<?php echo htmlspecialchars((string)$employee['name']); ?>"
                             data-presenca-date="<?php echo htmlspecialchars($dateIso); ?>"
                             data-presenca-year="<?php echo $dateIso ? htmlspecialchars(substr($dateIso, 0, 4)) : ''; ?>"
@@ -7260,12 +7260,12 @@ try {
                             data-just-decidido-em="<?php echo htmlspecialchars($justificativaDecididoEmFmt); ?>"
                             data-just-anexo="<?php echo htmlspecialchars($justificativaAnexo); ?>"
                             data-employee-status-key="<?php echo htmlspecialchars((string)($employee['status'] ?? '')); ?>">
-                            <td>
-                                <div class="pa-emp-cell">
-                                    <div class="pa-emp-av">
+                            <td class="fr-td-emp">
+                                <div class="fr-emp-cell">
+                                    <div class="fr-av" style="background:linear-gradient(135deg,#475569,#334155);">
                                         <?php if (!empty($employee['profile_picture'])): ?>
                                         <img src="../<?php echo htmlspecialchars($employee['profile_picture']); ?>"
-                                            alt="<?php echo htmlspecialchars($employee['name']); ?>">
+                                            alt="<?php echo htmlspecialchars($employee['name']); ?>" class="fr-av-img">
                                         <?php else: ?>
                                         <?php
                                             $partsName = preg_split('/\s+/', trim((string)$employee['name'])) ?: [];
@@ -7276,11 +7276,13 @@ try {
                                         ?>
                                         <?php endif; ?>
                                     </div>
-                                    <span class="pa-emp-name"><?php echo htmlspecialchars($employee['name']); ?></span>
+                                    <div class="fr-emp-info">
+                                        <span class="fr-emp-name"><?php echo htmlspecialchars($employee['name']); ?></span>
+                                    </div>
                                 </div>
                             </td>
 
-                            <td>
+                            <td class="fr-td-status">
                                 <?php
                                 // Priorizar status do funcionario (ex: ferias, inativo) sobre status automatico
                                 $empStatusRaw = isset($employee['status']) ? $employee['status'] : '';
@@ -7326,19 +7328,19 @@ try {
                             </td>
                             <td><?php echo isset($registro['hora_saida']) && $registro['hora_saida'] !== null ? htmlspecialchars(substr((string)$registro['hora_saida'], 0, 5)) : '--:--'; ?>
                             </td>
-                            <td style="text-align:center;">
-                                <div class="pa-acts">
+                            <td class="fr-td-acts">
+                                <div class="fr-acts">
                                     <?php if ($statusKey === 'sem-turno'): ?>
-                                    <button class="pa-btn pa-btn-assign" title="Atribuir turno"
+                                    <button type="button" class="fr-btn fr-btn-activate" title="Atribuir turno"
                                         onclick="resolverSemTurno(<?php echo (int)$employee['id']; ?>, '<?php echo htmlspecialchars((string)$employee['name'], ENT_QUOTES); ?>')">
                                         <i class="fas fa-calendar-plus"></i>
                                     </button>
                                     <?php endif; ?>
-                                    <button class="pa-btn pa-btn-view" title="Ver detalhes"
+                                    <button type="button" class="fr-btn fr-btn-view" title="Ver detalhes"
                                         onclick="verDetalhesPresenca(<?php echo $employee['id']; ?>)">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button class="pa-btn pa-btn-edit" title="Editar registo"
+                                    <button type="button" class="fr-btn fr-btn-edit" title="Editar registo"
                                         onclick="editarPresenca(<?php echo $employee['id']; ?>)">
                                         <i class="fas fa-edit"></i>
                                     </button>

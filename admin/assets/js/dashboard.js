@@ -487,41 +487,37 @@ function updatePresencaModalNavigationState(modal, navRows, currentIndex) {
     if (indicator) indicator.textContent = navRows.length > 0 ? `${currentIndex + 1}/${navRows.length}` : '0/0';
 }
 
-function buildRoteiroTimelineHtml(entrada, saida) {
-    const hasEntrada = !!entrada && entrada !== '--:--';
-    const hasSaida = !!saida && saida !== '--:--';
+const ROTEIRO_TL_CLASS_MAP = {
+    in: 'tl-entrada',
+    regresso: 'tl-regresso',
+    pausa: 'tl-pausa',
+    out: 'tl-saida',
+    ativo: 'tl-ativo'
+};
 
-    if (!hasEntrada && !hasSaida) {
+function buildRoteiroVerticalHtml(events) {
+    if (!Array.isArray(events) || events.length === 0) {
         return '<span class="fr-roteiro-label">Sem registo para este dia.</span>';
     }
 
-    let html = '';
-    if (hasEntrada) {
-        html += `
-            <span class="fr-roteiro-item" title="Entrada">
-                <span class="fr-roteiro-dot in"></span>
-                <span class="fr-roteiro-time">${entrada}</span>
-                <span class="fr-roteiro-label">Entrada</span>
-            </span>`;
-        html += '<span class="fr-roteiro-sep"></span>';
-    }
-
-    if (hasSaida) {
-        html += `
-            <span class="fr-roteiro-item" title="Saída">
-                <span class="fr-roteiro-dot out"></span>
-                <span class="fr-roteiro-time">${saida}</span>
-                <span class="fr-roteiro-label">Saída</span>
-            </span>`;
-    } else if (hasEntrada) {
-        html += `
-            <span class="fr-roteiro-item" title="Em curso">
-                <span class="fr-roteiro-dot pause"></span>
-                <span class="fr-roteiro-label">Em curso</span>
-            </span>`;
-    }
-
-    return html;
+    return events.map((ev, idx) => {
+        const isLast = idx === events.length - 1;
+        const tlClass = ROTEIRO_TL_CLASS_MAP[ev.cls] || 'tl-entrada';
+        const hora = ev.hora || '--:--';
+        const label = ev.label || '';
+        const icon = ev.icon || 'fa-circle';
+        return `
+            <div class="roteiro-evento ${tlClass}">
+                <div class="roteiro-hora">${hora}</div>
+                <div class="roteiro-dot-col">
+                    <div class="roteiro-dot"></div>
+                    ${isLast ? '' : '<div class="roteiro-line"></div>'}
+                </div>
+                <div class="roteiro-info">
+                    <div class="roteiro-lbl"><i class="fas ${icon}"></i> ${label}</div>
+                </div>
+            </div>`;
+    }).join('');
 }
 
 function renderPresencaModalFromRow(row, employeeId) {
@@ -578,7 +574,15 @@ function renderPresencaModalFromRow(row, employeeId) {
     document.getElementById('view-presenca-entrada').textContent = entrada;
     document.getElementById('view-presenca-saida').textContent = saida;
     const roteiroFullEl = document.getElementById('view-presenca-roteiro-full');
-    if (roteiroFullEl) roteiroFullEl.innerHTML = buildRoteiroTimelineHtml(entrada, saida);
+    if (roteiroFullEl) {
+        let roteiroEventos = [];
+        try {
+            roteiroEventos = JSON.parse(d.roteiro || '[]');
+        } catch (e) {
+            roteiroEventos = [];
+        }
+        roteiroFullEl.innerHTML = buildRoteiroVerticalHtml(roteiroEventos);
+    }
     document.getElementById('view-presenca-horas').textContent = horas;
     document.getElementById('view-presenca-atraso').textContent = atraso;
     document.getElementById('view-presenca-confirmacao').textContent = confirmacao;

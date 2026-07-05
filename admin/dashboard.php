@@ -4778,28 +4778,49 @@ try {
                 .fr-contract-expired { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
                 .fr-contract-expiring{ background:#fffbeb; color:#d97706; border:1px solid #fde68a; }
 
-                /* Roteiro do dia: mini timeline horizontal (tabela + modal) */
+                /* Roteiro do dia: mini timeline horizontal compacta (célula da tabela) */
                 .fr-td-roteiro { max-width:1px; }
                 .fr-roteiro { display:flex; align-items:center; gap:.3rem; white-space:nowrap; overflow:hidden; font-size:.78rem; }
                 .fr-roteiro-item { display:inline-flex; align-items:center; gap:.3rem; flex-shrink:0; }
-                .fr-roteiro-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 3px rgba(255,255,255,.05); }
-                .fr-roteiro-dot.in    { background:#4ade80; }
-                .fr-roteiro-dot.out   { background:#f87171; }
-                .fr-roteiro-dot.pause { background:#fbbf24; }
+                .fr-roteiro-dot {
+                    width:17px; height:17px; border-radius:50%; flex-shrink:0;
+                    display:flex; align-items:center; justify-content:center;
+                    font-size:.58rem; color:#0f172a; box-shadow:0 0 0 2px rgba(255,255,255,.05);
+                }
+                .fr-roteiro-dot.in       { background:#4ade80; }
+                .fr-roteiro-dot.regresso { background:#86efac; }
+                .fr-roteiro-dot.pausa    { background:#fbbf24; }
+                .fr-roteiro-dot.out      { background:#f87171; }
+                .fr-roteiro-dot.ativo    { background:#38bdf8; }
                 .fr-roteiro-time  { font-weight:700; color:var(--text-primary,#e2e8f0); }
                 .fr-roteiro-label { color:var(--text-secondary,#94a3b8); font-size:.72rem; }
-                .fr-roteiro-sep { width:18px; height:2px; background:rgba(255,255,255,.12); flex-shrink:0; border-radius:2px; }
+                .fr-roteiro-sep { width:14px; height:2px; background:rgba(255,255,255,.14); flex-shrink:0; border-radius:2px; }
                 .fr-roteiro-more {
                     flex-shrink:0; font-size:.68rem; font-weight:700; color:#60a5fa;
                     background:rgba(59,130,246,.14); padding:.1rem .45rem; border-radius:999px;
                 }
-                /* Variante grande usada no modal "Ver Detalhes" */
-                .fr-roteiro-lg { overflow-x:auto; padding:.4rem 0; gap:.6rem; }
-                .fr-roteiro-lg .fr-roteiro-item { flex-direction:column; align-items:center; gap:.3rem; min-width:70px; }
-                .fr-roteiro-lg .fr-roteiro-dot { width:14px; height:14px; }
-                .fr-roteiro-lg .fr-roteiro-sep { width:38px; }
-                .fr-roteiro-lg .fr-roteiro-time { font-size:.86rem; }
-                .fr-roteiro-lg .fr-roteiro-label { font-size:.72rem; }
+
+                /* Roteiro do dia: timeline vertical completa (modal "Ver Detalhes") */
+                .roteiro-dia { margin:0; padding:0; }
+                .roteiro-evento { display:grid; grid-template-columns:3rem 1.25rem 1fr; align-items:flex-start; gap:0 .5rem; position:relative; }
+                .roteiro-hora { font-size:.8rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text-secondary,#94a3b8); text-align:right; padding-top:.05rem; line-height:1.4rem; }
+                .roteiro-dot-col { display:flex; flex-direction:column; align-items:center; }
+                .roteiro-dot { width:.75rem; height:.75rem; border-radius:50%; border:2px solid currentColor; background:#0f172a; flex-shrink:0; margin-top:.3rem; }
+                .roteiro-line { width:2px; flex:1; min-height:1.6rem; background:rgba(255,255,255,.1); margin-bottom:-2px; }
+                .roteiro-info { padding-bottom:1.1rem; }
+                .roteiro-lbl { font-size:.85rem; font-weight:600; color:var(--text-primary,#e2e8f0); display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; line-height:1.4rem; }
+                .roteiro-lbl .fas { font-size:.78rem; }
+                .tl-entrada  .roteiro-dot, .tl-entrada  .roteiro-lbl { color:#22c55e; }
+                .tl-regresso .roteiro-dot, .tl-regresso .roteiro-lbl { color:#4ade80; }
+                .tl-pausa    .roteiro-dot, .tl-pausa    .roteiro-lbl { color:#f59e0b; }
+                .tl-saida    .roteiro-dot, .tl-saida    .roteiro-lbl { color:#f87171; }
+                .tl-ativo    .roteiro-dot, .tl-ativo    .roteiro-lbl { color:#38bdf8; }
+                .tl-entrada  .roteiro-dot { background:#22c55e; }
+                .tl-regresso .roteiro-dot { background:#4ade80; }
+                .tl-pausa    .roteiro-dot { background:#f59e0b; }
+                .tl-saida    .roteiro-dot { background:#f87171; }
+                @keyframes rot-pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.5)} 50%{box-shadow:0 0 0 5px rgba(56,189,248,0)} }
+                .tl-ativo .roteiro-dot { animation:rot-pulse-dot 1.8s ease-in-out infinite; background:#38bdf8; }
 
                 /* Role cell */
                 .fr-role-pos  { display:block; font-size:.83rem; font-weight:600; color:var(--text-primary,#f1f5f9); }
@@ -7103,6 +7124,56 @@ try {
                                 }
                             }
 
+                            // Roteiro do dia — todos os períodos (entrada/pausa/regresso/saída) do dia de referência
+                            $_timelineEventos = [];
+                            if ($dateIso !== '') {
+                                try {
+                                    $stmtTimelinePresenca = $pdo->prepare("
+                                        SELECT hora_entrada, hora_saida, observacao
+                                        FROM registros_ponto
+                                        WHERE funcionario_id = ? AND {$pontoDateColumn} = ?
+                                        ORDER BY id ASC
+                                    ");
+                                    $stmtTimelinePresenca->execute([(int)$employee['id'], $dateIso]);
+                                    $_pontosTimeline = $stmtTimelinePresenca->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                                } catch (Exception $e) {
+                                    $_pontosTimeline = [];
+                                }
+
+                                $_totalPontosTimeline = count($_pontosTimeline);
+                                foreach ($_pontosTimeline as $_tiTimeline => $_tpTimeline) {
+                                    $hEntTimeline = substr((string)($_tpTimeline['hora_entrada'] ?? ''), 0, 5);
+                                    $hSaiTimeline = substr((string)($_tpTimeline['hora_saida'] ?? ''), 0, 5);
+                                    $obsTimeline = mb_strtolower(trim((string)($_tpTimeline['observacao'] ?? '')));
+
+                                    if ($hEntTimeline) {
+                                        if ($_tiTimeline === 0) {
+                                            $_timelineEventos[] = ['hora' => $hEntTimeline, 'label' => 'Entrada', 'icon' => 'fa-sign-in-alt', 'cls' => 'in'];
+                                        } else {
+                                            $_timelineEventos[] = ['hora' => $hEntTimeline, 'label' => 'Regresso ao trabalho', 'icon' => 'fa-undo-alt', 'cls' => 'regresso'];
+                                        }
+                                    }
+
+                                    if ($hSaiTimeline) {
+                                        if (str_contains($obsTimeline, 'pausa')) {
+                                            if (str_contains($obsTimeline, 'almo')) {
+                                                $iconTimeline = 'fa-utensils'; $lblTimeline = 'Pausa Almoço';
+                                            } elseif (str_contains($obsTimeline, 'cigar')) {
+                                                $iconTimeline = 'fa-smoking'; $lblTimeline = 'Pausa Cigarro';
+                                            } else {
+                                                $iconTimeline = 'fa-pause-circle'; $lblTimeline = 'Pausa';
+                                            }
+                                            $_timelineEventos[] = ['hora' => $hSaiTimeline, 'label' => $lblTimeline, 'icon' => $iconTimeline, 'cls' => 'pausa'];
+                                        } else {
+                                            $_timelineEventos[] = ['hora' => $hSaiTimeline, 'label' => 'Saída', 'icon' => 'fa-sign-out-alt', 'cls' => 'out'];
+                                        }
+                                    } elseif ($_tiTimeline === $_totalPontosTimeline - 1) {
+                                        $_timelineEventos[] = ['hora' => null, 'label' => 'Em curso', 'icon' => 'fa-circle', 'cls' => 'ativo'];
+                                    }
+                                }
+                            }
+                            $_timelineEventosJson = htmlspecialchars(json_encode($_timelineEventos, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+
                             // 2. Determinar o status automático
                             $entrada = isset($registro['hora_entrada']) && $registro['hora_entrada'] !== null && $registro['hora_entrada'] !== '';
                             $saida = isset($registro['hora_saida']) && $registro['hora_saida'] !== null && $registro['hora_saida'] !== '';
@@ -7281,7 +7352,8 @@ try {
                             data-just-decidido-por="<?php echo htmlspecialchars($justificativaDecididoPor !== '' ? ('#' . $justificativaDecididoPor) : '-'); ?>"
                             data-just-decidido-em="<?php echo htmlspecialchars($justificativaDecididoEmFmt); ?>"
                             data-just-anexo="<?php echo htmlspecialchars($justificativaAnexo); ?>"
-                            data-employee-status-key="<?php echo htmlspecialchars((string)($employee['status'] ?? '')); ?>">
+                            data-employee-status-key="<?php echo htmlspecialchars((string)($employee['status'] ?? '')); ?>"
+                            data-roteiro="<?php echo $_timelineEventosJson; ?>">
                             <td class="fr-td-emp">
                                 <div class="fr-emp-cell">
                                     <div class="fr-av" style="background:linear-gradient(135deg,#475569,#334155);">
@@ -7346,35 +7418,32 @@ try {
                             </td>
 
                             <td><?php echo $dateDisplay; ?></td>
-                            <?php
-                                $temEntradaRoteiro = isset($registro['hora_entrada']) && $registro['hora_entrada'] !== null;
-                                $temSaidaRoteiro   = isset($registro['hora_saida']) && $registro['hora_saida'] !== null;
-                                $horaEntradaRoteiro = $temEntradaRoteiro ? htmlspecialchars(substr((string)$registro['hora_entrada'], 0, 5)) : '';
-                                $horaSaidaRoteiro   = $temSaidaRoteiro ? htmlspecialchars(substr((string)$registro['hora_saida'], 0, 5)) : '';
-                            ?>
+                            <?php $_totalEventosCell = count($_timelineEventos); ?>
                             <td class="fr-td-roteiro">
                                 <div class="fr-roteiro">
-                                    <?php if ($temEntradaRoteiro): ?>
-                                    <span class="fr-roteiro-item" title="Entrada <?php echo $horaEntradaRoteiro; ?>">
-                                        <span class="fr-roteiro-dot in"></span>
-                                        <span class="fr-roteiro-time"><?php echo $horaEntradaRoteiro; ?></span>
-                                    </span>
-                                    <?php if ($temSaidaRoteiro): ?><span class="fr-roteiro-sep"></span><?php endif; ?>
-                                    <?php endif; ?>
-                                    <?php if ($temSaidaRoteiro): ?>
-                                    <span class="fr-roteiro-item" title="Saída <?php echo $horaSaidaRoteiro; ?>">
-                                        <span class="fr-roteiro-dot out"></span>
-                                        <span class="fr-roteiro-time"><?php echo $horaSaidaRoteiro; ?></span>
-                                    </span>
-                                    <?php elseif ($temEntradaRoteiro): ?>
-                                    <span class="fr-roteiro-sep"></span>
-                                    <span class="fr-roteiro-item" title="Em curso">
-                                        <span class="fr-roteiro-dot pause"></span>
-                                        <span class="fr-roteiro-label">Em curso</span>
-                                    </span>
-                                    <?php endif; ?>
-                                    <?php if (!$temEntradaRoteiro && !$temSaidaRoteiro): ?>
-                                    <span class="fr-roteiro-label">Sem registo</span>
+                                    <?php if ($_totalEventosCell === 0): ?>
+                                        <span class="fr-roteiro-label">Sem registo</span>
+                                    <?php elseif ($_totalEventosCell <= 3): ?>
+                                        <?php foreach ($_timelineEventos as $_iCell => $_evCell): ?>
+                                            <?php if ($_iCell > 0): ?><span class="fr-roteiro-sep"></span><?php endif; ?>
+                                            <span class="fr-roteiro-item" title="<?php echo htmlspecialchars($_evCell['label'] . ($_evCell['hora'] ? ' ' . $_evCell['hora'] : '')); ?>">
+                                                <span class="fr-roteiro-dot <?php echo $_evCell['cls']; ?>"><i class="fas <?php echo $_evCell['icon']; ?>"></i></span>
+                                                <?php if ($_evCell['hora']): ?><span class="fr-roteiro-time"><?php echo $_evCell['hora']; ?></span><?php endif; ?>
+                                            </span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <?php $_firstCell = $_timelineEventos[0]; $_lastCell = $_timelineEventos[$_totalEventosCell - 1]; $_hiddenCell = $_totalEventosCell - 2; ?>
+                                        <span class="fr-roteiro-item" title="<?php echo htmlspecialchars($_firstCell['label'] . ' ' . $_firstCell['hora']); ?>">
+                                            <span class="fr-roteiro-dot <?php echo $_firstCell['cls']; ?>"><i class="fas <?php echo $_firstCell['icon']; ?>"></i></span>
+                                            <span class="fr-roteiro-time"><?php echo $_firstCell['hora']; ?></span>
+                                        </span>
+                                        <span class="fr-roteiro-sep"></span>
+                                        <span class="fr-roteiro-more" title="+<?php echo $_hiddenCell; ?> evento(s) — clique em Ver detalhes">+<?php echo $_hiddenCell; ?></span>
+                                        <span class="fr-roteiro-sep"></span>
+                                        <span class="fr-roteiro-item" title="<?php echo htmlspecialchars($_lastCell['label'] . ' ' . ($_lastCell['hora'] ?? '')); ?>">
+                                            <span class="fr-roteiro-dot <?php echo $_lastCell['cls']; ?>"><i class="fas <?php echo $_lastCell['icon']; ?>"></i></span>
+                                            <?php if ($_lastCell['hora']): ?><span class="fr-roteiro-time"><?php echo $_lastCell['hora']; ?></span><?php else: ?><span class="fr-roteiro-label">Em curso</span><?php endif; ?>
+                                        </span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -7431,7 +7500,7 @@ try {
                     <!-- Roteiro do dia -->
                     <div class="vm-section">
                         <div class="vm-sec-lbl"><i class="fas fa-route"></i> Roteiro do Dia</div>
-                        <div id="view-presenca-roteiro-full" class="fr-roteiro fr-roteiro-lg">
+                        <div id="view-presenca-roteiro-full" class="roteiro-dia">
                             <span class="fr-roteiro-label">Sem registo.</span>
                         </div>
                     </div>

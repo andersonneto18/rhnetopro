@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Avatares de Funcionários</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section h2 {
+            color: #34495e;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+        
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .avatar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .employee-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 0.75rem;
+        }
+        
+        .employee-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        }
+        
+        .employee-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+        
+        .avatar-role {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .table-demo {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+        
+        .table-demo thead tr {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .table-demo th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .table-demo tbody tr {
+            background: #f8f9fa;
+            transition: background 0.2s ease;
+        }
+        
+        .table-demo tbody tr:hover {
+            background: #e9ecef;
+        }
+        
+        .table-demo td {
+            padding: 1rem;
+        }
+        
+        .table-demo .employee-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .preview-section {
+            background: #2c3e50;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .large-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 48px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border: 4px solid white;
+            margin: 0 auto 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .large-avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        .large-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-role {
+            color: #bdc3c7;
+            font-size: 1rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .feature-list i {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-user-circle"></i> Avatares de Funcionários</h1>
+        <p class="subtitle">Sistema profissional de fotos de perfil implementado com sucesso!</p>
+        
+        <!-- Demonstração em Grid -->
+        <div class="section">
+            <h2><i class="fas fa-th"></i> Visualização em Grade</h2>
+            <div class="avatar-grid">
+                <div class="avatar-item">
+                    <div class="employee-avatar">JD</div>
+                    <div class="avatar-name">João Dias</div>
+                    <div class="avatar-role">Gerente</div>
+                </div>
+                <div class="avatar-item">
+                    <div class="employee-avatar">MS</div>
+                    <div class="avatar-name">Maria Silva</div>
+                    <div class="avatar-role">Chefe de Cozinha</div>
+                </div>
+                <div class="avatar-item">
+                    <div class="employee-avatar">PC</div>
+                    <div class="avatar-name">Pedro Costa</div>
+                    <div class="avatar-role">Garçom</div>
+                </div>
+                <div class="avatar-item">
+                    <div class="employee-avatar">AL</div>
+                    <div class="avatar-name">Ana Lopes</div>
+                    <div class="avatar-role">Bartender</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Demonstração em Tabela -->
+        <div class="section">
+            <h2><i class="fas fa-table"></i> Visualização em Tabela</h2>
+            <table class="table-demo">
+                <thead>
+                    <tr>
+                        <th>Avatar</th>
+                        <th>Nome</th>
+                        <th>Cargo</th>
+                        <th>Departamento</th>
+                        <th>Status</th>
+                    <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="employee-avatar">JD</div>
+                        </td>
+                        <td style="font-weight: 600;">João Dias</td>
+                        <td>Gerente Geral</td>
+                        <td>Administração</td>
+                        <td><span class="status-badge status-active">Ativo</span></td>
+                        <td>
+                            <div class="btn-grid" style="grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                                <button class="btn btn-primary" title="Ver Funcionário"><i class="fas fa-eye"></i> Ver</button>
+                                <button class="btn btn-warning" title="Editar Funcionário"><i class="fas fa-edit"></i> Editar</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="employee-avatar">MS</div>
+                        </td>
+                        <td style="font-weight: 600;">Maria Silva</td>
+                        <td>Chefe de Cozinha</td>
+                        <td>Cozinha</td>
+                        <td><span class="status-badge status-active">Ativo</span></td>
+                        <td>
+                            <div class="btn-grid" style="grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                                <button class="btn btn-primary" title="Ver Funcionário"><i class="fas fa-eye"></i> Ver</button>
+                                <button class="btn btn-warning" title="Editar Funcionário"><i class="fas fa-edit"></i> Editar</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="employee-avatar">PC</div>
+                        </td>
+                        <td style="font-weight: 600;">Pedro Costa</td>
+                        <td>Garçom</td>
+                        <td>Atendimento</td>
+                        <td><span class="status-badge status-inactive">Férias</span></td>
+                        <td>
+                            <div class="btn-grid" style="grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                                <button class="btn btn-primary" title="Ver Funcionário"><i class="fas fa-eye"></i> Ver</button>
+                                <button class="btn btn-warning" title="Editar Funcionário"><i class="fas fa-edit"></i> Editar</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Preview Grande -->
+        <div class="section">
+            <h2><i class="fas fa-id-card"></i> Visualização de Perfil</h2>
+            <div class="preview-section">
+                <div class="large-avatar">
+                    <i class="fas fa-user" style="font-size: 64px;"></i>
+                </div>
+                <div class="preview-name">João Dias</div>
+                <div class="preview-role">Gerente Geral</div>
+            </div>
+        </div>
+        
+        <!-- Funcionalidades -->
+        <div class="section">
+            <h2><i class="fas fa-check-circle"></i> Funcionalidades Implementadas</h2>
+            <ul class="feature-list">
+                <li>
+                    <i class="fas fa-upload"></i>
+                    <span><strong>Upload de Fotos:</strong> Suporte para JPG, PNG e GIF (máx. 2MB)</span>
+                </li>
+                <li>
+                    <i class="fas fa-eye"></i>
+                    <span><strong>Preview Instantâneo:</strong> Visualize a foto antes de salvar</span>
+                </li>
+                <li>
+                    <i class="fas fa-user-circle"></i>
+                    <span><strong>Iniciais Automáticas:</strong> Avatar bonito quando não há foto</span>
+                </li>
+                <li>
+                    <i class="fas fa-magic"></i>
+                    <span><strong>Efeitos Hover:</strong> Animações suaves ao passar o mouse</span>
+                </li>
+                <li>
+                    <i class="fas fa-shield-alt"></i>
+                    <span><strong>Validação Segura:</strong> Verificação de formato e tamanho</span>
+                </li>
+                <li>
+                    <i class="fas fa-file-pdf"></i>
+                    <span><strong>Exportação PDF:</strong> Foto incluída nos relatórios</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

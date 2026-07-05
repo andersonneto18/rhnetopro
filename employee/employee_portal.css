@@ -1,0 +1,105 @@
+/* Responsividade para o portal do funcionário */
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    padding: 0.75rem !important;
+  }
+
+  .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0.75rem auto !important;
+    padding: 0.75rem !important;
+    border-radius: 12px !important;
+  }
+
+  .actions {
+    flex-direction: column !important;
+    gap: 0.55rem !important;
+  }
+
+  .actions button,
+  .sms-actions button,
+  #btnDeleteSms {
+    width: 100%;
+    min-height: 42px;
+    font-size: 0.92rem;
+  }
+
+  .sms-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sms-actions {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .sms-item {
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding: 0.6rem;
+  }
+
+  .sms-item-text {
+    font-size: 0.9rem;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .logout {
+    text-align: center;
+    width: 100%;
+    margin-top: 0.9rem;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 0.5rem;
+  }
+  .card {
+    max-width: 98vw;
+    margin: 1rem auto;
+    padding: 0.5rem;
+    border-radius: 10px;
+  }
+  h2 {
+    font-size: 1.1rem;
+  }
+  .actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  button {
+    font-size: 0.95rem;
+    padding: 0.7rem 0.5rem;
+  }
+  .logout {
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+}
+@media (max-width: 400px) {
+  .card {
+    padding: 0.2rem;
+  }
+  button {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.2rem;
+  }
+}
+
+#notifications {
+  margin-bottom: 0.8rem;
+}
+#notifications div {
+  margin-bottom: 0.4rem;
+}

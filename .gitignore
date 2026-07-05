@@ -1,0 +1,19 @@
+config/sms_config.local.php
+.env
+vendor/
+node_modules/
+.claude/settings.local.json
+
+# Dados reais de funcionários / uploads (PII) - não versionar
+uploads/*
+!uploads/.gitkeep
+!uploads/profile/.gitkeep
+!uploads/documents/.gitkeep
+!uploads/justificativas/.gitkeep
+admin/uploads/*
+!admin/uploads/.gitkeep
+app/uploads/*
+!app/uploads/.gitkeep
+
+# Dump com dados reais de funcionários - não versionar
+sistema_cadastro.sql

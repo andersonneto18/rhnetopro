@@ -1,0 +1,407 @@
+
+        :root {
+            --ink-950: #091426;
+            --ink-900: #0f1f36;
+            --ink-700: #2a3f5e;
+            --ink-500: #5f7595;
+            --ink-300: #a9b7cb;
+            --surface-0: #f4f7fb;
+            --surface-1: #ffffff;
+            --line: #d8e0ec;
+            --brand: #0b6ea8;
+            --brand-strong: #095985;
+            --brand-soft: #dcf3ff;
+            --danger-bg: #fff2f3;
+            --danger-border: #ffc8cd;
+            --danger-ink: #b4232d;
+            --success-bg: #f0fdf6;
+            --success-border: #a7f0c6;
+            --success-ink: #16794c;
+            --shadow-card: 0 22px 50px rgba(10, 26, 47, 0.2);
+            --shadow-soft: 0 10px 25px rgba(8, 35, 68, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Manrope', 'Segoe UI', sans-serif;
+            color: var(--ink-900);
+            line-height: 1.45;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background:
+                radial-gradient(circle at 18% 20%, #c6ecff 0%, transparent 38%),
+                radial-gradient(circle at 82% 78%, #d6f6e9 0%, transparent 30%),
+                linear-gradient(140deg, #eef4fb 0%, #dce8f6 100%);
+        }
+
+        .signup-wrapper {
+            width: min(1120px, 100%);
+        }
+
+        /* ── Container em duas colunas ── */
+        .signup-container {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            border-radius: 26px;
+            overflow: hidden;
+            background: var(--surface-1);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: var(--shadow-card);
+            animation: cardIn 0.55s ease-out;
+        }
+
+        /* ── Painel de marca (esquerdo) ── */
+        .brand-panel {
+            background:
+                linear-gradient(160deg, rgba(8, 73, 121, 0.97) 0%, rgba(10, 46, 92, 0.97) 70%),
+                repeating-linear-gradient(
+                    120deg,
+                    rgba(255, 255, 255, 0.08),
+                    rgba(255, 255, 255, 0.08) 1px,
+                    transparent 1px,
+                    transparent 18px
+                );
+            color: #f5fbff;
+            padding: 3rem 2.6rem;
+            position: relative;
+        }
+
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 999px;
+            right: -60px;
+            bottom: -70px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0) 68%);
+        }
+
+        .brand-mark {
+            width: 110px;
+            height: 110px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: grid;
+            place-items: center;
+            margin-bottom: 1.4rem;
+            overflow: hidden;
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 20px;
+            display: block;
+        }
+
+        .brand-tag {
+            margin: 0;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            opacity: 0.8;
+            font-weight: 700;
+        }
+
+        .brand-panel h1 {
+            margin: 0.45rem 0 0;
+            font-family: 'Space Grotesk', 'Manrope', sans-serif;
+            font-size: clamp(1.9rem, 3vw, 2.3rem);
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+        }
+
+        .brand-subtitle {
+            margin: 1rem 0 2rem;
+            max-width: 30ch;
+            opacity: 0.92;
+            font-size: 0.97rem;
+        }
+
+        .brand-points {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.9rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-points li {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.93rem;
+            opacity: 0.96;
+        }
+
+        .brand-points i { color: #87f2bd; }
+
+        /* ── Painel do formulário (direito) ── */
+        .signup-panel {
+            padding: 2.6rem 2.8rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            overflow-y: auto;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-family: 'Space Grotesk', 'Manrope', sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: -0.02em;
+            color: var(--ink-950);
+        }
+
+        .panel-header p {
+            margin: 0.5rem 0 0;
+            color: var(--ink-500);
+            font-size: 0.93rem;
+        }
+
+        .signup-form { margin-top: 1.6rem; }
+
+        /* ── Grid de campos ── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 1.2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.45rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--ink-700);
+            font-weight: 700;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            top: 50%;
+            left: 0.9rem;
+            transform: translateY(-50%);
+            color: var(--ink-500);
+            transition: color 0.2s ease;
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="email"],
+        .input-group input[type="tel"],
+        .input-group input[type="number"],
+        .input-group input[type="password"] {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--surface-1);
+            padding: 0.82rem 0.9rem 0.82rem 2.6rem;
+            font-size: 0.94rem;
+            color: var(--ink-950);
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-group input[type="text"]:focus,
+        .input-group input[type="email"]:focus,
+        .input-group input[type="tel"]:focus,
+        .input-group input[type="number"]:focus,
+        .input-group input[type="password"]:focus {
+            outline: none;
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(11, 110, 168, 0.13);
+        }
+
+        .input-wrapper:focus-within i { color: var(--brand); }
+
+        /* Campo telefone — intl-tel-input ocupa a largura total */
+        .tel-wrapper .iti { width: 100%; }
+        .tel-wrapper .iti input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--surface-1);
+            padding: 0.82rem 0.9rem;
+            font-size: 0.94rem;
+            color: var(--ink-950);
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .tel-wrapper .iti input:focus {
+            outline: none;
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(11, 110, 168, 0.13);
+        }
+
+        /* ── Feedback ── */
+        .error-message,
+        .success-message {
+            margin: 0 0 1.1rem;
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-size: 0.88rem;
+            animation: slideDown 0.22s ease-out;
+        }
+
+        .error-message {
+            border: 1px solid var(--danger-border);
+            background: var(--danger-bg);
+            color: var(--danger-ink);
+        }
+
+        .success-message {
+            border: 1px solid var(--success-border);
+            background: var(--success-bg);
+            color: var(--success-ink);
+        }
+
+        /* ── Termos ── */
+        .checkbox-group {
+            margin: 0.8rem 0 1.3rem;
+            font-size: 0.88rem;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.55rem;
+            color: var(--ink-700);
+            cursor: pointer;
+            line-height: 1.5;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+            accent-color: var(--brand);
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper a {
+            color: var(--brand-strong);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .checkbox-wrapper a:hover { text-decoration: underline; }
+
+        /* ── Botão ── */
+        .signup-button {
+            width: 100%;
+            border: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0b6ea8 0%, #0a4f86 100%);
+            color: #fff;
+            padding: 0.92rem 1rem;
+            font-size: 0.99rem;
+            font-weight: 800;
+            font-family: inherit;
+            letter-spacing: 0.01em;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.55rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .signup-button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+        }
+
+        .signup-button:active { transform: translateY(0); }
+
+        /* ── Link de login ── */
+        .login-link {
+            margin-top: 1.2rem;
+            text-align: center;
+            color: var(--ink-500);
+            font-size: 0.9rem;
+        }
+
+        .login-link a {
+            color: var(--brand-strong);
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .login-link a:hover { text-decoration: underline; }
+
+        /* ── Crédito ── */
+        .developer-credit {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 5;
+            padding: 0.45rem 0.7rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(8, 28, 54, 0.09);
+            color: #4f607a;
+            font-size: 0.75rem;
+            font-family: inherit;
+            box-shadow: 0 6px 18px rgba(12, 33, 58, 0.14);
+        }
+
+        .developer-credit i {
+            color: var(--brand);
+            margin-right: 0.35rem;
+        }
+
+        /* ── Animações ── */
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(16px) scale(0.985); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 920px) {
+            body { padding: 1.3rem; }
+
+            .signup-container { grid-template-columns: 1fr; }
+
+            .brand-panel { padding: 2rem 2rem 1.8rem; }
+
+            .signup-panel { padding: 2rem; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 0.9rem; }
+
+            .form-grid { grid-template-columns: 1fr; }
+
+            .brand-panel { padding: 1.6rem 1.35rem; }
+
+            .signup-panel { padding: 1.35rem; }
+
+            .developer-credit { font-size: 0.7rem; bottom: 10px; right: 10px; }
+        }

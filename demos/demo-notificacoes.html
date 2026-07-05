@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Sistema de Notificações</title>
+    
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .btn-error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .info-box {
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .info-box p {
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+
+        .code {
+            background: #1f2937;
+            color: #10b981;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Sistema de Notificações</h1>
+        <p class="subtitle">Teste as notificações modernas do sistema RH Neto ProWeb</p>
+
+        <div class="button-grid">
+            <button class="btn btn-success" onclick="testSuccess()">
+                ✓ Sucesso
+            </button>
+            
+            <button class="btn btn-error" onclick="testError()">
+                ✗ Erro
+            </button>
+            
+            <button class="btn btn-warning" onclick="testWarning()">
+                ⚠ Aviso
+            </button>
+            
+            <button class="btn btn-info" onclick="testInfo()">
+                ℹ Info
+            </button>
+            
+            <button class="btn btn-confirm" onclick="testConfirm()">
+                ? Confirmação
+            </button>
+        </div>
+
+        <div class="info-box">
+            <h3>📚 Como Usar</h3>
+            <p><span class="code">showSuccess('mensagem')</span> - Notificação verde de sucesso</p>
+            <p><span class="code">showError('mensagem')</span> - Notificação vermelha de erro</p>
+            <p><span class="code">showWarning('mensagem')</span> - Notificação laranja de aviso</p>
+            <p><span class="code">showInfo('mensagem')</span> - Notificação azul informativa</p>
+            <p><span class="code">await showConfirm(...)</span> - Diálogo de confirmação elegante</p>
+        </div>
+    </div>
+
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Sistema de notificações
+        function showSuccess(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                    borderRadius: "12px",
+                    padding: "16px 24px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 25px rgba(16, 185, 129, 0.3)"
+                },
+                onClick: function(){}
+            }).showToast();
+        }
+
+        function showError(message) {
+            Toastify({
+                text: message,
+                duration: 4000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                    borderRadius: "12px",
+                    padding: "16px 24px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 25px rgba(239, 68, 68, 0.3)"
+                },
+                onClick: function(){}
+            }).showToast();
+        }
+
+        function showWarning(message) {
+            Toastify({
+                text: message,
+                duration: 3500,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                    borderRadius: "12px",
+                    padding: "16px 24px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 25px rgba(245, 158, 11, 0.3)"
+                },
+                onClick: function(){}
+            }).showToast();
+        }
+
+        function showInfo(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                    background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                    borderRadius: "12px",
+                    padding: "16px 24px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)"
+                },
+                onClick: function(){}
+            }).showToast();
+        }
+
+        async function showConfirm(title, text, confirmButtonText = 'Sim', cancelButtonText = 'Cancelar') {
+            const result = await Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: confirmButtonText,
+                cancelButtonText: cancelButtonText,
+                reverseButtons: true
+            });
+            return result.isConfirmed;
+        }
+
+        // Funções de teste
+        function testSuccess() {
+            showSuccess('✓ Operação realizada com sucesso!');
+        }
+
+        function testError() {
+            showError('✗ Ocorreu um erro ao processar sua solicitação.');
+        }
+
+        function testWarning() {
+            showWarning('⚠ Atenção! Verifique os dados antes de continuar.');
+        }
+
+        function testInfo() {
+            showInfo('ℹ Esta é uma mensagem informativa do sistema.');
+        }
+
+        async function testConfirm() {
+            const confirmed = await showConfirm(
+                'Confirmar Ação',
+                'Deseja realmente executar esta ação? Esta operação não pode ser desfeita.',
+                'Sim, confirmar',
+                'Cancelar'
+            );
+
+            if (confirmed) {
+                showSuccess('Ação confirmada com sucesso!');
+            } else {
+                showInfo('Ação cancelada pelo usuário.');
+            }
+        }
+
+        // Mostra notificação de boas-vindas ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showInfo('🎉 Bem-vindo ao demo de notificações! Clique nos botões para testar.');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

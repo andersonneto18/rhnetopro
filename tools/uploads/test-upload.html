@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Upload de Foto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+        }
+        .preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        input[type="file"] {
+            display: block;
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            width: 100%;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log div {
+            margin: 5px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Teste de Upload de Foto</h1>
+        
+        <div class="preview" id="preview">
+            FT
+        </div>
+        
+        <form id="testForm">
+            <input type="text" name="name" placeholder="Nome do funcionário" value="Teste Silva" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px;">
+            
+            <input type="file" id="fileInput" name="profile_picture" accept="image/*" required>
+            
+            <button type="submit">📤 Testar Upload</button>
+        </form>
+        
+        <div class="log" id="log"></div>
+    </div>
+    
+    <script>
+        const preview = document.getElementById('preview');
+        const fileInput = document.getElementById('fileInput');
+        const testForm = document.getElementById('testForm');
+        const logDiv = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            div.innerHTML = `${icon} ${message}`;
+            div.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logDiv.insertBefore(div, logDiv.firstChild);
+        }
+        
+        // Preview da foto
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                addLog(`Arquivo selecionado: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+                addLog(`Tipo: ${file.type}`);
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
+                    addLog('Preview carregado com sucesso', 'success');
+                };
+                reader.onerror = function() {
+                    addLog('Erro ao carregar preview', 'error');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Submeter formulário
+        testForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            addLog('Iniciando upload...');
+            
+            const formData = new FormData(this);
+            
+            // Adicionar dados extras para teste
+            formData.append('position', 'Teste');
+            formData.append('department', 'Teste');
+            formData.append('email', 'teste@teste.com');
+            formData.append('phone', '123456789');
+            formData.append('startDate', '2026-01-09');
+            formData.append('status', 'active');
+            
+            addLog('Enviando para create_employee.php...');
+            
+            try {
+                const response = await fetch('../../api/employees/create_employee.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                addLog(`Status da resposta: ${response.status}`);
+                
+                const text = await response.text();
+                addLog(`Resposta bruta: ${text.substring(0, 200)}`);
+                
+                try {
+                    const data = JSON.parse(text);
+                    if (data.success) {
+                        addLog('✅ Funcionário criado com sucesso!', 'success');
+                        addLog(`ID: ${data.employee_id}`);
+                    } else {
+                        addLog(`Erro: ${data.message}`, 'error');
+                    }
+                } catch (err) {
+                    addLog('Erro ao fazer parse do JSON', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`Erro na requisição: ${error.message}`, 'error');
+            }
+        });
+        
+        addLog('Página de teste carregada - Pronta para testar!');
+    </script>
+</body>
+</html>

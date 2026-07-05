@@ -11098,10 +11098,37 @@ function closeBulkActionsBar() {
                             if (typeof showError === 'function') showError((data && data.error) || 'Não foi possível reverter o pagamento.');
                             return;
                         }
-                        if (typeof showSuccess === 'function') {
-                            showSuccess('Pagamento revertido. A página vai atualizar para liberar a edição.');
+
+                        // Atualizar estado da linha sem recarregar a página
+                        editRow.setAttribute('data-status-pagamento', 'pendente');
+                        editBtn.setAttribute('data-pago', '0');
+                        editBtn.title = 'Editar Variáveis Mensais';
+
+                        var badge = editRow.querySelector('.status-pagamento');
+                        if (badge) {
+                            badge.className = 'status-pagamento status-pagamento-pendente';
+                            badge.innerHTML = '<i class="fas fa-clock"></i> Pendente';
+                            var dateHint = badge.nextElementSibling;
+                            if (dateHint && dateHint.tagName === 'DIV') dateHint.remove();
                         }
-                        window.setTimeout(function () { window.location.reload(); }, 500);
+
+                        if (!editRow.querySelector('.btn-folha-pagar')) {
+                            var pagarBtnHtml = document.createElement('button');
+                            pagarBtnHtml.type = 'button';
+                            pagarBtnHtml.className = 'fr-btn fr-btn-activate btn-folha-pagar employee-action-btn';
+                            pagarBtnHtml.setAttribute('data-emp-id', empId);
+                            pagarBtnHtml.setAttribute('data-fiscal-year', fyear);
+                            pagarBtnHtml.setAttribute('data-fiscal-month', fmonth);
+                            pagarBtnHtml.title = 'Marcar como Pago';
+                            pagarBtnHtml.innerHTML = '<i class="fas fa-check"></i>';
+                            editBtn.insertAdjacentElement('afterend', pagarBtnHtml);
+                        }
+
+                        if (typeof showSuccess === 'function') {
+                            showSuccess('Pagamento revertido. Editando variáveis...');
+                        }
+
+                        openVariaveisModal(editRow);
                     })
                     .catch(function (err) {
                         delete editBtn.dataset.unpaying;

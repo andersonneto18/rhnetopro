@@ -53,10 +53,7 @@ if (move_uploaded_file($file['tmp_name'], $path)) {
     try {
         // Verificar se a coluna existe
         $check = $conn->query("SHOW COLUMNS FROM usuarios LIKE 'profile_picture'");
-        $numRows = 0;
-        if (is_object($check) && method_exists($check, 'rowCount')) {
-            $numRows = $check->rowCount();
-        }
+        $numRows = ($check instanceof mysqli_result) ? $check->num_rows : 0;
         if ($numRows == 0) {
             $conn->query("ALTER TABLE usuarios ADD COLUMN profile_picture VARCHAR(255) NULL DEFAULT NULL AFTER client_id");
         }

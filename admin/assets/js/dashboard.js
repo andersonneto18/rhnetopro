@@ -5668,29 +5668,22 @@ function toggleExportTurnosDropdown() {
 
 function togglePresencaHistoryPanel(button) {
     const panel = document.getElementById('presencaHistoryPanel');
+    const mainWrap = document.getElementById('presencaMainTableWrap');
     if (!panel) return;
 
     const isOpen = panel.dataset.open === 'true';
     const nextOpen = !isOpen;
 
-    if (nextOpen) {
-        panel.style.marginTop = '1.25rem';
-        panel.style.maxHeight = panel.scrollHeight + 'px';
-        panel.style.opacity = '1';
-        panel.dataset.open = 'true';
-    } else {
-        panel.style.maxHeight = '0';
-        panel.style.opacity = '0';
-        panel.style.marginTop = '0';
-        panel.dataset.open = 'false';
-    }
+    panel.style.display = nextOpen ? 'block' : 'none';
+    panel.dataset.open = nextOpen ? 'true' : 'false';
+    if (mainWrap) mainWrap.style.display = nextOpen ? 'none' : '';
 
     if (button) {
         button.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
         button.classList.toggle('history-active', nextOpen);
         button.innerHTML = nextOpen
-            ? '<i class="fas fa-history"></i><span>Ocultar Histórico</span><i class="fas fa-chevron-up" style="margin-left: .35rem; font-size: 0.8em;"></i>'
-            : '<i class="fas fa-history"></i><span>Histórico</span><i class="fas fa-chevron-down" style="margin-left: .35rem; font-size: 0.8em;"></i>';
+            ? '<i class="fas fa-arrow-left"></i><span>Voltar</span>'
+            : '<i class="fas fa-history"></i><span>Histórico</span>';
     }
 }
 

@@ -6875,9 +6875,10 @@ try {
                             <i class="fas fa-sliders-h"></i> Filtros
                             <span class="fr-filter-badge" id="paFilterBadge" style="display:none"></span>
                         </button>
-                        <button type="button" id="togglePresencaHistoryBtn" class="btn btn-secondary"
-                            onclick="togglePresencaHistoryPanel(this)" aria-expanded="false"
+                        <button type="button" id="togglePresencaHistoryBtn" class="btn btn-secondary" disabled
+                            aria-expanded="false"
                             aria-controls="presencaHistoryPanel"
+                            title="Indisponível no momento"
                             style="padding:.5rem .9rem; white-space:nowrap;">
                             <i class="fas fa-history"></i>
                             <span>Histórico</span>

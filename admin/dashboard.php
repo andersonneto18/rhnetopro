@@ -4761,6 +4761,8 @@ try {
                 .fr-btn-activate:hover{ background:#10b981; color:#fff; }
                 .fr-btn-off    { opacity:.35; cursor:not-allowed; }
                 .fr-btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,.2); }
+                .fr-btn:disabled { opacity:.35; cursor:not-allowed; filter:grayscale(.6); }
+                .fr-btn:disabled:hover { background:inherit; color:inherit; }
 
                 /* Checkbox */
                 .fr-checkbox { width:16px; height:16px; accent-color:#3b82f6; cursor:pointer; }

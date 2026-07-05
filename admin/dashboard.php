@@ -4778,6 +4778,29 @@ try {
                 .fr-contract-expired { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
                 .fr-contract-expiring{ background:#fffbeb; color:#d97706; border:1px solid #fde68a; }
 
+                /* Roteiro do dia: mini timeline horizontal (tabela + modal) */
+                .fr-td-roteiro { max-width:1px; }
+                .fr-roteiro { display:flex; align-items:center; gap:.3rem; white-space:nowrap; overflow:hidden; font-size:.78rem; }
+                .fr-roteiro-item { display:inline-flex; align-items:center; gap:.3rem; flex-shrink:0; }
+                .fr-roteiro-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 3px rgba(255,255,255,.05); }
+                .fr-roteiro-dot.in    { background:#4ade80; }
+                .fr-roteiro-dot.out   { background:#f87171; }
+                .fr-roteiro-dot.pause { background:#fbbf24; }
+                .fr-roteiro-time  { font-weight:700; color:var(--text-primary,#e2e8f0); }
+                .fr-roteiro-label { color:var(--text-secondary,#94a3b8); font-size:.72rem; }
+                .fr-roteiro-sep { width:18px; height:2px; background:rgba(255,255,255,.12); flex-shrink:0; border-radius:2px; }
+                .fr-roteiro-more {
+                    flex-shrink:0; font-size:.68rem; font-weight:700; color:#60a5fa;
+                    background:rgba(59,130,246,.14); padding:.1rem .45rem; border-radius:999px;
+                }
+                /* Variante grande usada no modal "Ver Detalhes" */
+                .fr-roteiro-lg { overflow-x:auto; padding:.4rem 0; gap:.6rem; }
+                .fr-roteiro-lg .fr-roteiro-item { flex-direction:column; align-items:center; gap:.3rem; min-width:70px; }
+                .fr-roteiro-lg .fr-roteiro-dot { width:14px; height:14px; }
+                .fr-roteiro-lg .fr-roteiro-sep { width:38px; }
+                .fr-roteiro-lg .fr-roteiro-time { font-size:.86rem; }
+                .fr-roteiro-lg .fr-roteiro-label { font-size:.72rem; }
+
                 /* Role cell */
                 .fr-role-pos  { display:block; font-size:.83rem; font-weight:600; color:var(--text-primary,#f1f5f9); }
                 .fr-role-dept { display:inline-flex; align-items:center; margin-top:4px; padding:2px 8px; background:rgba(99,102,241,.12); color:#a5b4fc; border-radius:4px; font-size:.68rem; font-weight:600; }
@@ -6899,8 +6922,7 @@ try {
                             <th class="fr-th-emp">Funcionário</th>
                             <th class="fr-th-status">Status</th>
                             <th>Data</th>
-                            <th>Entrada</th>
-                            <th>Saída</th>
+                            <th>Roteiro</th>
                             <th class="fr-th-acts">Ações</th>
                         </tr>
                     </thead>
@@ -7324,9 +7346,37 @@ try {
                             </td>
 
                             <td><?php echo $dateDisplay; ?></td>
-                            <td><?php echo isset($registro['hora_entrada']) && $registro['hora_entrada'] !== null ? htmlspecialchars(substr((string)$registro['hora_entrada'], 0, 5)) : '--:--'; ?>
-                            </td>
-                            <td><?php echo isset($registro['hora_saida']) && $registro['hora_saida'] !== null ? htmlspecialchars(substr((string)$registro['hora_saida'], 0, 5)) : '--:--'; ?>
+                            <?php
+                                $temEntradaRoteiro = isset($registro['hora_entrada']) && $registro['hora_entrada'] !== null;
+                                $temSaidaRoteiro   = isset($registro['hora_saida']) && $registro['hora_saida'] !== null;
+                                $horaEntradaRoteiro = $temEntradaRoteiro ? htmlspecialchars(substr((string)$registro['hora_entrada'], 0, 5)) : '';
+                                $horaSaidaRoteiro   = $temSaidaRoteiro ? htmlspecialchars(substr((string)$registro['hora_saida'], 0, 5)) : '';
+                            ?>
+                            <td class="fr-td-roteiro">
+                                <div class="fr-roteiro">
+                                    <?php if ($temEntradaRoteiro): ?>
+                                    <span class="fr-roteiro-item" title="Entrada <?php echo $horaEntradaRoteiro; ?>">
+                                        <span class="fr-roteiro-dot in"></span>
+                                        <span class="fr-roteiro-time"><?php echo $horaEntradaRoteiro; ?></span>
+                                    </span>
+                                    <?php if ($temSaidaRoteiro): ?><span class="fr-roteiro-sep"></span><?php endif; ?>
+                                    <?php endif; ?>
+                                    <?php if ($temSaidaRoteiro): ?>
+                                    <span class="fr-roteiro-item" title="Saída <?php echo $horaSaidaRoteiro; ?>">
+                                        <span class="fr-roteiro-dot out"></span>
+                                        <span class="fr-roteiro-time"><?php echo $horaSaidaRoteiro; ?></span>
+                                    </span>
+                                    <?php elseif ($temEntradaRoteiro): ?>
+                                    <span class="fr-roteiro-sep"></span>
+                                    <span class="fr-roteiro-item" title="Em curso">
+                                        <span class="fr-roteiro-dot pause"></span>
+                                        <span class="fr-roteiro-label">Em curso</span>
+                                    </span>
+                                    <?php endif; ?>
+                                    <?php if (!$temEntradaRoteiro && !$temSaidaRoteiro): ?>
+                                    <span class="fr-roteiro-label">Sem registo</span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td class="fr-td-acts">
                                 <div class="fr-acts">
@@ -7375,6 +7425,14 @@ try {
                         <div class="vm-hero-info">
                             <h2 class="vm-hero-name" id="view-presenca-funcionario"></h2>
                             <div id="view-presenca-status" style="margin-top:4px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Roteiro do dia -->
+                    <div class="vm-section">
+                        <div class="vm-sec-lbl"><i class="fas fa-route"></i> Roteiro do Dia</div>
+                        <div id="view-presenca-roteiro-full" class="fr-roteiro fr-roteiro-lg">
+                            <span class="fr-roteiro-label">Sem registo.</span>
                         </div>
                     </div>
 

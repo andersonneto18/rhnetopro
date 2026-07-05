@@ -487,6 +487,43 @@ function updatePresencaModalNavigationState(modal, navRows, currentIndex) {
     if (indicator) indicator.textContent = navRows.length > 0 ? `${currentIndex + 1}/${navRows.length}` : '0/0';
 }
 
+function buildRoteiroTimelineHtml(entrada, saida) {
+    const hasEntrada = !!entrada && entrada !== '--:--';
+    const hasSaida = !!saida && saida !== '--:--';
+
+    if (!hasEntrada && !hasSaida) {
+        return '<span class="fr-roteiro-label">Sem registo para este dia.</span>';
+    }
+
+    let html = '';
+    if (hasEntrada) {
+        html += `
+            <span class="fr-roteiro-item" title="Entrada">
+                <span class="fr-roteiro-dot in"></span>
+                <span class="fr-roteiro-time">${entrada}</span>
+                <span class="fr-roteiro-label">Entrada</span>
+            </span>`;
+        html += '<span class="fr-roteiro-sep"></span>';
+    }
+
+    if (hasSaida) {
+        html += `
+            <span class="fr-roteiro-item" title="Saída">
+                <span class="fr-roteiro-dot out"></span>
+                <span class="fr-roteiro-time">${saida}</span>
+                <span class="fr-roteiro-label">Saída</span>
+            </span>`;
+    } else if (hasEntrada) {
+        html += `
+            <span class="fr-roteiro-item" title="Em curso">
+                <span class="fr-roteiro-dot pause"></span>
+                <span class="fr-roteiro-label">Em curso</span>
+            </span>`;
+    }
+
+    return html;
+}
+
 function renderPresencaModalFromRow(row, employeeId) {
     if (!row) return;
 
@@ -540,6 +577,8 @@ function renderPresencaModalFromRow(row, employeeId) {
     document.getElementById('view-presenca-falta-tipo').textContent = faltaTipo;
     document.getElementById('view-presenca-entrada').textContent = entrada;
     document.getElementById('view-presenca-saida').textContent = saida;
+    const roteiroFullEl = document.getElementById('view-presenca-roteiro-full');
+    if (roteiroFullEl) roteiroFullEl.innerHTML = buildRoteiroTimelineHtml(entrada, saida);
     document.getElementById('view-presenca-horas').textContent = horas;
     document.getElementById('view-presenca-atraso').textContent = atraso;
     document.getElementById('view-presenca-confirmacao').textContent = confirmacao;
@@ -6601,8 +6640,8 @@ function openSettings() {
                 cells[1]?.textContent.trim() || '',
                 cells[2]?.textContent.trim() || '',
                 row.dataset.tipoDia || '',
-                cells[3]?.textContent.trim() || '--:--',
-                cells[4]?.textContent.trim() || '--:--',
+                row.dataset.horaEntrada || '--:--',
+                row.dataset.horaSaida || '--:--',
                 row.dataset.horas || '',
                 row.dataset.atraso || '',
                 row.dataset.faltaTipo || '',
@@ -6663,8 +6702,8 @@ function openSettings() {
                 cells[1]?.textContent.trim() || '',
                 cells[2]?.textContent.trim() || '',
                 row.dataset.tipoDia || '',
-                cells[3]?.textContent.trim() || '--:--',
-                cells[4]?.textContent.trim() || '--:--',
+                row.dataset.horaEntrada || '--:--',
+                row.dataset.horaSaida || '--:--',
                 row.dataset.horas || '',
                 row.dataset.atraso || '',
                 row.dataset.faltaTipo || ''

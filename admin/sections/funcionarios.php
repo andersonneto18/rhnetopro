@@ -475,6 +475,7 @@
                 #addEmployeeModal { overflow-y:auto; padding:24px 16px 48px; }
                 #turnoModal, #bulkTurnoModal, #turnoSwapModal { overflow-y:auto; padding:24px 16px 48px; }
                 #gorjetaModal, #gorjetaViewModal { overflow-y:auto; padding:24px 16px 48px; }
+                #notifyModal, #bulkVacationModal, #bulkStatusModal, #bulkDepartmentModal { overflow-y:auto; padding:24px 16px 48px; }
                 .am-sheet {
                     background:#0f172a;
                     border:1px solid rgba(255,255,255,.1);
@@ -931,76 +932,60 @@
 
             </div>
 
-            <div id="notifyModal" class="modal" style="display: none;">
-                <div class="modal-content notify-modal-content"
-                    style="max-width: 480px; background: #fafdff; border-radius: 18px; box-shadow: 0 8px 32px rgba(52,152,219,0.13); padding: 2.2rem 2.2rem 1.5rem 2.2rem; position: relative;">
-                    <button class="bulk-close" aria-label="Fechar" onclick="closeNotifyModal()"
-                        style="position: absolute; top: 18px; right: 22px; color: #217dbb; background: none; border: none; font-size: 2.1em; font-weight: 700; cursor: pointer; transition: color 0.2s; z-index: 2;">&times;</button>
+            <div id="notifyModal" class="modal" style="display: none; overflow-y:auto; padding:24px 16px 48px;">
+                <div class="am-sheet" style="max-width:480px;">
+                    <button class="am-close" type="button" aria-label="Fechar" onclick="closeNotifyModal()">&times;</button>
 
-                    <div class="notify-modal-header" style="text-align: center; margin-bottom: 1.2rem;">
-                        <div
-                            style="display: flex; justify-content: center; align-items: center; margin-bottom: 0.5rem;">
-                            <span
-                                style="background: linear-gradient(135deg, #3498db 0%, #217dbb 100%); color: #fff; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; font-size: 2em; box-shadow: 0 2px 12px rgba(52,152,219,0.13);">
-                                <i class="fas fa-comment-dots"></i>
-                            </span>
+                    <div class="am-header">
+                        <div class="am-header-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 6px 16px rgba(37,99,235,.35);">
+                            <i class="fas fa-comment-dots"></i>
                         </div>
-                        <h2
-                            style="color: #217dbb; font-size: 1.45em; font-weight: 800; margin: 0 0 0.2em 0; letter-spacing: 0.5px;">
-                            Enviar SMS</h2>
-                        <p style="color: #6c7a89; font-size: 1em; margin: 0;">Envie uma mensagem rápida para os
-                            funcionários
-                            selecionados.</p>
-                    </div>
-
-                    <div class="notify-audience"
-                        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 1.1rem;">
-                        <span id="selectedCount" class="selected-count-badge"
-                            style="background: #eaf6fb; color: #217dbb; font-weight: 700; border-radius: 8px; padding: 0.3em 1em; font-size: 1em;">0
-                            funcionários selecionados</span>
-                        <div id="notifyRecipientPreview" class="recipient-preview"
-                            style="color: #7b8ca6; font-size: 0.98em; text-align: center;">Nenhum destinatário
-                            selecionado.
+                        <div>
+                            <h2 class="am-title">Enviar SMS</h2>
+                            <p class="am-subtitle">Envie uma mensagem rápida para os funcionários selecionados</p>
                         </div>
                     </div>
 
-                    <label for="smsMessage" class="notify-label"
-                        style="font-weight: 700; color: #217dbb; margin-bottom: 0.4em; display: block;">Mensagem <span
-                            style="font-weight:400; color:#7b8ca6;">(máx 160 caracteres)</span></label>
-                    <div style="margin-bottom: 0.8em; background: #eef7fd; border: 1px solid #d9ebf8; border-radius: 10px; padding: 0.65em 0.85em;">
-                        <div style="font-weight: 700; color: #217dbb; margin-bottom: 0.45em;">Canal de envio</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.85em; color: #2c3e50; font-size: 0.97em;">
-                            <label style="display: flex; align-items: center; gap: 0.35em; cursor: pointer;">
+                    <div class="am-section">
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;text-align:center;">
+                            <span id="selectedCount" style="background:rgba(59,130,246,.14);color:#93c5fd;font-weight:700;border-radius:8px;padding:.3em 1em;font-size:.85rem;">0 funcionários selecionados</span>
+                            <div id="notifyRecipientPreview" style="color:#64748b;font-size:.82rem;">Nenhum destinatário selecionado.</div>
+                        </div>
+                    </div>
+
+                    <div class="am-section">
+                        <div class="am-sec-lbl"><i class="fas fa-paper-plane"></i> Canal de Envio</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:.85rem;">
+                            <label class="am-lbl" style="display:flex;align-items:center;gap:.35em;cursor:pointer;font-weight:400;">
                                 <input type="radio" name="notifyDeliveryMode" value="app" />
                                 App do funcionário
                             </label>
-                            <label style="display: flex; align-items: center; gap: 0.35em; cursor: pointer;">
+                            <label class="am-lbl" style="display:flex;align-items:center;gap:.35em;cursor:pointer;font-weight:400;">
                                 <input type="radio" name="notifyDeliveryMode" value="phone" />
                                 Número de telefone
                             </label>
-                            <label style="display: flex; align-items: center; gap: 0.35em; cursor: pointer;">
+                            <label class="am-lbl" style="display:flex;align-items:center;gap:.35em;cursor:pointer;font-weight:400;">
                                 <input type="radio" name="notifyDeliveryMode" value="both" checked />
                                 Ambos
                             </label>
                         </div>
                     </div>
-                    <textarea id="smsMessage" maxlength="160"
-                        placeholder="Digite uma mensagem clara e objetiva para a equipa."
-                        style="width: 100%; min-height: 90px; border-radius: 10px; border: 1.5px solid #dbeafe; background: #fafdff; color: #34495e; font-size: 1.08em; padding: 0.8em 1em; margin-bottom: 0.5em; box-shadow: 0 1px 4px rgba(52,152,219,0.04);"></textarea>
-                    <div class="notify-meta-row"
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1em;">
-                        <p id="charLimitMsg" style="display:none; margin:0; color:#e74c3c; font-size:0.98em;"></p>
-                        <span id="smsCharCounter" style="color: #217dbb; font-size: 0.98em;">160 restantes</span>
+
+                    <div class="am-section">
+                        <label class="am-lbl" for="smsMessage">Mensagem <span class="am-opt">(máx 160 caracteres)</span></label>
+                        <textarea id="smsMessage" maxlength="160" class="am-inp" style="min-height:90px;"
+                            placeholder="Digite uma mensagem clara e objetiva para a equipa."></textarea>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem;">
+                            <p id="charLimitMsg" style="display:none;margin:0;color:#f87171;font-size:.82rem;"></p>
+                            <span id="smsCharCounter" class="am-hint">160 restantes</span>
+                        </div>
                     </div>
 
-                    <div class="modal-actions notify-actions"
-                        style="display: flex; gap: 1.1em; justify-content: center;">
-                        <button type="button" onclick="sendBulkSMS()" class="btn-primary"
-                            style="background: linear-gradient(90deg, #3498db 0%, #217dbb 100%); color: #fff; font-weight: 700; border: none; border-radius: 8px; padding: 0.7em 2.1em; font-size: 1.08em; box-shadow: 0 2px 8px rgba(52,152,219,0.10); cursor: pointer; transition: background 0.2s;">
+                    <div class="am-footer">
+                        <button type="button" class="am-btn-cancel" onclick="closeNotifyModal()">Cancelar</button>
+                        <button type="button" class="am-btn-submit" onclick="sendBulkSMS()">
                             <i class="fas fa-paper-plane"></i> Enviar SMS
                         </button>
-                        <button type="button" onclick="closeNotifyModal()" class="btn-danger"
-                            style="background: #e74c3c; color: #fff; font-weight: 700; border: none; border-radius: 8px; padding: 0.7em 2.1em; font-size: 1.08em; box-shadow: 0 2px 8px rgba(231,76,60,0.10); cursor: pointer; transition: background 0.2s;">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -1623,48 +1608,44 @@
             </div>
 
             <!-- Modal: Marcar Férias em Lote -->
-            <div id="bulkVacationModal" class="modal" style="display: none;">
-                <div class="modal-content" style="max-width: 500px;">
-                    <span class="close-btn" onclick="document.getElementById('bulkVacationModal').style.display='none'"
-                        style="color: #ecf0f1; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-                    <h3 style="text-align: center; color: #3498db; margin-bottom: 25px;">
-                        <i class="fas fa-umbrella-beach"></i> Marcar Férias em Lote
-                    </h3>
+            <div id="bulkVacationModal" class="modal" style="display: none; overflow-y:auto; padding:24px 16px 48px;">
+                <div class="am-sheet" style="max-width:480px;">
+                    <button class="am-close" type="button" aria-label="Fechar"
+                        onclick="document.getElementById('bulkVacationModal').style.display='none'">&times;</button>
+
+                    <div class="am-header">
+                        <div class="am-header-icon" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);box-shadow:0 6px 16px rgba(2,132,199,.35);">
+                            <i class="fas fa-umbrella-beach"></i>
+                        </div>
+                        <div>
+                            <h2 class="am-title">Marcar Férias em Lote</h2>
+                            <p class="am-subtitle">Aplica o período de férias aos funcionários selecionados</p>
+                        </div>
+                    </div>
 
                     <form id="bulkVacationForm">
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; color: #ecf0f1; font-weight: 600;">
-                                Data Início
-                            </label>
-                            <input type="date" id="vacationStartDate" name="start_date" required
-                                style="width: 100%; padding: 12px; border: 2px solid #34495e; border-radius: 8px; background: #2c3e50; color: #ecf0f1; font-size: 14px;">
+                        <div class="am-section">
+                            <div class="am-g2">
+                                <div class="am-f">
+                                    <label class="am-lbl" for="vacationStartDate">Data Início *</label>
+                                    <input type="date" id="vacationStartDate" name="start_date" class="am-inp" required>
+                                </div>
+                                <div class="am-f">
+                                    <label class="am-lbl" for="vacationEndDate">Data Fim *</label>
+                                    <input type="date" id="vacationEndDate" name="end_date" class="am-inp" required>
+                                </div>
+                                <div class="am-f am-f-full">
+                                    <label class="am-lbl" for="vacationNote">Observação</label>
+                                    <textarea id="vacationNote" name="note" rows="3" class="am-inp"></textarea>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; color: #ecf0f1; font-weight: 600;">
-                                Data Fim
-                            </label>
-                            <input type="date" id="vacationEndDate" name="end_date" required
-                                style="width: 100%; padding: 12px; border: 2px solid #34495e; border-radius: 8px; background: #2c3e50; color: #ecf0f1; font-size: 14px;">
-                        </div>
-
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; color: #ecf0f1; font-weight: 600;">
-                                Observação
-                            </label>
-                            <textarea id="vacationNote" name="note" rows="3"
-                                style="width: 100%; padding: 12px; border: 2px solid #34495e; border-radius: 8px; background: #2c3e50; color: #ecf0f1; font-size: 14px;"></textarea>
-                        </div>
-
-                        <div style="display: flex; gap: 1rem; margin-top: 20px;">
-                            <button type="submit" class="btn"
-                                style="flex: 1; background: #3498db; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        <div class="am-footer">
+                            <button type="button" class="am-btn-cancel"
+                                onclick="document.getElementById('bulkVacationModal').style.display='none'">Cancelar</button>
+                            <button type="submit" class="am-btn-submit">
                                 <i class="fas fa-check"></i> Confirmar
-                            </button>
-                            <button type="button"
-                                onclick="document.getElementById('bulkVacationModal').style.display='none'" class="btn"
-                                style="flex: 1; background: #95a5a6; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                <i class="fas fa-times"></i> Cancelar
                             </button>
                         </div>
                     </form>
@@ -1672,45 +1653,45 @@
             </div>
 
             <!-- Modal: Alterar Status em Lote -->
-            <div id="bulkStatusModal" class="modal" style="display: none;">
-                <div class="modal-content" style="max-width: 500px;">
-                    <span class="close-btn" onclick="document.getElementById('bulkStatusModal').style.display='none'"
-                        style="color: #ecf0f1; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-                    <h3 style="text-align: center; color: #3498db; margin-bottom: 25px;">
-                        <i class="fas fa-toggle-on"></i> Alterar Status em Lote
-                    </h3>
+            <div id="bulkStatusModal" class="modal" style="display: none; overflow-y:auto; padding:24px 16px 48px;">
+                <div class="am-sheet" style="max-width:480px;">
+                    <button class="am-close" type="button" aria-label="Fechar"
+                        onclick="document.getElementById('bulkStatusModal').style.display='none'">&times;</button>
+
+                    <div class="am-header">
+                        <div class="am-header-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 6px 16px rgba(37,99,235,.35);">
+                            <i class="fas fa-toggle-on"></i>
+                        </div>
+                        <div>
+                            <h2 class="am-title">Alterar Status em Lote</h2>
+                            <p class="am-subtitle">Aplica o novo status aos funcionários selecionados</p>
+                        </div>
+                    </div>
 
                     <form id="bulkStatusForm">
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; color: #ecf0f1; font-weight: 600;">
-                                Novo Status
-                            </label>
-                            <select id="bulkNewStatus" name="status" required
-                                style="width: 100%; padding: 12px; border: 2px solid #34495e; border-radius: 8px; background: #2c3e50; color: #ecf0f1; font-size: 14px;">
-                                <option value="">Selecione...</option>
-                                <option value="active">Ativo</option>
-                                <option value="inactive">Inativo</option>
-                                <option value="ferias">Férias</option>
-                            </select>
+                        <div class="am-section">
+                            <div class="am-g2">
+                                <div class="am-f am-f-full">
+                                    <label class="am-lbl" for="bulkNewStatus">Novo Status *</label>
+                                    <select id="bulkNewStatus" name="status" class="am-inp am-sel" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="active">Ativo</option>
+                                        <option value="inactive">Inativo</option>
+                                        <option value="ferias">Férias</option>
+                                    </select>
+                                </div>
+                                <div class="am-f am-f-full">
+                                    <label class="am-lbl">Razão <span class="am-opt">(opcional)</span></label>
+                                    <textarea id="bulkStatusReason" name="reason" rows="2" class="am-inp"></textarea>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; color: #ecf0f1; font-weight: 600;">
-                                Razão (Opcional)
-                            </label>
-                            <textarea id="bulkStatusReason" name="reason" rows="2"
-                                style="width: 100%; padding: 12px; border: 2px solid #34495e; border-radius: 8px; background: #2c3e50; color: #ecf0f1; font-size: 14px;"></textarea>
-                        </div>
-
-                        <div style="display: flex; gap: 1rem; margin-top: 20px;">
-                            <button type="submit" class="btn"
-                                style="flex: 1; background: #3498db; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        <div class="am-footer">
+                            <button type="button" class="am-btn-cancel"
+                                onclick="document.getElementById('bulkStatusModal').style.display='none'">Cancelar</button>
+                            <button type="submit" class="am-btn-submit">
                                 <i class="fas fa-check"></i> Confirmar
-                            </button>
-                            <button type="button"
-                                onclick="document.getElementById('bulkStatusModal').style.display='none'" class="btn"
-                                style="flex: 1; background: #95a5a6; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                <i class="fas fa-times"></i> Cancelar
                             </button>
                         </div>
                     </form>
@@ -1718,33 +1699,34 @@
             </div>
 
             <!-- Modal: Alterar Departamento em Lote -->
-            <div id="bulkDepartmentModal" class="modal" style="display: none;">
-                <div class="modal-content" style="max-width: 500px;">
-                    <span class="close-btn"
-                        onclick="document.getElementById('bulkDepartmentModal').style.display='none'"
-                        style="color: #ecf0f1; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-                    <h3 style="text-align: center; color: #3498db; margin-bottom: 25px;">
-                        <i class="fas fa-exchange-alt"></i> Alterar Departamento em Lote
-                    </h3>
-                    <form id="bulkDepartmentForm">
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; color: #ecf0f1; font-weight: 600;">
-                                Novo Departamento
-                            </label>
-                            <input type="text" id="bulkNewDepartment" name="department" required
-                                style="width: 100%; padding: 12px; border: 2px solid #34495e; border-radius: 8px; background: #2c3e50; color: #ecf0f1; font-size: 14px;"
-                                placeholder="Ex: Marketing">
+            <div id="bulkDepartmentModal" class="modal" style="display: none; overflow-y:auto; padding:24px 16px 48px;">
+                <div class="am-sheet" style="max-width:480px;">
+                    <button class="am-close" type="button" aria-label="Fechar"
+                        onclick="document.getElementById('bulkDepartmentModal').style.display='none'">&times;</button>
+
+                    <div class="am-header">
+                        <div class="am-header-icon" style="background:linear-gradient(135deg,#64748b,#475569);box-shadow:0 6px 16px rgba(71,85,105,.35);">
+                            <i class="fas fa-exchange-alt"></i>
                         </div>
-                        <div style="display: flex; gap: 1rem; margin-top: 20px;">
-                            <button type="submit" class="btn"
-                                style="flex: 1; background: #3498db; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        <div>
+                            <h2 class="am-title">Alterar Departamento em Lote</h2>
+                            <p class="am-subtitle">Move os funcionários selecionados para outro departamento</p>
+                        </div>
+                    </div>
+
+                    <form id="bulkDepartmentForm">
+                        <div class="am-section">
+                            <div class="am-f am-f-full">
+                                <label class="am-lbl" for="bulkNewDepartment">Novo Departamento *</label>
+                                <input type="text" id="bulkNewDepartment" name="department" class="am-inp" required placeholder="Ex: Marketing">
+                            </div>
+                        </div>
+
+                        <div class="am-footer">
+                            <button type="button" class="am-btn-cancel"
+                                onclick="document.getElementById('bulkDepartmentModal').style.display='none'">Cancelar</button>
+                            <button type="submit" class="am-btn-submit">
                                 <i class="fas fa-check"></i> Confirmar
-                            </button>
-                            <button type="button"
-                                onclick="document.getElementById('bulkDepartmentModal').style.display='none'"
-                                class="btn"
-                                style="flex: 1; background: #95a5a6; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                <i class="fas fa-times"></i> Cancelar
                             </button>
                         </div>
                     </form>

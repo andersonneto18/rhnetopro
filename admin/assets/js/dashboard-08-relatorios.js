@@ -444,25 +444,85 @@ document.addEventListener('DOMContentLoaded', function() {
             exportCsv(fileBase, metadata, headers, data);
             return;
         }
-        const doc = new window.jspdf.jsPDF({ orientation: 'landscape' });
-        let y = 12;
-        doc.setFontSize(11);
-        metadata.forEach((m) => {
-            doc.text(`${m[0]}: ${m[1]}`, 10, y);
-            y += 6;
-        });
-        y += 4;
-        doc.setFontSize(10);
-        doc.text(headers.join(' | '), 10, y);
-        y += 6;
-        data.forEach((row) => {
-            if (y > 190) {
-                doc.addPage();
-                y = 12;
+        const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const marginX = 12;
+
+        const reportName = (metadata.find((m) => m[0] === 'Relatório') || [, fileBase])[1];
+        const periodLabel = (metadata.find((m) => m[0] === 'Período aplicado') || [, ''])[1];
+        const totalRows = (metadata.find((m) => m[0] === 'Registros exportados') || [, String(data.length)])[1];
+        const generatedAt = new Date().toLocaleString('pt-PT');
+
+        function drawHeader() {
+            // Faixa de marca
+            doc.setFillColor(29, 78, 216); // #1d4ed8
+            doc.rect(0, 0, pageWidth, 22, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(15);
+            doc.text('RHNeto Pro', marginX, 10);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text('Sistema de Gestão de Recursos Humanos', marginX, 16);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text(String(reportName), pageWidth - marginX, 10, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text(`Gerado em ${generatedAt}`, pageWidth - marginX, 16, { align: 'right' });
+
+            // Linha de metadados (período + total)
+            doc.setTextColor(51, 65, 85);
+            doc.setFontSize(9);
+            doc.text(`Período: ${periodLabel}    ·    Registos: ${totalRows}`, marginX, 29);
+        }
+
+        function drawFooter(pageData) {
+            const pageCount = doc.internal.getNumberOfPages();
+            const currentPage = pageData?.pageNumber || doc.internal.getCurrentPageInfo().pageNumber;
+            doc.setDrawColor(226, 232, 240);
+            doc.line(marginX, pageHeight - 12, pageWidth - marginX, pageHeight - 12);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(100, 116, 139);
+            doc.text('RHNeto Pro — Relatório gerado automaticamente', marginX, pageHeight - 7);
+            doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth - marginX, pageHeight - 7, { align: 'right' });
+        }
+
+        drawHeader();
+
+        doc.autoTable({
+            head: [headers],
+            body: data,
+            startY: 34,
+            margin: { left: marginX, right: marginX, bottom: 16 },
+            styles: {
+                fontSize: 8.5,
+                cellPadding: 2.5,
+                textColor: [30, 41, 59],
+                lineColor: [226, 232, 240],
+                lineWidth: 0.15
+            },
+            headStyles: {
+                fillColor: [37, 99, 235],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'left'
+            },
+            alternateRowStyles: {
+                fillColor: [241, 245, 249]
+            },
+            didDrawPage: function (pageData) {
+                if (pageData.pageNumber > 1) drawHeader();
+                drawFooter(pageData);
             }
-            doc.text(row.join(' | '), 10, y);
-            y += 5;
         });
+
+        // Reaplica o rodapé na última página, cuja contagem total de páginas só é conhecida no final
+        drawFooter();
+
         doc.save(`${fileBase}_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 

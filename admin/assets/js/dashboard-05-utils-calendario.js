@@ -1736,13 +1736,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // abrir automaticamente o modal de notificação antes de tornar a barra visível
-                if (modal && getComputedStyle(modal).display === 'none') {
-                    console.log('Chamando openNotifyModal via atualização de barra');
-                    openNotifyModal();
-                    return; // evita mostrar barra momentaneamente
-                }
-
                 bulkCountSpan.textContent = `${count} funcionário${count !== 1 ? 's' : ''} selecionado${count !== 1 ? 's' : ''}`;
                 bulkActionsBar.classList.add('show');
                 bulkActionsBar.removeAttribute('inert');

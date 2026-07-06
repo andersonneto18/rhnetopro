@@ -1,116 +1,16 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAll = document.getElementById('selectAllCheckbox');
-    const checkboxes = document.querySelectorAll('tbody .employee-checkbox');
-
-    if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            // Define o estado de todos os checkboxes baseado no "Selecionar Tudo"
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-                
-                // Opcional: Adiciona uma classe visual na linha (tr) se desejar
-                const row = checkbox.closest('tr');
-                if (selectAll.checked) {
-                    row.classList.add('selected-row');
-                } else {
-                    row.classList.remove('selected-row');
-                }
-            });
-        });
-    }
-
-    // Lógica inversa: Se desmarcar um item manual, desmarca o "Selecionar Tudo"
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const allChecked = Array.from(checkboxes).every(c => c.checked);
-            const anyUnchecked = Array.from(checkboxes).some(c => !c.checked);
-            
-            if (anyUnchecked) {
-                selectAll.checked = false;
-            } else if (allChecked && checkboxes.length > 1) {
-                // não ligar "selecionar tudo" se só existir um checkbox
-                selectAll.checked = true;
-            }
-        });
-    });
-});
+// Nota: a seleção de checkboxes (individual e "Selecionar Tudo") já é gerida
+// inteiramente por initializeBulkActions() em dashboard-05-utils-calendario.js.
+// Havia aqui uma versão duplicada que registava os seus próprios listeners 'change'
+// nos mesmos checkboxes/"Selecionar Tudo" — como ambas mexiam em selectAllCheckbox.checked,
+// uma desfazia o que a outra tinha acabado de marcar, e "Selecionar Tudo" acabava por
+// desmarcar os funcionários logo em seguida.
 
 
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAll = document.getElementById('selectAllCheckbox');
-    const checkboxes = document.querySelectorAll('tbody .employee-checkbox');
-    const bulkBar = document.getElementById('bulkActionsBar');
-    const bulkCount = document.getElementById('bulkCount');
-
-    // Função para atualizar a visibilidade da barra e o contador
-    function updateBulkBar() {
-        const selectedCount = document.querySelectorAll('tbody .employee-checkbox:checked').length;
-        const notifyModal = document.getElementById('notifyModal');
-        const notifyVisible = !!(notifyModal && getComputedStyle(notifyModal).display !== 'none');
-
-        if (window.__notifyModalOpen || notifyVisible) {
-            bulkBar.classList.remove('active');
-            bulkBar.classList.remove('show');
-            bulkBar.setAttribute('aria-hidden', 'true');
-            bulkBar.style.display = 'none';
-            document.body.classList.remove('bulk-bar-visible');
-            return;
-        }
-        
-        if (selectedCount > 0) {
-            bulkBar.classList.add('active'); // Adiciona classe para mostrar
-            bulkBar.setAttribute('aria-hidden', 'false');
-            bulkBar.style.display = 'flex';   // Garante que o display apareça
-            document.body.classList.add('bulk-bar-visible');
-            bulkCount.textContent = `${selectedCount} funcionário(s) selecionado(s)`;
-        } else {
-            bulkBar.classList.remove('active');
-            bulkBar.setAttribute('aria-hidden', 'true');
-            bulkBar.style.display = 'none';
-            document.body.classList.remove('bulk-bar-visible');
-            selectAll.checked = false; // Desmarca o "marcar todos" se nada estiver selecionado
-        }
-    }
-
-    // Evento para o checkbox "Selecionar Tudo"
-    if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-            });
-            updateBulkBar();
-        });
-    }
-
-    // Evento para cada checkbox individual
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateBulkBar();
-            
-            // Lógica para desmarcar o "Selecionar Tudo" se um item for desmarcado
-            if (!this.checked) {
-                selectAll.checked = false;
-            } else {
-                const allChecked = Array.from(checkboxes).every(c => c.checked);
-                if (allChecked && checkboxes.length > 1) selectAll.checked = true;
-            }
-        });
-    });
-
-    // Função para o botão "Limpar" da sua barra
-    window.clearBulkSelection = function() {
-        checkboxes.forEach(checkbox => checkbox.checked = false);
-        selectAll.checked = false;
-        updateBulkBar();
-    };
-});
-
-
-
-// removido comentário estragado e função duplicada para evitar erros e conflitos
+// A visibilidade da barra de ações em lote, o contador e o botão "Limpar" (window.clearBulkSelection)
+// já são geridos por updateBulkActionsBar()/clearBulkSelection() em dashboard-05-utils-calendario.js.
 
 
 // notificacao adm manda funcionarios

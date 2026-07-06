@@ -1671,97 +1671,14 @@ document.addEventListener('DOMContentLoaded', function() {
         applyTurnosView();
     }
     
-    // ========== FILTROS PARA GORJETAS ==========
-    const searchGorjetas = document.getElementById('searchGorjetas');
-    const filterGorjetasStatus = document.getElementById('filterGorjetasStatus');
-    const filterGorjetasMes = document.getElementById('filterGorjetasMes');
-    const clearFiltersGorjetas = document.getElementById('clearFiltersGorjetas');
-    const resultCountGorjetas = document.getElementById('resultCountGorjetas');
-    const gorjetasTable = document.querySelector('#gorjetas-section tbody');
-    
-    function filterGorjetasTable() {
-        if (!gorjetasTable) return;
-        
-        const searchValue = searchGorjetas.value.toLowerCase();
-        const statusValue = filterGorjetasStatus.value.toLowerCase();
-        const mesValue = filterGorjetasMes.value;
-        const rows = gorjetasTable.querySelectorAll('tr');
-        let visibleCount = 0;
-        const hoje = new Date();
-        
-        rows.forEach(row => {
-            const dataCell = row.cells[0]?.textContent || '';
-            const funcionario = row.cells[1]?.textContent.toLowerCase() || '';
-            const statusBadge = row.querySelector('.status-badge');
-            const statusText = statusBadge?.textContent.toLowerCase() || '';
-            const statusClass = statusBadge?.className || '';
-            
-            const matchesSearch = searchValue === '' || funcionario.includes(searchValue);
-            
-            let matchesStatus = statusValue === '';
-            if (!matchesStatus) {
-                if (statusValue === 'pago' && (statusClass.includes('status-active') || statusText.includes('pago'))) matchesStatus = true;
-                if (statusValue === 'pendente' && (statusClass.includes('status-pendente') || statusText.includes('pendente'))) matchesStatus = true;
-                if (statusValue === 'rejeitado' && (statusClass.includes('status-rejeitado') || statusText.includes('rejeitado'))) matchesStatus = true;
-            }
-            
-            let matchesMes = mesValue === '';
-            if (!matchesMes && dataCell) {
-                try {
-                    const [dia, mes, ano] = dataCell.split('/');
-                    const dataRow = new Date(ano, mes - 1, dia);
-                    
-                    if (mesValue === 'hoje') {
-                        matchesMes = dataRow.toDateString() === hoje.toDateString();
-                    } else if (mesValue === 'semana') {
-                        const umaSemanaAtras = new Date(hoje);
-                        umaSemanaAtras.setDate(hoje.getDate() - 7);
-                        matchesMes = dataRow >= umaSemanaAtras && dataRow <= hoje;
-                    } else if (mesValue === 'mes') {
-                        matchesMes = dataRow.getMonth() === hoje.getMonth() && dataRow.getFullYear() === hoje.getFullYear();
-                    } else if (mesValue === 'ultimo_mes') {
-                        const mesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
-                        const ultimoDiaMesPassado = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
-                        matchesMes = dataRow >= mesPassado && dataRow <= ultimoDiaMesPassado;
-                    }
-                } catch(e) {
-                    matchesMes = true; // Em caso de erro, mostra a linha
-                }
-            }
-            
-            if (matchesSearch && matchesStatus && matchesMes) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        
-        resultCountGorjetas.textContent = `${visibleCount} ${visibleCount === 1 ? 'resultado' : 'resultados'}`;
-        
-        const hasFilters = searchValue || statusValue || mesValue;
-        clearFiltersGorjetas.style.display = hasFilters ? 'block' : 'none';
-    }
-    
-    if (searchGorjetas) searchGorjetas.addEventListener('input', filterGorjetasTable);
-    if (filterGorjetasStatus) filterGorjetasStatus.addEventListener('change', filterGorjetasTable);
-    if (filterGorjetasMes) filterGorjetasMes.addEventListener('change', filterGorjetasTable);
-    
-    if (clearFiltersGorjetas) {
-        clearFiltersGorjetas.addEventListener('click', function() {
-            searchGorjetas.value = '';
-            filterGorjetasStatus.value = '';
-            filterGorjetasMes.value = '';
-            filterGorjetasTable();
-        });
-    }
-    
-    if (gorjetasTable) filterGorjetasTable();
-
-    const exportGorjetasBtn = document.getElementById('exportGorjetasBtn');
-    if (exportGorjetasBtn) {
-        exportGorjetasBtn.addEventListener('click', exportGorjetasCSV);
-    }
+    // Nota: o filtro de Gorjetas (busca/dia/mês/ano/status) já é tratado inteiramente
+    // pelo script inline em admin/sections/gorjetas.php (filtrarGorjetasDinamico, ids
+    // filtro-dia/filtro-mes/filtro-ano/filtro-status). O bloco antigo que existia aqui
+    // referenciava ids de uma versão anterior do filtro (#filterGorjetasStatus,
+    // #filterGorjetasMes, #clearFiltersGorjetas) que já não existem no HTML atual —
+    // isso lançava um TypeError não capturado logo no carregamento da página, o que
+    // interrompia o resto deste DOMContentLoaded e impedia window.bulkChangeStatus e
+    // window.bulkChangeDepartment (definidos mais abaixo) de sequer serem criados.
 
     // ===== Profile dropdown toggle =====
     window.toggleProfileDropdown = function() {

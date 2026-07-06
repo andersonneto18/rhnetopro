@@ -590,10 +590,19 @@
                             // Mantém padrão data_registro
                         }
 
+                        // Data efetiva de avaliação: sem filtro explícito de período, avalia SEMPRE hoje.
+                        // (evita herdar o último ponto/turno de dias anteriores e não detectar falta/roteiro do dia atual)
+                        $_presencaQueryStart = $presencaServerStart !== '' ? $presencaServerStart : date('Y-m-d');
+                        $_presencaQueryEnd = $presencaServerEnd !== '' ? $presencaServerEnd : date('Y-m-d');
+                        $_expectedDateRef = $_presencaQueryEnd;
+                        $_expectedWeekdayMap = [0 => 'dom', 1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => 'sab'];
+                        $_expectedWeekdayTs = strtotime($_expectedDateRef);
+                        $_expectedWeekdayToken = $_expectedWeekdayTs !== false ? $_expectedWeekdayMap[(int)date('w', $_expectedWeekdayTs)] : '';
+
                         $expectedStartByEmployee = [];
                         try {
                             $stmtExpectedStart = $pdo->prepare(
-                                "SELECT t.funcionario_id, t.horario_inicio
+                                "SELECT t.funcionario_id, t.horario_inicio, t.dias_semana, t.data_inicio, t.data_fim
                      FROM turnos t
                      INNER JOIN employees e ON e.id = t.funcionario_id
                      WHERE e.client_id = ? AND LOWER(COALESCE(t.status, '')) IN ('ativo', 'active')
@@ -603,7 +612,22 @@
                             $rowsExpectedStart = $stmtExpectedStart->fetchAll(PDO::FETCH_ASSOC) ?: [];
                             foreach ($rowsExpectedStart as $rowExpected) {
                                 $empIdExp = (int)($rowExpected['funcionario_id'] ?? 0);
-                                if ($empIdExp > 0 && !isset($expectedStartByEmployee[$empIdExp])) {
+                                if ($empIdExp <= 0 || isset($expectedStartByEmployee[$empIdExp])) {
+                                    continue;
+                                }
+
+                                // Só considera "turno esperado" se ele realmente cobre a data avaliada
+                                // (dias da semana configurados + período de vigência do turno).
+                                $turnoDiasRaw = trim((string)($rowExpected['dias_semana'] ?? ''));
+                                $turnoDias = $turnoDiasRaw !== '' ? parseTurnoDays($turnoDiasRaw) : [];
+                                $diaCorreto = empty($turnoDias) || $_expectedWeekdayToken === '' || in_array($_expectedWeekdayToken, $turnoDias, true);
+
+                                $inicioVigencia = trim((string)($rowExpected['data_inicio'] ?? ''));
+                                $fimVigencia = trim((string)($rowExpected['data_fim'] ?? ''));
+                                $dentroVigencia = ($inicioVigencia === '' || $inicioVigencia === '0000-00-00' || $inicioVigencia <= $_expectedDateRef)
+                                    && ($fimVigencia === '' || $fimVigencia === '0000-00-00' || $fimVigencia >= $_expectedDateRef);
+
+                                if ($diaCorreto && $dentroVigencia) {
                                     $expectedStartByEmployee[$empIdExp] = (string)($rowExpected['horario_inicio'] ?? '');
                                 }
                             }
@@ -676,33 +700,22 @@
                             error_log('Erro ao carregar justificativas na assiduidade: ' . $e->getMessage());
                         }
 
-                        $pontoPeriodSql = '';
-                        $presencaPeriodSql = '';
-                        if ($presencaServerStart !== '') {
-                            $pontoPeriodSql .= " AND DATE({$pontoDateColumn}) >= ?";
-                            $presencaPeriodSql .= " AND DATE({$presencaDateColumn}) >= ?";
-                        }
-                        if ($presencaServerEnd !== '') {
-                            $pontoPeriodSql .= " AND DATE({$pontoDateColumn}) <= ?";
-                            $presencaPeriodSql .= " AND DATE({$presencaDateColumn}) <= ?";
-                        }
+                        // Usa sempre $_presencaQueryStart/$_presencaQueryEnd (default = hoje quando não há filtro
+                        // explícito) em vez de $presencaServerStart/$presencaServerEnd diretamente, para que o
+                        // registo de ponto/presença avaliado seja sempre o do dia certo, nunca um resíduo de dias antigos.
+                        $pontoPeriodSql = " AND DATE({$pontoDateColumn}) >= ? AND DATE({$pontoDateColumn}) <= ?";
+                        $presencaPeriodSql = " AND DATE({$presencaDateColumn}) >= ? AND DATE({$presencaDateColumn}) <= ?";
 
                         foreach ($employees as $employee):
                             // 1. Lógica para buscar o registro de ponto mais recente do funcionário
                             $stmt = $pdo->prepare("
                     SELECT id, status, hora_entrada, hora_saida, obs, status_confirmacao, tipo_dia, falta_tipo, {$pontoDateColumn} AS data_registro, {$pontoUpdatedSelect}
-                    FROM registros_ponto 
+                    FROM registros_ponto
                     WHERE funcionario_id = ? {$pontoPeriodSql}
                     ORDER BY {$pontoDateColumn} DESC, id DESC
                     LIMIT 1
                 ");
-                            $pontoParams = [(int)$employee['id']];
-                            if ($presencaServerStart !== '') {
-                                $pontoParams[] = $presencaServerStart;
-                            }
-                            if ($presencaServerEnd !== '') {
-                                $pontoParams[] = $presencaServerEnd;
-                            }
+                            $pontoParams = [(int)$employee['id'], $_presencaQueryStart, $_presencaQueryEnd];
                             $stmt->execute($pontoParams);
                             $registro = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -714,19 +727,18 @@
                     ORDER BY {$presencaDateColumn} DESC, id DESC
                     LIMIT 1
                 ");
-                            $presencaParams = [(int)$employee['id']];
-                            if ($presencaServerStart !== '') {
-                                $presencaParams[] = $presencaServerStart;
-                            }
-                            if ($presencaServerEnd !== '') {
-                                $presencaParams[] = $presencaServerEnd;
-                            }
+                            $presencaParams = [(int)$employee['id'], $_presencaQueryStart, $_presencaQueryEnd];
                             $stmtPresencaHoje->execute($presencaParams);
                             $presencaHoje = $stmtPresencaHoje->fetch(PDO::FETCH_ASSOC);
                             $presencaStatus = isset($presencaHoje['status']) ? mb_strtolower(trim((string)$presencaHoje['status'])) : '';
 
-                            // Data de referência para exibição/filtros: ponto mais recente, fallback presença
+                            // Data de referência para exibição/filtros: ponto mais recente, fallback presença,
+                            // e por fim a data avaliada (hoje, por padrão) — nunca fica em branco/desatualizada
+                            // mesmo quando o funcionário ainda não tem nenhum registo no dia.
                             $rawDate = $registro['data_registro'] ?? ($presencaHoje['data_registro'] ?? null);
+                            if (empty($rawDate)) {
+                                $rawDate = $_presencaQueryEnd;
+                            }
                             $dateIso = '';
                             $dateDisplay = '--/--/----';
                             if (!empty($rawDate)) {

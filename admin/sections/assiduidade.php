@@ -751,6 +751,7 @@
 
                             // Roteiro do dia — todos os períodos (entrada/pausa/regresso/saída) do dia de referência
                             $_timelineEventos = [];
+                            $_pontosTimeline = [];
                             if ($dateIso !== '') {
                                 try {
                                     $stmtTimelinePresenca = $pdo->prepare("
@@ -804,20 +805,31 @@
                             $saida = isset($registro['hora_saida']) && $registro['hora_saida'] !== null && $registro['hora_saida'] !== '';
                             $confirmado = isset($registro['status_confirmacao']) && $registro['status_confirmacao'] === 'confirmado';
 
+                            // Soma TODOS os períodos do dia (entrada/saída, regresso/saída, ...), não só o
+                            // último registo — assim uma pausa (ex.: almoço) nunca é contada como horas trabalhadas.
                             $horasTrabalhadas = '--:--';
-                            if ($entrada && $saida) {
-                                $entradaTs = strtotime('1970-01-01 ' . $registro['hora_entrada']);
-                                $saidaTs = strtotime('1970-01-01 ' . $registro['hora_saida']);
-                                if ($entradaTs !== false && $saidaTs !== false) {
-                                    if ($saidaTs < $entradaTs) {
-                                        // Suporte a virada de dia (ex.: turno noturno)
-                                        $saidaTs += 24 * 60 * 60;
+                            $_minTrabalhadosTotal = 0;
+                            $_temPeriodoValido = false;
+                            foreach ($_pontosTimeline as $_ptHoras) {
+                                $_hEntHoras = $_ptHoras['hora_entrada'] ?? null;
+                                $_hSaiHoras = $_ptHoras['hora_saida'] ?? null;
+                                if ($_hEntHoras !== null && $_hEntHoras !== '' && $_hSaiHoras !== null && $_hSaiHoras !== '') {
+                                    $_entTsHoras = strtotime('1970-01-01 ' . $_hEntHoras);
+                                    $_saiTsHoras = strtotime('1970-01-01 ' . $_hSaiHoras);
+                                    if ($_entTsHoras !== false && $_saiTsHoras !== false) {
+                                        if ($_saiTsHoras < $_entTsHoras) {
+                                            // Suporte a virada de dia (ex.: turno noturno)
+                                            $_saiTsHoras += 24 * 60 * 60;
+                                        }
+                                        $_minTrabalhadosTotal += max(0, (int) floor(($_saiTsHoras - $_entTsHoras) / 60));
+                                        $_temPeriodoValido = true;
                                     }
-                                    $diffMin = max(0, (int) floor(($saidaTs - $entradaTs) / 60));
-                                    $h = (int) floor($diffMin / 60);
-                                    $m = $diffMin % 60;
-                                    $horasTrabalhadas = sprintf('%02d:%02d', $h, $m);
                                 }
+                            }
+                            if ($_temPeriodoValido) {
+                                $h = (int) floor($_minTrabalhadosTotal / 60);
+                                $m = $_minTrabalhadosTotal % 60;
+                                $horasTrabalhadas = sprintf('%02d:%02d', $h, $m);
                             }
 
                             $tipoDia = mb_strtolower(trim((string)($registro['tipo_dia'] ?? 'normal')));

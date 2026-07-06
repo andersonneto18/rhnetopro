@@ -3968,7 +3968,21 @@ try {
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- Seu JS -->
-    <script src="assets/js/dashboard.js?v=<?php echo (int)@filemtime(__DIR__ . '/assets/js/dashboard.js'); ?>"></script>
+    <?php
+        // dashboard.js dividido em partes sequenciais (mesma ordem/escopo global do ficheiro único original)
+        foreach ([
+            'dashboard-01-core.js',
+            'dashboard-02-funcionarios.js',
+            'dashboard-03-turnos.js',
+            'dashboard-04-navegacao.js',
+            'dashboard-05-utils-calendario.js',
+            'dashboard-06-funcionarios-notif.js',
+            'dashboard-07-folha.js',
+            'dashboard-08-relatorios.js',
+        ] as $__jsPart) {
+            echo '<script src="assets/js/' . $__jsPart . '?v=' . (int)@filemtime($ADMIN_DIR . '/assets/js/' . $__jsPart) . '"></script>' . "\n    ";
+        }
+    ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 

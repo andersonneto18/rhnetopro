@@ -869,27 +869,39 @@
                                 $status_texto = 'PRESENTE';
                                 $status_classe = 'status-presente';
                             } elseif (!$entrada) {
-                                // Se não marcou presença:
-                                $agora = date('H:i');
-                                $horaTurno = substr($horarioPrevisto, 0, 5);
-                                $toleranciaMin = max(0, (int)($estHorario['tolerancia_atraso_min'] ?? 0));
-                                $agoraTs = strtotime('1970-01-01 ' . $agora);
-                                $turnoTs = strtotime('1970-01-01 ' . $horaTurno);
-                                $toleranciaTs = $turnoTs !== false ? $turnoTs + ($toleranciaMin * 60) : false;
-                                if ($agoraTs !== false && $toleranciaTs !== false) {
-                                    if ($agoraTs > $toleranciaTs) {
-                                        $status_texto = 'FALTA';
-                                        $status_classe = 'status-falta';
-                                    } elseif ($agoraTs > $turnoTs) {
-                                        $status_texto = 'ATRASADO';
-                                        $status_classe = 'status-warning';
+                                // Se não marcou presença: o dia avaliado ($dateIso) pode ser passado, hoje ou futuro
+                                // em relação à data real do servidor — a comparação por hora só faz sentido para hoje.
+                                $_hojeRealAssiduidade = date('Y-m-d');
+                                if ($dateIso !== '' && $dateIso > $_hojeRealAssiduidade) {
+                                    // Dia futuro: o turno ainda nem começou, não é falta nem atraso.
+                                    $status_texto = 'AGENDADO';
+                                    $status_classe = 'status-nao-marcado';
+                                } elseif ($dateIso !== '' && $dateIso < $_hojeRealAssiduidade) {
+                                    // Dia passado sem marcação: já esgotou o dia inteiro, é falta direta.
+                                    $status_texto = 'FALTA';
+                                    $status_classe = 'status-falta';
+                                } else {
+                                    $agora = date('H:i');
+                                    $horaTurno = substr($horarioPrevisto, 0, 5);
+                                    $toleranciaMin = max(0, (int)($estHorario['tolerancia_atraso_min'] ?? 0));
+                                    $agoraTs = strtotime('1970-01-01 ' . $agora);
+                                    $turnoTs = strtotime('1970-01-01 ' . $horaTurno);
+                                    $toleranciaTs = $turnoTs !== false ? $turnoTs + ($toleranciaMin * 60) : false;
+                                    if ($agoraTs !== false && $toleranciaTs !== false) {
+                                        if ($agoraTs > $toleranciaTs) {
+                                            $status_texto = 'FALTA';
+                                            $status_classe = 'status-falta';
+                                        } elseif ($agoraTs > $turnoTs) {
+                                            $status_texto = 'ATRASADO';
+                                            $status_classe = 'status-warning';
+                                        } else {
+                                            $status_texto = 'NÃO REGISTADO';
+                                            $status_classe = 'status-nao-marcado';
+                                        }
                                     } else {
                                         $status_texto = 'NÃO REGISTADO';
                                         $status_classe = 'status-nao-marcado';
                                     }
-                                } else {
-                                    $status_texto = 'NÃO REGISTADO';
-                                    $status_classe = 'status-nao-marcado';
                                 }
                             } elseif ($entrada && (!$saida && !$confirmado)) {
                                 $status_texto = 'EM ABERTO';
@@ -1022,6 +1034,8 @@
 
                                     if (mb_stripos($normalizedStatusTexto, 'sem turno') !== false) {
                                         $statusKey = 'sem-turno';
+                                    } elseif (mb_stripos($normalizedStatusTexto, 'agendado') !== false) {
+                                        $statusKey = 'agendado';
                                     } elseif (mb_stripos($normalizedStatusTexto, 'falta') !== false) {
                                         $statusKey = 'falta';
                                     } elseif (mb_stripos($normalizedStatusTexto, 'em aberto') !== false) {

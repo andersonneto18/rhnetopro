@@ -1,0 +1,2221 @@
+/* NOTA: a partir daqui há uma chave `{` de `.btn-primary` (linha seguinte) que nunca é
+   fechada corretamente, fazendo com que a maior parte deste ficheiro fique tecnicamente
+   aninhada dentro dela (bug pré-existente, não introduzido por esta divisão de ficheiros).
+   Os navegadores toleram isto sem quebrar a página, por isso o comportamento visual
+   continua igual ao ficheiro original. Por causa disso, este ficheiro não foi subdividido
+   mais — corrigir a chave em falta é uma tarefa separada, com risco próprio. */
+    .btn-primary {
+
+
+
+
+ 
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        .table thead tr {
+            background-color: #1f2937;
+            border-radius: 0.5rem;
+        }
+
+        .table thead th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary, #cbd5e0);
+        }
+
+        .table thead th:last-child {
+            text-align: right;
+            padding-right: 2rem;
+        }
+        
+               
+
+        .table{
+            background-color: #1a202c;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .table tbody td {
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            color: #edf2f7;
+            height: 75px;
+        }
+
+        .table tbody td:last-child {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 1.25rem 1.5rem 1.25rem 1rem;
+        }
+        
+        .marcar-presenca, .marcar-falta {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .marcar-presenca {
+            background-color: #1a6449;
+            color: white;
+        }
+        .marcar-presenca:hover {
+            background-color: #16a34a;
+        }
+
+        .marcar-falta {
+            background-color: #991b1b;
+            color: white;
+        }
+        .marcar-falta:hover {
+            background-color: #dc2626;
+        }
+        
+        .marcar-presenca i, .marcar-falta i {
+            margin-right: 0.5rem;
+        }
+
+        /* Mantém um único padrão global para .status-badge */
+
+
+
+
+
+
+/* Configuração inicial do modal/barra */
+/* removed older duplicative styles; visibility now controlled by .show class above */
+
+/* fallback: if JS ever toggles .active ensure bar visible */
+.bulk-actions-bar.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+    display: flex !important;
+}
+
+
+/* Fundo do Modal */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Backdrop um pouco mais leve */
+    backdrop-filter: none; /* remover desfoque para não deixar tudo fusco */
+}
+
+/* se precisarmos do blur em algum modal específico, adicionamos classe .blurred */
+.modal.blurred {
+    backdrop-filter: blur(4px);
+}
+
+/* Caixa do Modal */
+.modal-content {
+    background-color: #ffffff;
+    margin: 10vh auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden; /* Garante que o header e footer respeitem o border-radius */
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Animação de entrada */
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Cabeçalho do Modal */
+.modal-content h2 {
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+    font-size: 1.25rem;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    display: none !important;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Backdrop um pouco mais leve */
+    backdrop-filter: none; /* remover desfoque para não deixar tudo fusco */
+    color: #aaa;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.close:hover { color: #dc3545; }
+
+/* Corpo do Modal */
+.modal-body {
+    padding: 20px;
+}
+
+#selectedCountText {
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Textarea de SMS */
+#smsMessage {
+    width: 100%;
+    height: 120px;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box; /* Essencial para o padding não quebrar a largura */
+}
+
+#smsMessage:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Rodapé/Ações */
+.modal-actions {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #eee;
+}
+
+/* Botões */
+.btn-primary, .btn-danger {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+    /* fixed height to keep same vertical size across different content */
+    min-height: 40px;
+    line-height: 1;
+}
+
+.btn-primary { background-color: #007bff; color: white; }
+.btn-danger { background-color: #fff; color: #dc3545; border: 1px solid #dc3545; }
+
+.btn-primary:hover { background-color: #0056b3; }
+.btn-danger:hover { background-color: #fff5f5; }
+
+/* Notify Modal - theme-aware styling */
+#notifyModal .modal-content {
+    max-width: 700px;
+    width: calc(100% - 2rem);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    /* use background variable so it matches theme; fallback to light for safety */
+    background: var(--bg-secondary, #ffffff);
+    color: var(--text-primary, #333);
+    position: relative;
+}
+
+#notifyModal .notify-modal-content {
+    max-width: 760px;
+    width: calc(100% - 2rem);
+    border-radius: 16px;
+    padding: 1.25rem;
+    border: 1px solid var(--border-primary, #dbe1ea);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 249, 255, 0.98));
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+body.dark-theme #notifyModal .notify-modal-content {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+}
+
+#notifyModal .notify-modal-header {
+    padding: 0.5rem 0.25rem 0.75rem;
+    border-bottom: 1px solid var(--border-primary, #e5e7eb);
+}
+
+#notifyModal .notify-modal-header h2 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+#notifyModal .notify-modal-header p {
+    margin: 0.5rem 0 0;
+    color: var(--text-secondary, #5b6678);
+    font-size: 0.92rem;
+}
+
+#notifyModal .notify-audience {
+    margin-top: 0.9rem;
+    padding: 0.85rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-primary, #e5e7eb);
+    background: rgba(59, 130, 246, 0.06);
+}
+
+body.dark-theme #notifyModal .notify-audience {
+    background: rgba(37, 99, 235, 0.15);
+}
+
+#notifyModal .selected-count-badge {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 700;
+    color: var(--primary-700, #1d4ed8);
+    font-size: 0.9rem;
+}
+
+#notifyModal .recipient-preview {
+    margin-top: 0.45rem;
+    color: var(--text-secondary, #556174);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#notifyModal .notify-label {
+    display: block;
+    margin: 0.95rem 0 0.35rem;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+}
+
+#notifyModal .notify-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.3rem;
+    padding: 0 0.25rem;
+}
+
+#notifyModal #smsCharCounter {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+    font-weight: 600;
+}
+
+#notifyModal #charLimitMsg {
+    color: var(--error-600, #dc2626);
+    font-size: 0.82rem;
+    margin: 0;
+}
+
+#notifyModal .admin-msg-box {
+    margin-top: 0.9rem;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 0.85rem;
+}
+
+#notifyModal .sms-history-box {
+    margin-top: 0.9rem;
+    border: 1px solid var(--border-primary, #d1d5db);
+    border-radius: 12px;
+    padding: 0.75rem;
+    background: rgba(148, 163, 184, 0.08);
+}
+
+body.dark-theme #notifyModal .sms-history-box {
+    background: rgba(71, 85, 105, 0.24);
+}
+
+#notifyModal .sms-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+#notifyModal .sms-history-refresh {
+    border: 1px solid var(--border-primary, #d1d5db);
+    background: var(--bg-secondary, #fff);
+    color: var(--text-primary, #0f172a);
+    border-radius: 8px;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#notifyModal .sms-history-list {
+    display: grid;
+    gap: 0.55rem;
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+}
+
+#notifyModal .sms-history-item {
+    border: 1px solid var(--border-primary, #d1d5db);
+    border-radius: 10px;
+    padding: 0.6rem;
+    background: var(--bg-secondary, #fff);
+}
+
+#notifyModal .sms-history-message {
+    font-size: 0.88rem;
+    color: var(--text-primary, #111827);
+    margin-bottom: 0.4rem;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+#notifyModal .sms-history-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.74rem;
+    color: var(--text-secondary, #64748b);
+}
+
+#notifyModal .sms-history-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+#notifyModal .sms-history-actions button {
+    border: 1px solid var(--border-primary, #d1d5db);
+    background: var(--bg-secondary, #fff);
+    color: var(--text-primary, #111827);
+    border-radius: 7px;
+    padding: 0.22rem 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#notifyModal .sms-history-actions button.action-danger {
+    border-color: rgba(220, 38, 38, 0.35);
+    color: var(--error-700, #b91c1c);
+}
+
+#notifyModal .sms-history-empty {
+    font-size: 0.84rem;
+    color: var(--text-secondary, #64748b);
+    padding: 0.4rem;
+}
+
+body.dark-theme #notifyModal .admin-msg-box {
+    background: rgba(16, 185, 129, 0.14);
+}
+
+#notifyModal .msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#notifyModal .msg-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+#notifyModal .msg-actions button {
+    border: 1px solid var(--border-primary, #d1d5db);
+    background: var(--bg-secondary, #ffffff);
+    color: var(--text-primary, #111827);
+    border-radius: 8px;
+    padding: 0.36rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#notifyModal .msg-actions .text-danger {
+    border-color: rgba(220, 38, 38, 0.4);
+    color: var(--error-700, #b91c1c);
+}
+
+#notifyModal #savedMessagePreview {
+    margin: 0.6rem 0 0;
+    color: var(--text-primary, #1f2937);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+#notifyModal .notify-actions {
+    margin-top: 1rem;
+    justify-content: flex-end;
+}
+
+#notifyModal .btn-ghost-danger {
+    background: transparent;
+    color: var(--error-700, #b91c1c);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+/* dark theme override for notify modal content */
+body.dark-theme #notifyModal .modal-content {
+    background: var(--neutral-800, #1e293b); /* keeps the fusco/dark feel when in dark mode */
+    color: var(--text-secondary, #eef2ff);
+}
+
+#notifyModal .modal-content h2 {
+    margin: 0;
+    padding: 20px 48px 20px 24px;
+    font-size: 1.2rem;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-bottom: 1px solid var(--border-primary, #eee);
+}
+
+#notifyModal .modal-body {
+    padding: 18px 20px;
+    background: transparent;
+}
+
+#notifyModal #selectedCountText {
+    color: var(--text-primary, #333);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+/* SMS textarea - uses theme variables */
+#notifyModal #smsMessage {
+    width: 100%;
+    min-height: 120px;
+    max-height: 45vh;
+    padding: 14px;
+    border: 1px solid var(--border-primary, #e0e0e0);
+    background: var(--bg-secondary, #fff);
+    color: var(--text-primary, #333);
+    border-radius: 8px;
+    font-size: 15px;
+    resize: vertical;
+    box-sizing: border-box;
+    margin: 16px 16px 0 16px;
+}
+
+#notifyModal #smsMessage:focus {
+    border-color: rgba(59,130,246,0.9);
+    box-shadow: 0 6px 18px rgba(37,99,235,0.12);
+    outline: none;
+}
+
+/* small character counter styling */
+#notifyModal #charLimitMsg {
+    color: var(--text-secondary, rgba(0,0,0,0.6));
+    font-size: 0.875rem;
+    margin-top: 8px;
+}
+
+#notifyModal .modal-actions {
+    padding: 14px 18px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-top: 1px solid var(--border-primary, #eee);
+    /* keep buttons together on the right rather than stretching apart */
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ensure notify modal buttons share height and baseline */
+#notifyModal .modal-actions button {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+#notifyModal .modal-actions .left-info {
+    color: var(--text-primary, #333);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+#notifyModal .modal-actions .btn-primary {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    border: none;
+}
+
+#notifyModal .modal-actions .btn-danger {
+    background: transparent;
+    color: var(--text-secondary, #dc3545);
+    border: 1px solid var(--border-primary, #dc3545);
+}
+
+@media (max-width: 600px) {
+    #notifyModal .modal-content { width: calc(100% - 1rem); margin: 6vh 0; }
+    #notifyModal #smsMessage { min-height: 120px; }
+    #notifyModal .notify-modal-content { max-height: 92vh; padding: 1rem; }
+    #notifyModal .sms-history-list { max-height: 150px; }
+    .bulk-actions-bar { bottom: 90px; }
+}
+
+
+
+
+
+/* O container que ocupa a tela toda */
+#notifyModal {
+    display: none; /* Mantém escondido até ser chamado */
+    position: fixed; 
+    z-index: 9999; /* Valor alto para garantir que fique no topo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* O fundo escuro (overlay) */
+    align-items: center;
+    justify-content: center;
+}
+
+/* O cartão branco/escuro centralizado */
+.modal-content {
+    background-color: #1a1d21; /* Ajuste para a cor do seu tema */
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    z-index: 10000; /* Um pouco maior que o pai, se necessário */
+    position: relative;
+}
+
+
+/* 1. O Container do Modal (Para garantir que fique na frente) */
+#notifyModal {
+    display: none; 
+    position: fixed; 
+    z-index: 9999; /* Valor altíssimo para não ficar atrás de nada */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo escuro levemente transparente */
+    align-items: center;
+    justify-content: center;
+}
+
+/* 2. O Conteúdo do Modal */
+.modal-content {
+    background-color: #1a1d21; /* Cor escura do seu print */
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    position: relative; /* ESSENCIAL para o botão de fechar se basear aqui */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    color: white;
+}
+
+/* 3. Posicionando o Botão de Fechar (o "X") */
+.bulk-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #999);
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s ease;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+}
+
+.bulk-close:hover {
+    color: var(--text-primary, #333);
+    background: rgba(0,0,0,0.05);
+}
+
+body.dark-theme .bulk-close:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+/* 4. Estilização de Texto (Negritos e Maiúsculas) */
+#notifyModal h2 {
+    margin-top: 0;
+    text-transform: uppercase; /* MAIÚSCULO */
+    font-weight: 700;          /* NEGRITO */
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+}
+
+#selectedCountText {
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+/* 5. Textarea Estilizada */
+#smsMessage {
+    width: 100%;
+    height: 120px;
+    background: #25282c;
+    border: 1px solid #3f444a;
+    border-radius: 8px;
+    color: white;
+    padding: 12px;
+    font-family: inherit;
+    resize: none;
+}
+
+.bulk-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #6c757d;    /* Cor cinza elegante */
+    font-size: 24px;   /* Tamanho visível */
+    font-weight: bold;
+    cursor: pointer;   /* Cursor de "mãozinha" */
+    z-index: 1001;     /* Garante que fique acima de tudo no modal */
+    padding: 5px 10px; /* Aumenta a área de toque */
+    line-height: 1;
+}
+
+.bulk-close:hover {
+    color: #ffffff;    /* Muda para branco ao passar o mouse */
+}
+
+
+
+/* Container dos botões */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end; /* Alinha os botões à direita */
+    align-items: center;       /* Garante que fiquem na mesma altura */
+    gap: 12px;                 /* Espaçamento entre os botões */
+    margin-top: 25px;          /* Respiro entre o textarea e os botões */
+}
+
+/* Base comum para todos os botões do modal */
+.modal-actions button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;                  /* Espaço entre o ícone e o texto */
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;          /* Negrito estilo Word */
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    height: 42px;              /* Força todos a terem a mesma altura */
+}
+
+/* Estilo do Botão Enviar */
+.btn-primary {
+    background-color: #2563eb; /* Azul padrão */
+    color: white;
+    flex-grow: 1;              /* Opcional: faz o botão de enviar ocupar mais espaço */
+    max-width: 200px;
+}
+
+/* Estilo do Botão Cancelar */
+.btn-danger {
+    background: transparent;
+    border: 1px solid #3f444a !important; /* Borda sutil como no seu print */
+    color: #e2e8f0;
+}
+
+.btn-danger:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+
+
+
+/* Caixa da mensagem enviada/salva */
+.admin-msg-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #2563eb;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #a0aec0;
+}
+
+.msg-actions button {
+    background: none;
+    border: none;
+    color: #cbd5e0;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: 0.2s;
+}
+
+.msg-actions button:hover {
+    color: #fff;
+    transform: scale(1.2);
+}
+
+.msg-actions .text-danger:hover {
+    color: #ff4d4d;
+}
+
+#savedMessagePreview {
+    font-style: italic;
+    color: #e2e8f0;
+    word-wrap: break-word;
+}
+
+
+
+/* Selecionamos pelo ID para garantir que a cor mude apenas neste botão */
+#bulkNotifyBtn.btn-danger {
+    background-color: #e0f2fe !important; /* Azul bem claro (Sky Blue) */
+    border: 1px solid #bae6fd !important; /* Borda um pouco mais escura para dar forma */
+    color: #0369a1 !important;           /* Texto em azul escuro para contraste e leitura */
+    
+    /* Formatações solicitadas (Negrito e Maiúsculas) */
+    font-weight: 800; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    /* Ajuste de alinhamento interno */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+/* Efeito de Hover */
+#bulkNotifyBtn.btn-danger:hover {
+    background-color: #bae6fd !important; /* Escurece levemente no hover */
+    color: #0c4a6e !important;           /* Texto fica ainda mais escuro */
+    filter: brightness(1.05);
+}
+
+/* Cor diferente apenas para o ícone lá dentro */
+#bulkNotifyBtn.btn-danger i {
+    color: #38bdf8 !important; /* Azul celeste vibrante para o ícone de SMS */
+    font-size: 1.1em;
+}
+
+
+
+/* grupos de ações — estilos base */
+.bulk-primary,
+.bulk-danger {
+    display: flex;
+    gap: .3rem;
+    align-items: center;
+}
+
+/* btn-danger e btn-secondary fora do contexto funcionarios-section */
+.btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: .45rem .8rem; cursor: pointer; font-size: .82rem; font-weight: 600; transition: all .17s; }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); }
+.btn-danger { background: rgba(239,68,68,0.18); color: #fca5a5; border: 1px solid rgba(239,68,68,0.35); border-radius: 8px; padding: .45rem .8rem; cursor: pointer; font-size: .82rem; font-weight: 600; transition: all .17s; }
+.btn-danger:hover { background: rgba(239,68,68,0.32); color: #fff; }
+
+/* Mobile-only dashboard adjustments (desktop untouched) */
+@media (min-width: 769px) {
+    .mobile-menu-btn {
+        display: none !important;
+    }
+
+    .mobile-menu {
+        display: none !important;
+    }
+
+    .nav-links {
+        display: flex !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body.mobile-menu-open {
+        overflow: hidden;
+    }
+
+    .navbar-container {
+        padding: 0 0.75rem;
+    }
+
+    .navbar-content {
+        grid-template-columns: 1fr auto;
+        height: 4.25rem;
+        gap: 0.5rem;
+    }
+
+    .logo {
+        min-width: 0;
+    }
+
+    .logo-text {
+        font-size: 1rem;
+    }
+
+    .nav-links {
+        display: none !important;
+    }
+
+    .mobile-menu-btn {
+        display: inline-flex !important;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        align-items: center;
+        justify-content: center;
+        z-index: 61;
+    }
+
+    .mobile-menu-btn i {
+        font-size: 1rem;
+        color: var(--primary-500);
+    }
+
+    .mobile-menu {
+        position: fixed;
+        top: 4.25rem;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        z-index: 60;
+        border-top: 1px solid var(--border-primary);
+        border-bottom: 0;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+
+    .mobile-nav-links {
+        padding: 0.85rem;
+        gap: 0.45rem;
+    }
+
+    .mobile-menu .nav-link {
+        justify-content: flex-start;
+        min-height: 46px;
+        border-radius: 0.75rem;
+        font-size: 0.9rem;
+        padding: 0.65rem 0.8rem;
+    }
+
+    .mobile-menu .nav-link i {
+        width: 1.2rem;
+        text-align: center;
+    }
+
+    .mobile-user-section {
+        padding: 0.9rem;
+    }
+
+    .mobile-user-section .profile-avatar {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+
+    .main-content {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0.9rem 0.65rem 1.1rem;
+    }
+
+    .hero-section {
+        padding: 1.05rem 0.9rem;
+        border-radius: var(--radius-xl);
+    }
+
+    .hero-content {
+        gap: 0.8rem;
+        padding-right: 0;
+    }
+
+    .hero-subtitle {
+        margin-bottom: 0.7rem;
+    }
+
+    .hero-cta {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem 0.95rem;
+        font-size: 0.95rem;
+        gap: 0.5rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card {
+        padding: 0.85rem;
+        border-radius: 0.85rem;
+    }
+
+    .stat-number {
+        font-size: 1.55rem;
+    }
+
+    .stat-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+    }
+
+    .stat-icon-container {
+        width: 2.35rem;
+        height: 2.35rem;
+    }
+
+    .stat-icon {
+        font-size: 1.05rem;
+    }
+
+    .section-header {
+        width: 100%;
+        margin-bottom: 1rem;
+        padding: 0.85rem;
+        gap: 0.75rem;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        gap: 0.5rem;
+    }
+
+    .section-header .btn,
+    .section-header .btn-primary {
+        width: 100%;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .table {
+        min-width: 640px;
+    }
+
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .btn-accent {
+        align-items: center;
+    }
+}
+
+@media (max-width: 520px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-title {
+        font-size: 1.25rem;
+    }
+}
+
+/* Mobile refinement only: keep desktop untouched */
+@media (max-width: 768px) {
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .navbar {
+        overflow: visible;
+    }
+
+    .navbar-container,
+    .navbar-content,
+    .main-content,
+    .content-section,
+    .section-header,
+    .hero-section,
+    .activity-section,
+    .card,
+    .data-table {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .mobile-menu-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-links {
+        display: none !important;
+    }
+
+    .mobile-menu {
+        left: auto;
+        right: 0;
+        width: min(340px, 90vw);
+        border-left: 1px solid var(--border-primary);
+        border-top: 1px solid var(--border-primary);
+        border-bottom: 0;
+        box-shadow: var(--shadow-2xl);
+    }
+
+    .mobile-menu.active {
+        display: block;
+    }
+
+    .mobile-nav-links {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .mobile-menu .nav-link {
+        width: 100%;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .main-content {
+        padding: 0.9rem 0.65rem 1rem;
+        margin: 0;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .stat-card {
+        min-width: 0;
+    }
+
+    .hero-cta,
+    .section-header .btn,
+    .section-header .btn-primary {
+        width: 100%;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0.65rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .search-input {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .table-wrapper,
+    .data-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 560px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Consistent nav behavior on mobile/tablet */
+@media (max-width: 1024px) {
+    .nav-links {
+        display: none !important;
+    }
+
+    .mobile-menu-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-menu {
+        display: none;
+    }
+
+    .mobile-menu.active {
+        display: block;
+    }
+}
+
+/* Padronizacao global: todos os botoes com o tamanho da secao de Presenca */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-accent,
+.btn-success,
+.btn-info,
+.btn-view,
+.btn-edit,
+.btn-delete,
+.btn-entrada,
+.btn-saida,
+.btn-sm {
+    min-width: 66px !important;
+    height: 30px !important;
+    padding: 0.3rem 0.5rem !important;
+    border-radius: 7px !important;
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+    gap: 0.26rem !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.14);
+    transition: transform 0.14s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    white-space: nowrap;
+}
+
+.btn i,
+.btn-primary i,
+.btn-secondary i,
+.btn-danger i,
+.btn-accent i,
+.btn-success i,
+.btn-info i,
+.btn-view i,
+.btn-edit i,
+.btn-delete i,
+.btn-entrada i,
+.btn-saida i,
+.btn-sm i {
+    font-size: 0.72rem !important;
+}
+
+.btn:not(:disabled):hover,
+.btn-primary:not(:disabled):hover,
+.btn-secondary:not(:disabled):hover,
+.btn-danger:not(:disabled):hover,
+.btn-accent:not(:disabled):hover,
+.btn-success:not(:disabled):hover,
+.btn-info:not(:disabled):hover,
+.btn-view:not(:disabled):hover,
+.btn-edit:not(:disabled):hover,
+.btn-delete:not(:disabled):hover,
+.btn-entrada:not(:disabled):hover,
+.btn-saida:not(:disabled):hover,
+.btn-sm:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.2);
+    filter: brightness(1.03);
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-danger:disabled,
+.btn-accent:disabled,
+.btn-success:disabled,
+.btn-info:disabled,
+.btn-view:disabled,
+.btn-edit:disabled,
+.btn-delete:disabled,
+.btn-entrada:disabled,
+.btn-saida:disabled,
+.btn-sm:disabled {
+    opacity: 0.62;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Presenca e Turnos: mesmo tamanho/estilo de acoes dos Funcionarios */
+#assiduidade-section .btn,
+#assiduidade-section .btn-primary,
+#assiduidade-section .btn-secondary,
+#assiduidade-section .btn-danger,
+#assiduidade-section .btn-accent,
+#assiduidade-section .btn-success,
+#assiduidade-section .btn-info,
+#assiduidade-section .btn-view,
+#assiduidade-section .btn-edit,
+#assiduidade-section .btn-delete,
+#assiduidade-section .btn-entrada,
+#assiduidade-section .btn-saida,
+#assiduidade-section .btn-sm,
+#turnos-section .btn,
+#turnos-section .btn-primary,
+#turnos-section .btn-secondary,
+#turnos-section .btn-danger,
+#turnos-section .btn-accent,
+#turnos-section .btn-success,
+#turnos-section .btn-info,
+#turnos-section .btn-view,
+#turnos-section .btn-edit,
+#turnos-section .btn-delete,
+#turnos-section .btn-entrada,
+#turnos-section .btn-saida,
+#turnos-section .btn-sm {
+    min-width: 66px !important;
+    height: 30px !important;
+    padding: 0.3rem 0.5rem !important;
+    border-radius: 7px !important;
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+    gap: 0.26rem !important;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.14);
+}
+
+#assiduidade-section .btn i,
+#assiduidade-section .btn-primary i,
+#assiduidade-section .btn-secondary i,
+#assiduidade-section .btn-danger i,
+#assiduidade-section .btn-accent i,
+#assiduidade-section .btn-success i,
+#assiduidade-section .btn-info i,
+#assiduidade-section .btn-view i,
+#assiduidade-section .btn-edit i,
+#assiduidade-section .btn-delete i,
+#assiduidade-section .btn-entrada i,
+#assiduidade-section .btn-saida i,
+#assiduidade-section .btn-sm i,
+#turnos-section .btn i,
+#turnos-section .btn-primary i,
+#turnos-section .btn-secondary i,
+#turnos-section .btn-danger i,
+#turnos-section .btn-accent i,
+#turnos-section .btn-success i,
+#turnos-section .btn-info i,
+#turnos-section .btn-view i,
+#turnos-section .btn-edit i,
+#turnos-section .btn-delete i,
+#turnos-section .btn-entrada i,
+#turnos-section .btn-saida i,
+#turnos-section .btn-sm i {
+    font-size: 0.72rem !important;
+}
+
+/* Uniformizacao final: acoes iguais em todas as secoes (Gorjetas, Folha, etc.) */
+.content-section .employee-actions,
+.content-section .gorjeta-actions,
+.content-section .table-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.content-section .employee-action-btn,
+.content-section td .btn.btn-sm,
+.content-section td .btn-view,
+.content-section td .btn-edit,
+.content-section td .btn-delete,
+.content-section td .btn-success,
+.content-section td .btn-secondary,
+.content-section td .btn-danger {
+    min-width: 66px !important;
+    height: 30px !important;
+    padding: 0.3rem 0.5rem !important;
+    border-radius: 7px !important;
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+    gap: 0.26rem !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.14);
+    transition: transform 0.14s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    white-space: nowrap;
+}
+
+.content-section .employee-action-btn i,
+.content-section td .btn.btn-sm i,
+.content-section td .btn-view i,
+.content-section td .btn-edit i,
+.content-section td .btn-delete i,
+.content-section td .btn-success i,
+.content-section td .btn-secondary i,
+.content-section td .btn-danger i {
+    font-size: 0.72rem !important;
+}
+
+.content-section .employee-action-btn:not(:disabled):hover,
+.content-section td .btn.btn-sm:not(:disabled):hover,
+.content-section td .btn-view:not(:disabled):hover,
+.content-section td .btn-edit:not(:disabled):hover,
+.content-section td .btn-delete:not(:disabled):hover,
+.content-section td .btn-success:not(:disabled):hover,
+.content-section td .btn-secondary:not(:disabled):hover,
+.content-section td .btn-danger:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.2);
+    filter: brightness(1.03);
+}
+
+.content-section .employee-action-btn:disabled,
+.content-section td .btn.btn-sm:disabled,
+.content-section td .btn-view:disabled,
+.content-section td .btn-edit:disabled,
+.content-section td .btn-delete:disabled,
+.content-section td .btn-success:disabled,
+.content-section td .btn-secondary:disabled,
+.content-section td .btn-danger:disabled {
+    opacity: 0.62;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Relatórios - Dashboard */
+.relatorios-container {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.relatorios-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: flex-end;
+}
+.relatorios-filtros label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+}
+.relatorios-filtros input,
+.relatorios-filtros select {
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-top: 0.2rem;
+}
+.relatorios-filtros button {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 5px;
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+.relatorios-tabela table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.relatorios-tabela th, .relatorios-tabela td {
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+.relatorios-tabela th {
+  background: #f6f8fa;
+}
+@media (max-width: 700px) {
+  .relatorios-filtros { flex-direction: column; }
+  .relatorios-container { padding: 1rem; }
+}
+
+          
+     #modalConfiguracaoSalarial .search-input {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+
+            #modalConfiguracaoSalarial .search-input::placeholder {
+                color: #94a3b8 !important;
+            }
+
+            #modalConfiguracaoSalarial .modal-content {
+                color: #1f2937;
+            }
+
+            #modalConfiguracaoSalarial .modal-content [style*="var(--text-primary)"] {
+                color: #1f2937 !important;
+            }
+
+            #modalConfiguracaoSalarial .modal-content [style*="var(--text-secondary)"] {
+                color: #64748b !important;
+            }
+
+            #modalConfiguracaoSalarial form label,
+            #modalConfiguracaoSalarial form th,
+            #modalConfiguracaoSalarial form td,
+            #modalConfiguracaoSalarial form span {
+                color: #334155;
+            }
+
+            #modalConfiguracaoSalarial form small,
+            #modalConfiguracaoSalarial form p {
+                color: #64748b !important;
+            }
+
+            #modalConfiguracaoSalarial form input[type="number"],
+            #modalConfiguracaoSalarial form select {
+                background: #ffffff;
+                color: #0f172a;
+            }
+
+  
+
+        .recibo-row td {
+            padding: .48rem .5rem;
+            font-size: 1.01rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+            background: #fff;
+            transition: background 0.2s;
+        }
+
+/* ==============================
+   Bulk Actions Professional UI
+   ============================== */
+
+/* ── Bulk Actions Bar — redesign profissional ── */
+#funcionarios-section .bulk-actions-bar {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: 28px !important;
+    top: auto !important;
+    transform: translateX(-50%) translateY(110px) scale(0.97) !important;
+    width: min(1100px, calc(100vw - 32px)) !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    border-radius: 18px !important;
+    border-top-left-radius: 18px !important;
+    border-top-right-radius: 18px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(9, 17, 33, 0.97) !important;
+    backdrop-filter: blur(28px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(1.5) !important;
+    box-shadow:
+        0 28px 70px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    padding: .65rem .85rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .75rem !important;
+    z-index: 10002 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: transform 0.38s cubic-bezier(0.34, 1.44, 0.64, 1), opacity 0.22s ease !important;
+    color: #f1f5f9 !important;
+}
+
+#funcionarios-section .bulk-actions-bar.active,
+#funcionarios-section .bulk-actions-bar.show,
+#funcionarios-section .bulk-actions-bar[aria-hidden="false"] {
+    opacity: 1 !important;
+    transform: translateX(-50%) translateY(0) scale(1) !important;
+    pointer-events: auto !important;
+}
+
+#funcionarios-section .bulk-actions-bar[aria-hidden="true"] {
+    opacity: 0 !important;
+    transform: translateX(-50%) translateY(110px) scale(0.97) !important;
+    pointer-events: none !important;
+}
+
+/* Esquerda: fechar + badge de contagem */
+#funcionarios-section .bulk-actions-bar .bulk-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: .6rem !important;
+    flex-shrink: 0 !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-close {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 9px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: .78rem !important;
+    cursor: pointer !important;
+    transition: all .15s !important;
+    flex-shrink: 0 !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-close:hover {
+    background: rgba(255, 255, 255, 0.13) !important;
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: .45rem !important;
+    background: rgba(59, 130, 246, 0.14) !important;
+    border: 1px solid rgba(59, 130, 246, 0.28) !important;
+    border-radius: 10px !important;
+    padding: .32rem .75rem !important;
+    color: #93c5fd !important;
+    font-size: .8rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-info i {
+    color: #60a5fa !important;
+    font-size: .8rem !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-info strong {
+    font-size: .95rem !important;
+    font-weight: 800 !important;
+    color: #fff !important;
+}
+
+/* Área de ações */
+#funcionarios-section .bulk-actions-bar .bulk-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: .35rem !important;
+    flex-wrap: wrap !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-primary,
+#funcionarios-section .bulk-actions-bar .bulk-danger {
+    display: flex !important;
+    align-items: center !important;
+    gap: .3rem !important;
+    margin-left: 0 !important;
+}
+
+/* Separador visual entre grupos */
+#funcionarios-section .bulk-actions-bar .bulk-primary {
+    padding-right: .5rem !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Botões primários */
+#funcionarios-section .bulk-actions-bar .bulk-primary button {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: .4rem !important;
+    border-radius: 10px !important;
+    padding: .45rem .8rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: .8rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all .17s !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+    letter-spacing: .01em !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-primary button:hover {
+    background: rgba(255, 255, 255, 0.13) !important;
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Botão secundário (limpar) */
+#funcionarios-section .bulk-actions-bar .bulk-danger .btn-secondary {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: .4rem !important;
+    border-radius: 10px !important;
+    padding: .45rem .8rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: .8rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all .17s !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-danger .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.13) !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Botão de eliminar */
+#funcionarios-section .bulk-actions-bar .bulk-danger .btn-danger {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: .4rem !important;
+    border-radius: 10px !important;
+    padding: .45rem .8rem !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #fca5a5 !important;
+    font-size: .8rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all .17s !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+}
+
+#funcionarios-section .bulk-actions-bar .bulk-danger .btn-danger:hover {
+    background: rgba(239, 68, 68, 0.3) !important;
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+}
+
+#bulkVacationModal,
+#bulkStatusModal,
+#bulkDepartmentModal,
+#notifyModal {
+    background: radial-gradient(circle at 18% 16%, rgba(37, 99, 235, 0.22), rgba(15, 23, 42, 0.74) 55%) !important;
+    backdrop-filter: blur(3px);
+}
+
+#bulkVacationModal .modal-content,
+#bulkStatusModal .modal-content,
+#bulkDepartmentModal .modal-content {
+    border-radius: 18px !important;
+    border: 1px solid rgba(148, 163, 184, 0.24) !important;
+    background: linear-gradient(165deg, #f8fbff 0%, #eef5ff 52%, #e5f0ff 100%) !important;
+    box-shadow: 0 22px 58px rgba(15, 23, 42, 0.36) !important;
+    color: #0f172a !important;
+    padding: 1.5rem 1.35rem 1.15rem !important;
+    animation: bulkModalEnter 0.2s ease;
+}
+
+#bulkVacationModal .close-btn,
+#bulkStatusModal .close-btn,
+#bulkDepartmentModal .close-btn {
+    color: #334155 !important;
+    background: rgba(15, 23, 42, 0.08);
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+#bulkVacationModal h3,
+#bulkStatusModal h3,
+#bulkDepartmentModal h3 {
+    margin-top: 0.1rem;
+    margin-bottom: 1.2rem !important;
+    color: #0f2a4d !important;
+    font-size: 1.16rem;
+    letter-spacing: 0.01em;
+}
+
+#bulkVacationModal .form-group label,
+#bulkStatusModal .form-group label,
+#bulkDepartmentModal .form-group label {
+    color: #334155 !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.35rem !important;
+    font-size: 0.9rem;
+}
+
+#bulkVacationModal input,
+#bulkVacationModal textarea,
+#bulkStatusModal select,
+#bulkStatusModal textarea,
+#bulkDepartmentModal input {
+    border-radius: 10px !important;
+    border: 1px solid #bfdbfe !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) inset;
+}
+
+#bulkVacationModal input:focus,
+#bulkVacationModal textarea:focus,
+#bulkStatusModal select:focus,
+#bulkStatusModal textarea:focus,
+#bulkDepartmentModal input:focus {
+    outline: none;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16) !important;
+}
+
+#bulkVacationModal button[type="submit"],
+#bulkStatusModal button[type="submit"],
+#bulkDepartmentModal button[type="submit"] {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+}
+
+#bulkVacationModal button[type="button"],
+#bulkStatusModal button[type="button"],
+#bulkDepartmentModal button[type="button"] {
+    background: #94a3b8 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+}
+
+#notifyModal .notify-modal-content {
+    border-radius: 20px !important;
+    border: 1px solid rgba(148, 163, 184, 0.24) !important;
+    background: linear-gradient(165deg, #f8fbff 0%, #eef6ff 55%, #e8f2ff 100%) !important;
+    box-shadow: 0 24px 62px rgba(15, 23, 42, 0.36) !important;
+    color: #0f172a !important;
+}
+
+#notifyModal textarea,
+#notifyModal select,
+#notifyModal input {
+    border-color: #bfdbfe !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+
+#notifyModal textarea:focus,
+#notifyModal select:focus,
+#notifyModal input:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16) !important;
+}
+
+#notifyModal .notify-actions .btn-primary {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+    border: none !important;
+}
+
+@keyframes bulkModalEnter {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 980px) {
+    #funcionarios-section .bulk-actions-bar {
+        width: calc(100vw - 18px) !important;
+        padding: 0.8rem 0.75rem !important;
+        border-radius: 14px !important;
+        gap: 0.7rem !important;
+    }
+
+    #funcionarios-section .bulk-actions-bar .bulk-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.5rem !important;
+    }
+
+    #funcionarios-section .bulk-actions-bar .bulk-primary,
+    #funcionarios-section .bulk-actions-bar .bulk-danger {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
+        .recibo-row:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        .recibo-label {
+            color: #334155;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .recibo-value {
+            text-align: right;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: 0.01em;
+        }
+
+        #reciboCard h2, #reciboCard .recibo-label, #reciboCard .recibo-value {
+            color: #1e293b !important;
+        }
+
+        #reciboCard table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #reciboCard .recibo-row td {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        #reciboCard .recibo-row:last-child td {
+            border-bottom: none;
+        }
+
+        #reciboCard .recibo-section-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #2563eb;
+            background: #f1f5f9;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 600px) {
+            #reciboCard {
+                max-width: 99vw;
+                padding: 0.5rem;
+            }
+            #reciboCard table, #reciboCard .recibo-row td {
+                font-size: 0.93rem;
+            }
+        }
+
+        .recibo-label {
+            color: #475569;
+        }
+
+        .recibo-value {
+            text-align: right;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        @media print {
+            body>*:not(#reciboCard) {
+                display: none !important;
+            }
+
+            #modalReciboFolha {
+                position: static !important;
+                background: none !important;
+                padding: 0 !important;
+            }
+
+            #reciboCard {
+                box-shadow: none !important;
+            }
+
+            button {
+                display: none !important;
+            }
+        }
+      
+
+            .relatorios-flex-grid {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 1.2rem;
+                margin-bottom: 1.5rem;
+                width: 100%;
+            }
+
+            @media (max-width: 1200px) {
+                .relatorios-flex-grid {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+
+            @media (max-width: 700px) {
+                .relatorios-flex-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            @media (max-width: 480px) {
+                .relatorios-flex-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .turnos-view-switch .btn.active {
+                background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+                color: #fff;
+                border-color: transparent;
+            }
+
+            .turnos-calendar-wrapper {
+                margin-top: 1rem;
+                border: 1px solid rgba(255,255,255,.08);
+                border-radius: 12px;
+                background: var(--card-bg,#1e293b);
+                padding: 0.85rem;
+            }
+
+            .turnos-calendar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                margin-bottom: 0.85rem;
+            }
+
+            .turnos-calendar-nav {
+                display: flex;
+                gap: 0.45rem;
+                flex-wrap: wrap;
+            }
+
+            .turnos-calendar-range-label {
+                margin: 0;
+                color: #e2e8f0;
+                font-size: 1rem;
+                font-weight: 700;
+                letter-spacing: 0.01em;
+            }
+
+            .turnos-calendar-grid-week {
+                display: grid;
+                grid-template-columns: repeat(7, minmax(180px, 1fr));
+                gap: 0.7rem;
+                overflow-x: auto;
+                padding-bottom: 0.3rem;
+            }
+
+            .turnos-calendar-day-col {
+                min-height: 280px;
+                border: 1px solid rgba(255,255,255,.08);
+                border-radius: 10px;
+                background: rgba(255,255,255,.03);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .turnos-calendar-day-col.is-today {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.16);
+            }
+
+            .turnos-calendar-day-header {
+                padding: 0.55rem 0.7rem;
+                border-bottom: 1px solid rgba(255,255,255,.08);
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                color: #e2e8f0;
+                font-size: 0.87rem;
+                gap: 0.45rem;
+            }
+
+            .turnos-calendar-day-col.is-today .turnos-calendar-day-header {
+                background: linear-gradient(90deg, rgba(59,130,246,.18), rgba(59,130,246,.06));
+            }
+
+            .turnos-calendar-day-count {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 22px;
+                height: 22px;
+                padding: 0 0.38rem;
+                border-radius: 999px;
+                background: #1d4ed8;
+                color: #fff;
+                font-size: 0.72rem;
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            .turnos-calendar-day-body {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.55rem;
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            .turnos-calendar-card {
+                border-radius: 8px;
+                padding: 0.55rem;
+                border: 1px solid transparent;
+                background: rgba(59,130,246,.08);
+                font-size: 0.78rem;
+                line-height: 1.35;
+            }
+
+            .turnos-calendar-card.is-ativo {
+                border-color: rgba(59,130,246,.3);
+                background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(59,130,246,.05));
+            }
+
+            .turnos-calendar-card.is-inativo {
+                border-color: rgba(239,68,68,.3);
+                background: linear-gradient(135deg, rgba(239,68,68,.14), rgba(239,68,68,.05));
+            }
+
+            .turnos-calendar-card.type-manha {
+                border-left: 4px solid #f59e0b;
+            }
+
+            .turnos-calendar-card.type-tarde {
+                border-left: 4px solid #0ea5e9;
+            }
+
+            .turnos-calendar-card.type-noturno {
+                border-left: 4px solid #6366f1;
+            }
+
+            .turnos-calendar-card.type-intermitente {
+                border-left: 4px solid #14b8a6;
+            }
+
+            .turnos-calendar-card.type-default {
+                border-left: 4px solid #64748b;
+            }
+
+            .turnos-calendar-card-title {
+                font-weight: 700;
+                color: #f1f5f9;
+                margin-bottom: 0.2rem;
+            }
+
+            .turnos-calendar-card-subtitle,
+            .turnos-calendar-card-meta {
+                color: #94a3b8;
+            }
+
+            .turnos-calendar-empty {
+                margin: 0;
+                color: #64748b;
+                font-size: 0.8rem;
+                font-style: italic;
+            }
+
+            .turnos-calendar-grid-month {
+                display: grid;
+                grid-template-columns: repeat(7, minmax(120px, 1fr));
+                gap: 0.55rem;
+            }
+
+            .turnos-calendar-weekday {
+                font-size: 0.8rem;
+                color: #60a5fa;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 0.15rem 0.3rem;
+            }
+
+            .turnos-calendar-month-cell {
+                min-height: 150px;
+                border: 1px solid rgba(255,255,255,.08);
+                border-radius: 9px;
+                background: rgba(255,255,255,.03);
+                padding: 0.4rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.35rem;
+            }
+
+            .turnos-calendar-month-cell.is-outside {
+                background: rgba(255,255,255,.015);
+                opacity: 0.72;
+            }
+
+            .turnos-calendar-month-cell.is-today {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.14);
+            }
+
+            .turnos-calendar-month-date {
+                align-self: stretch;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: #94a3b8;
+            }
+
+            .turnos-calendar-month-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.35rem;
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            .turnos-calendar-more {
+                margin: 0;
+                color: #60a5fa;
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+
+            @media (max-width: 880px) {
+                .turnos-calendar-grid-month {
+                    grid-template-columns: repeat(2, minmax(140px, 1fr));
+                }
+
+                .turnos-calendar-weekday {
+                    display: none;
+                }
+
+                .turnos-calendar-month-cell {
+                    min-height: 170px;
+                }
+            }
+
+        }
+
+

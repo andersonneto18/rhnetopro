@@ -3955,8 +3955,11 @@ try {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <!-- Seu CSS -->
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?php echo (int)@filemtime(__DIR__ . '/assets/css/dashboard.css'); ?>">
+    <!-- CSS do dashboard, dividido em partes (mesma ordem de cascata do antigo dashboard.css) -->
+    <link rel="stylesheet" href="assets/css/base.css?v=<?php echo (int)@filemtime(__DIR__ . '/assets/css/base.css'); ?>">
+    <link rel="stylesheet" href="assets/css/layout.css?v=<?php echo (int)@filemtime(__DIR__ . '/assets/css/layout.css'); ?>">
+    <link rel="stylesheet" href="assets/css/components.css?v=<?php echo (int)@filemtime(__DIR__ . '/assets/css/components.css'); ?>">
+    <link rel="stylesheet" href="assets/css/legacy.css?v=<?php echo (int)@filemtime(__DIR__ . '/assets/css/legacy.css'); ?>">
     <!-- Bibliotecas JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

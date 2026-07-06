@@ -17,3 +17,6 @@ app/uploads/*
 
 # Dump com dados reais de funcionários - não versionar
 sistema_cadastro.sql
+
+# Log da tarefa agendada de atualização de faltas
+tools/atualizar_status_presencas.log

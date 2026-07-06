@@ -1716,7 +1716,6 @@ body.dark-theme .bulk-close:hover {
     transform: translateY(-1px) !important;
 }
 
-#bulkVacationModal,
 #bulkStatusModal,
 #bulkDepartmentModal,
 #notifyModal {
@@ -1724,131 +1723,9 @@ body.dark-theme .bulk-close:hover {
     backdrop-filter: blur(3px);
 }
 
-#bulkVacationModal .modal-content,
-#bulkStatusModal .modal-content,
-#bulkDepartmentModal .modal-content {
-    border-radius: 18px !important;
-    border: 1px solid rgba(148, 163, 184, 0.24) !important;
-    background: linear-gradient(165deg, #f8fbff 0%, #eef5ff 52%, #e5f0ff 100%) !important;
-    box-shadow: 0 22px 58px rgba(15, 23, 42, 0.36) !important;
-    color: #0f172a !important;
-    padding: 1.5rem 1.35rem 1.15rem !important;
-    animation: bulkModalEnter 0.2s ease;
-}
-
-#bulkVacationModal .close-btn,
-#bulkStatusModal .close-btn,
-#bulkDepartmentModal .close-btn {
-    color: #334155 !important;
-    background: rgba(15, 23, 42, 0.08);
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-}
-
-#bulkVacationModal h3,
-#bulkStatusModal h3,
-#bulkDepartmentModal h3 {
-    margin-top: 0.1rem;
-    margin-bottom: 1.2rem !important;
-    color: #0f2a4d !important;
-    font-size: 1.16rem;
-    letter-spacing: 0.01em;
-}
-
-#bulkVacationModal .form-group label,
-#bulkStatusModal .form-group label,
-#bulkDepartmentModal .form-group label {
-    color: #334155 !important;
-    font-weight: 700 !important;
-    margin-bottom: 0.35rem !important;
-    font-size: 0.9rem;
-}
-
-#bulkVacationModal input,
-#bulkVacationModal textarea,
-#bulkStatusModal select,
-#bulkStatusModal textarea,
-#bulkDepartmentModal input {
-    border-radius: 10px !important;
-    border: 1px solid #bfdbfe !important;
-    background: #ffffff !important;
-    color: #0f172a !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) inset;
-}
-
-#bulkVacationModal input:focus,
-#bulkVacationModal textarea:focus,
-#bulkStatusModal select:focus,
-#bulkStatusModal textarea:focus,
-#bulkDepartmentModal input:focus {
-    outline: none;
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16) !important;
-}
-
-#bulkVacationModal button[type="submit"],
-#bulkStatusModal button[type="submit"],
-#bulkDepartmentModal button[type="submit"] {
-    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 10px !important;
-    font-weight: 700 !important;
-}
-
-#bulkVacationModal button[type="button"],
-#bulkStatusModal button[type="button"],
-#bulkDepartmentModal button[type="button"] {
-    background: #94a3b8 !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 10px !important;
-    font-weight: 700 !important;
-}
-
-#notifyModal .notify-modal-content {
-    border-radius: 20px !important;
-    border: 1px solid rgba(148, 163, 184, 0.24) !important;
-    background: linear-gradient(165deg, #f8fbff 0%, #eef6ff 55%, #e8f2ff 100%) !important;
-    box-shadow: 0 24px 62px rgba(15, 23, 42, 0.36) !important;
-    color: #0f172a !important;
-}
-
-#notifyModal textarea,
-#notifyModal select,
-#notifyModal input {
-    border-color: #bfdbfe !important;
-    background: #ffffff !important;
-    color: #0f172a !important;
-}
-
-#notifyModal textarea:focus,
-#notifyModal select:focus,
-#notifyModal input:focus {
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16) !important;
-}
-
-#notifyModal .notify-actions .btn-primary {
-    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
-    border: none !important;
-}
-
-@keyframes bulkModalEnter {
-    from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
+/* Nota: as regras antigas de .modal-content/.close-btn/.form-group/.notify-modal-content destes
+   modais foram removidas — os modais agora usam a estrutura am-* (ver admin/sections/funcionarios.php),
+   que já tem o seu próprio estilo escuro consistente com o resto do painel. */
 
 @media (max-width: 980px) {
     #funcionarios-section .bulk-actions-bar {

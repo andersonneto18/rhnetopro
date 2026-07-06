@@ -2015,79 +2015,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return results;
     }
 
-    // Função: Marcar Férias em Lote
-    window.bulkMarkVacation = function() {
-        const canShowBulkWarning = document.body.classList.contains('bulk-bar-visible') || !!document.querySelector('#bulkActionsBar.show');
-        const selected = document.querySelectorAll('.employee-row .employee-checkbox:checked');
-        if (selected.length === 0) {
-            if (canShowBulkWarning) showWarning('Selecione pelo menos um funcionário');
-            return;
-        }
-        document.getElementById('bulkVacationModal').style.display = 'block';
-    }
-
-    document.getElementById('bulkVacationForm')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const submitBtn = this.querySelector('button[type="submit"]');
-        if (submitBtn?.disabled) return;
-
-        const selected = document.querySelectorAll('.employee-row .employee-checkbox:checked');
-        const startDate = document.getElementById('vacationStartDate').value;
-        const endDate = document.getElementById('vacationEndDate').value;
-        const note = document.getElementById('vacationNote').value.trim();
-
-        if (!startDate || !endDate) {
-            showWarning('Informe a data de início e fim das férias.');
-            return;
-        }
-
-        if (startDate > endDate) {
-            showWarning('A data de início não pode ser maior que a data de fim.');
-            return;
-        }
-
-        const employees = Array.from(selected).map(cb => ({
-            id: cb.dataset.employeeId,
-            name: cb.dataset.employeeName,
-            checkbox: cb,
-            row: cb.closest('tr'),
-            currentStatus: normalizeEmployeeStatus(cb.closest('tr')?.dataset?.status || '')
-        }));
-
-        try {
-            if (submitBtn) submitBtn.disabled = true;
-
-            const results = await executeBulkAction({
-                actionLabel: 'Marcação de férias',
-                employees,
-                validateEmployee: (emp) => {
-                    if (emp.currentStatus === 'inactive') {
-                        return 'Funcionário inativo não pode ser marcado em férias.';
-                    }
-                    return '';
-                },
-                buildFormData: (emp) => {
-                    const fd = new FormData();
-                    fd.append('action', 'update_status');
-                    fd.append('id', emp.id);
-                    fd.append('status', 'ferias');
-                    fd.append('start_vacation', startDate);
-                    fd.append('end_vacation', endDate);
-                    if (note) fd.append('reason', note);
-                    return fd;
-                }
-            });
-
-            if (results.some((item) => item.success)) {
-                document.getElementById('bulkVacationModal').style.display = 'none';
-            }
-        } catch (err) {
-            showError('Erro ao processar férias');
-        } finally {
-            if (submitBtn) submitBtn.disabled = false;
-        }
-    });
-
     // Função: Alterar Status em Lote
     window.bulkChangeStatus = function() {
         const canShowBulkWarning = document.body.classList.contains('bulk-bar-visible') || !!document.querySelector('#bulkActionsBar.show');
@@ -2111,6 +2038,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!newStatus) {
             showWarning('Selecione um status');
             return;
+        }
+
+        let vacationStart = '';
+        let vacationEnd = '';
+        if (newStatus === 'ferias') {
+            vacationStart = document.getElementById('bulkVacationStartDate').value;
+            vacationEnd = document.getElementById('bulkVacationEndDate').value;
+            if (!vacationStart || !vacationEnd) {
+                showWarning('Informe a data de início e fim das férias.');
+                return;
+            }
+            if (vacationStart > vacationEnd) {
+                showWarning('A data de início não pode ser maior que a data de fim.');
+                return;
+            }
         }
 
         const employees = Array.from(selected).map(cb => ({
@@ -2141,6 +2083,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     fd.append('action', 'update_status');
                     fd.append('id', emp.id);
                     fd.append('status', newStatus);
+                    if (newStatus === 'ferias') {
+                        fd.append('start_vacation', vacationStart);
+                        fd.append('end_vacation', vacationEnd);
+                    }
                     if (reason) fd.append('reason', reason);
                     return fd;
                 }

@@ -475,7 +475,7 @@
                 #addEmployeeModal { overflow-y:auto; padding:24px 16px 48px; }
                 #turnoModal, #bulkTurnoModal, #turnoSwapModal { overflow-y:auto; padding:24px 16px 48px; }
                 #gorjetaModal, #gorjetaViewModal { overflow-y:auto; padding:24px 16px 48px; }
-                #notifyModal, #bulkVacationModal, #bulkStatusModal, #bulkDepartmentModal { overflow-y:auto; padding:24px 16px 48px; }
+                #notifyModal, #bulkStatusModal, #bulkDepartmentModal { overflow-y:auto; padding:24px 16px 48px; }
                 .am-sheet {
                     background:#0f172a;
                     border:1px solid rgba(255,255,255,.1);
@@ -898,10 +898,6 @@
 
                 <div class="bulk-actions">
                     <div class="bulk-primary">
-                        <button type="button" onclick="bulkMarkVacation()">
-                            <i class="fas fa-umbrella-beach"></i> Férias
-                        </button>
-
                         <button type="button" onclick="bulkChangeStatus()">
                             <i class="fas fa-toggle-on"></i> Status
                         </button>
@@ -1608,51 +1604,7 @@
             </div>
 
             <!-- Modal: Marcar Férias em Lote -->
-            <div id="bulkVacationModal" class="modal" style="display: none; overflow-y:auto; padding:24px 16px 48px;">
-                <div class="am-sheet" style="max-width:480px;">
-                    <button class="am-close" type="button" aria-label="Fechar"
-                        onclick="document.getElementById('bulkVacationModal').style.display='none'">&times;</button>
-
-                    <div class="am-header">
-                        <div class="am-header-icon" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);box-shadow:0 6px 16px rgba(2,132,199,.35);">
-                            <i class="fas fa-umbrella-beach"></i>
-                        </div>
-                        <div>
-                            <h2 class="am-title">Marcar Férias em Lote</h2>
-                            <p class="am-subtitle">Aplica o período de férias aos funcionários selecionados</p>
-                        </div>
-                    </div>
-
-                    <form id="bulkVacationForm">
-                        <div class="am-section">
-                            <div class="am-g2">
-                                <div class="am-f">
-                                    <label class="am-lbl" for="vacationStartDate">Data Início *</label>
-                                    <input type="date" id="vacationStartDate" name="start_date" class="am-inp" required>
-                                </div>
-                                <div class="am-f">
-                                    <label class="am-lbl" for="vacationEndDate">Data Fim *</label>
-                                    <input type="date" id="vacationEndDate" name="end_date" class="am-inp" required>
-                                </div>
-                                <div class="am-f am-f-full">
-                                    <label class="am-lbl" for="vacationNote">Observação</label>
-                                    <textarea id="vacationNote" name="note" rows="3" class="am-inp"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="am-footer">
-                            <button type="button" class="am-btn-cancel"
-                                onclick="document.getElementById('bulkVacationModal').style.display='none'">Cancelar</button>
-                            <button type="submit" class="am-btn-submit">
-                                <i class="fas fa-check"></i> Confirmar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Modal: Alterar Status em Lote -->
+            <!-- Modal: Alterar Status em Lote (inclui datas de férias quando aplicável) -->
             <div id="bulkStatusModal" class="modal" style="display: none; overflow-y:auto; padding:24px 16px 48px;">
                 <div class="am-sheet" style="max-width:480px;">
                     <button class="am-close" type="button" aria-label="Fechar"
@@ -1673,12 +1625,23 @@
                             <div class="am-g2">
                                 <div class="am-f am-f-full">
                                     <label class="am-lbl" for="bulkNewStatus">Novo Status *</label>
-                                    <select id="bulkNewStatus" name="status" class="am-inp am-sel" required>
+                                    <select id="bulkNewStatus" name="status" class="am-inp am-sel" required
+                                        onchange="document.getElementById('bulkVacationDatesWrap').style.display = this.value === 'ferias' ? '' : 'none';">
                                         <option value="">Selecione...</option>
                                         <option value="active">Ativo</option>
                                         <option value="inactive">Inativo</option>
                                         <option value="ferias">Férias</option>
                                     </select>
+                                </div>
+                                <div id="bulkVacationDatesWrap" class="am-g2 am-f-full" style="display:none;padding:0;">
+                                    <div class="am-f">
+                                        <label class="am-lbl" for="bulkVacationStartDate">Data Início *</label>
+                                        <input type="date" id="bulkVacationStartDate" name="start_vacation" class="am-inp">
+                                    </div>
+                                    <div class="am-f">
+                                        <label class="am-lbl" for="bulkVacationEndDate">Data Fim *</label>
+                                        <input type="date" id="bulkVacationEndDate" name="end_vacation" class="am-inp">
+                                    </div>
                                 </div>
                                 <div class="am-f am-f-full">
                                     <label class="am-lbl">Razão <span class="am-opt">(opcional)</span></label>

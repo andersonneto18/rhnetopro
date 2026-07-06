@@ -7577,12 +7577,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         card.style.borderRadius = '12px';
         card.style.padding = '0.75rem';
-        card.style.border = isInativo ? '1px solid #fecaca' : '1px solid #bfdbfe';
+        card.style.border = isInativo ? '1px solid rgba(239,68,68,.3)' : '1px solid rgba(59,130,246,.3)';
         card.style.borderLeft = `4px solid ${accent}`;
         card.style.background = isInativo
-            ? 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)'
-            : 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)';
-        card.style.boxShadow = '0 10px 24px rgba(15, 23, 42, 0.08)';
+            ? 'linear-gradient(135deg, rgba(239,68,68,.14), rgba(239,68,68,.05))'
+            : 'linear-gradient(135deg, rgba(59,130,246,.12), rgba(59,130,246,.05))';
+        card.style.boxShadow = '0 10px 24px rgba(0, 0, 0, 0.18)';
         card.style.display = 'flex';
         card.style.flexDirection = 'column';
         card.style.gap = '0.25rem';
@@ -7591,11 +7591,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function styleCalendarShell() {
         if (turnosCalendarWrapper) {
             turnosCalendarWrapper.style.marginTop = '1rem';
-            turnosCalendarWrapper.style.border = '1px solid #dbe6f2';
+            turnosCalendarWrapper.style.border = '1px solid rgba(255,255,255,.08)';
             turnosCalendarWrapper.style.borderRadius = '18px';
-            turnosCalendarWrapper.style.background = 'linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%)';
+            turnosCalendarWrapper.style.background = 'var(--card-bg, #1e293b)';
             turnosCalendarWrapper.style.padding = '1rem';
-            turnosCalendarWrapper.style.boxShadow = '0 18px 38px rgba(15, 23, 42, 0.08)';
+            turnosCalendarWrapper.style.boxShadow = '0 18px 38px rgba(0, 0, 0, 0.25)';
         }
 
         if (turnosCalendarGrid) {
@@ -7614,26 +7614,26 @@ document.addEventListener('DOMContentLoaded', function() {
         title.className = 'turnos-calendar-card-title';
         title.textContent = turno.funcionario || 'Funcionário';
         title.style.fontWeight = '800';
-        title.style.color = '#0f172a';
+        title.style.color = '#f1f5f9';
         title.style.fontSize = '0.88rem';
 
         const subtitle = document.createElement('div');
         subtitle.className = 'turnos-calendar-card-subtitle';
         subtitle.textContent = `${turno.turnoTipo || '-'} | ${turno.horarioText || '-'}`;
-        subtitle.style.color = '#1e3a5f';
+        subtitle.style.color = '#93c5fd';
         subtitle.style.fontSize = '0.8rem';
         subtitle.style.fontWeight = '600';
 
         const meta = document.createElement('div');
         meta.className = 'turnos-calendar-card-meta';
         meta.textContent = `Escala: ${turno.escala || '-'} | ${capitalizeText(turno.statusText || 'ativo')}`;
-        meta.style.color = '#475569';
+        meta.style.color = '#94a3b8';
         meta.style.fontSize = '0.76rem';
 
         if (turno.vigenciaText) {
             const rangeMeta = document.createElement('div');
             rangeMeta.textContent = `Vigência: ${turno.vigenciaText}`;
-            rangeMeta.style.color = '#64748b';
+            rangeMeta.style.color = '#94a3b8';
             rangeMeta.style.fontSize = '0.74rem';
             card.appendChild(title);
             card.appendChild(subtitle);
@@ -7666,40 +7666,40 @@ document.addEventListener('DOMContentLoaded', function() {
             const dayCol = document.createElement('div');
             dayCol.className = 'turnos-calendar-day-col';
             dayCol.style.minHeight = '320px';
-            dayCol.style.border = '1px solid #d6e4f5';
+            dayCol.style.border = '1px solid rgba(255,255,255,.08)';
             dayCol.style.borderRadius = '16px';
-            dayCol.style.background = '#ffffff';
+            dayCol.style.background = 'rgba(255,255,255,.03)';
             dayCol.style.display = 'flex';
             dayCol.style.flexDirection = 'column';
             dayCol.style.overflow = 'hidden';
-            dayCol.style.boxShadow = '0 12px 28px rgba(15, 23, 42, 0.06)';
+            dayCol.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.18)';
 
             const dayTurnos = turnosData.filter(turno => turnoOccursOnDate(turno, dayDate));
             const isToday = isSameDate(dayDate, new Date());
             if (isToday) {
                 dayCol.classList.add('is-today');
                 dayCol.style.borderColor = '#3b82f6';
-                dayCol.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.16), 0 14px 32px rgba(15, 23, 42, 0.08)';
+                dayCol.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.16), 0 14px 32px rgba(0, 0, 0, 0.22)';
             }
 
             const header = document.createElement('div');
             header.className = 'turnos-calendar-day-header';
             header.style.padding = '0.85rem 0.9rem';
-            header.style.borderBottom = '1px solid #e5edf7';
+            header.style.borderBottom = '1px solid rgba(255,255,255,.08)';
             header.style.display = 'grid';
             header.style.gridTemplateColumns = '1fr auto auto';
             header.style.alignItems = 'center';
             header.style.gap = '0.5rem';
-            header.style.background = isToday ? 'linear-gradient(90deg, #dbeafe 0%, #eff6ff 100%)' : 'linear-gradient(90deg, #f8fbff 0%, #ffffff 100%)';
+            header.style.background = isToday ? 'linear-gradient(90deg, rgba(59,130,246,.18), rgba(59,130,246,.06))' : 'rgba(255,255,255,.02)';
 
             const dayName = document.createElement('strong');
             dayName.textContent = weekDayShortLabels[dayIndex];
             dayName.style.fontSize = '0.95rem';
-            dayName.style.color = '#0f172a';
+            dayName.style.color = '#e2e8f0';
 
             const dateText = document.createElement('span');
             dateText.textContent = formatDate(dayDate);
-            dateText.style.color = '#334155';
+            dateText.style.color = '#94a3b8';
             dateText.style.fontWeight = '600';
             dateText.style.fontSize = '0.82rem';
 
@@ -7726,10 +7726,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 empty.textContent = 'Sem turnos';
                 empty.style.margin = '0';
                 empty.style.padding = '0.85rem';
-                empty.style.border = '1px dashed #cbd5e1';
+                empty.style.border = '1px dashed rgba(255,255,255,.15)';
                 empty.style.borderRadius = '12px';
-                empty.style.background = '#f8fafc';
-                empty.style.color = '#64748b';
+                empty.style.background = 'rgba(255,255,255,.02)';
+                empty.style.color = '#94a3b8';
                 empty.style.fontStyle = 'italic';
                 body.appendChild(empty);
             } else {
@@ -7768,7 +7768,7 @@ document.addEventListener('DOMContentLoaded', function() {
             weekday.className = 'turnos-calendar-weekday';
             weekday.textContent = weekDayShortLabels[dayIndex];
             weekday.style.fontSize = '0.77rem';
-            weekday.style.color = '#1d4e89';
+            weekday.style.color = '#60a5fa';
             weekday.style.fontWeight = '800';
             weekday.style.textTransform = 'uppercase';
             weekday.style.letterSpacing = '0.06em';
@@ -7786,21 +7786,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const cell = document.createElement('div');
             cell.className = `turnos-calendar-month-cell ${isCurrentMonth ? '' : 'is-outside'}`.trim();
             cell.style.minHeight = '180px';
-            cell.style.border = '1px solid #d7e5f3';
+            cell.style.border = '1px solid rgba(255,255,255,.08)';
             cell.style.borderRadius = '14px';
-            cell.style.background = isCurrentMonth ? '#ffffff' : '#f8fafc';
+            cell.style.background = isCurrentMonth ? 'rgba(255,255,255,.03)' : 'rgba(255,255,255,.015)';
             cell.style.padding = '0.6rem';
             cell.style.display = 'flex';
             cell.style.flexDirection = 'column';
             cell.style.gap = '0.45rem';
-            cell.style.boxShadow = isCurrentMonth ? '0 10px 24px rgba(15, 23, 42, 0.05)' : 'none';
+            cell.style.boxShadow = isCurrentMonth ? '0 10px 24px rgba(0, 0, 0, 0.15)' : 'none';
             if (!isCurrentMonth) {
                 cell.style.opacity = '0.72';
             }
             if (isToday) {
                 cell.classList.add('is-today');
                 cell.style.borderColor = '#3b82f6';
-                cell.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.14), 0 12px 28px rgba(15, 23, 42, 0.08)';
+                cell.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.14), 0 12px 28px rgba(0, 0, 0, 0.2)';
             }
 
             const dateLabel = document.createElement('div');
@@ -7813,7 +7813,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dateNumber.textContent = String(currentDate.getDate());
             dateNumber.style.fontSize = '0.8rem';
             dateNumber.style.fontWeight = '800';
-            dateNumber.style.color = '#334155';
+            dateNumber.style.color = '#94a3b8';
 
             const countBadge = document.createElement('span');
             countBadge.className = 'turnos-calendar-day-count';
@@ -7836,10 +7836,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 empty.textContent = 'Sem turnos';
                 empty.style.margin = '0';
                 empty.style.padding = '0.65rem';
-                empty.style.border = '1px dashed #cbd5e1';
+                empty.style.border = '1px dashed rgba(255,255,255,.15)';
                 empty.style.borderRadius = '10px';
-                empty.style.background = '#f8fafc';
-                empty.style.color = '#64748b';
+                empty.style.background = 'rgba(255,255,255,.02)';
+                empty.style.color = '#94a3b8';
                 empty.style.fontStyle = 'italic';
                 list.appendChild(empty);
             } else {
@@ -7852,7 +7852,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     more.className = 'turnos-calendar-more';
                     more.textContent = `+${dayTurnos.length - 3} turnos`;
                     more.style.margin = '0';
-                    more.style.color = '#1d4ed8';
+                    more.style.color = '#60a5fa';
                     more.style.fontSize = '0.75rem';
                     more.style.fontWeight = '700';
                     list.appendChild(more);

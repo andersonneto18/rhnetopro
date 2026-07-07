@@ -222,35 +222,27 @@
 
             <!-- Modal: Configuração de Registo Salarial -->
             <div id="modalConfiguracaoSalarial" class="modal"
-                style="display:none; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto;">
-                <div class="modal-content modal-content-wide">
-
-                    <div class="modal-header">
-                        <h3 class="modal-title">
-                            <i class="fas fa-sliders-h"></i>
-                            Configuração de Registo Salarial
-                        </h3>
-                        <span id="btnClosePayrollModal" class="modal-close">&times;</span>
+                style="display:none; align-items:flex-start; justify-content:center; padding:24px 16px 48px; overflow-y:auto;">
+                <div class="am-sheet" style="max-width:920px;">
+                    <button type="button" id="btnClosePayrollModal" class="am-close" aria-label="Fechar">&times;</button>
+                    <div class="am-header">
+                        <div class="am-header-icon"><i class="fas fa-sliders-h"></i></div>
+                        <div>
+                            <h2 class="am-title">Configuração de Registo Salarial</h2>
+                            <p class="am-subtitle">Regras básicas de registo mensal — cálculos fiscais e legais ficam a cargo do contabilista</p>
+                        </div>
                     </div>
-                    <p class="modal-desc">
-                        Defina apenas regras básicas de registo salarial mensal. Cálculos fiscais e legais devem ser
-                        tratados externamente pelo contabilista.
-                    </p>
 
-                    <form id="formPayrollConfig" method="post" action="dashboard.php?section=definicoes"
-                        style="display:grid; gap:1.5rem;">
+                    <form id="formPayrollConfig" method="post" action="dashboard.php?section=definicoes">
                         <input type="hidden" name="action" value="save_payroll_config">
                         <input type="hidden" name="config_ano_hidden" id="payrollConfigAnoHidden"
                             value="<?php echo (int)$payrollConfigYear; ?>">
 
                         <!-- ── BLOCO 1: Ano Fiscal ── -->
-                        <div class="settings-section-block">
-                            <div class="settings-section-block-header">
-                                <i class="fas fa-calendar-alt" style="color:var(--primary-600);"></i>
-                                <span class="settings-section-block-title">Ano Fiscal</span>
-                            </div>
+                        <div class="am-section">
+                            <div class="am-sec-lbl"><i class="fas fa-calendar-alt"></i> Ano Fiscal</div>
                             <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                                <select name="config_year" id="payrollConfigYearSelect" class="search-input"
+                                <select name="config_year" id="payrollConfigYearSelect" class="am-inp am-sel"
                                     style="max-width:160px;">
                                     <?php for ($y = $currentYear + 1; $y >= $currentYear - 5; $y--): ?>
                                     <option value="<?php echo $y; ?>"
@@ -259,122 +251,96 @@
                                     </option>
                                     <?php endfor; ?>
                                 </select>
-                                <small style="color:var(--text-secondary);">Ao alterar o ano, as configurações
+                                <small class="am-hint">Ao alterar o ano, as configurações
                                     correspondentes
                                     são carregadas automaticamente.</small>
                             </div>
                         </div>
 
                         <!-- ── BLOCO 2: Segurança Social (oculto no modo simples) ── -->
-                        <div class="settings-section-block" style="display:none;">
-                            <div class="settings-section-block-header">
-                                <i class="fas fa-shield-alt" style="color:#0284c7;"></i>
-                                <span class="settings-section-block-title">Segurança Social</span>
-                            </div>
-                            <div
-                                style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.85rem;">
-                                <div style="display:grid; gap:.35rem;">
-                                    <label style="font-size:.875rem; font-weight:600;">Taxa do Trabalhador (%)</label>
-                                    <div style="display:flex; align-items:center; gap:.4rem;">
-                                        <input type="number" step="0.01" min="0" max="100" name="social_security_rate"
-                                            value="<?php echo htmlspecialchars(number_format((float)($payrollAdminTaxRules['social_security_rate'] ?? 0) * 100, 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                            class="search-input" style="max-width:120px;">
-                                        <span style="font-weight:700; color:var(--text-secondary);">%</span>
-                                    </div>
-                                    <small style="color:var(--text-secondary);">Em Portugal: 11,00%</small>
+                        <div class="am-section" style="display:none;">
+                            <div class="am-sec-lbl"><i class="fas fa-shield-alt"></i> Segurança Social</div>
+                            <div class="am-g2">
+                                <div class="am-f">
+                                    <label class="am-lbl">Taxa do Trabalhador (%)</label>
+                                    <input class="am-inp" type="number" step="0.01" min="0" max="100" name="social_security_rate"
+                                        value="<?php echo htmlspecialchars(number_format((float)($payrollAdminTaxRules['social_security_rate'] ?? 0) * 100, 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <small class="am-hint">Em Portugal: 11,00%</small>
                                 </div>
-                                <div style="display:grid; gap:.35rem;">
-                                    <label style="font-size:.875rem; font-weight:600;">Taxa da Entidade Patronal
-                                        (%)</label>
-                                    <div style="display:flex; align-items:center; gap:.4rem;">
-                                        <input type="number" step="0.01" min="0" max="100"
-                                            name="employer_social_security_rate"
-                                            value="<?php echo htmlspecialchars(number_format((float)($payrollAdminTaxRules['employer_social_security_rate'] ?? 0) * 100, 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                            class="search-input" style="max-width:120px;">
-                                        <span style="font-weight:700; color:var(--text-secondary);">%</span>
-                                    </div>
-                                    <small style="color:var(--text-secondary);">Em Portugal: 23,75%</small>
+                                <div class="am-f">
+                                    <label class="am-lbl">Taxa da Entidade Patronal (%)</label>
+                                    <input class="am-inp" type="number" step="0.01" min="0" max="100"
+                                        name="employer_social_security_rate"
+                                        value="<?php echo htmlspecialchars(number_format((float)($payrollAdminTaxRules['employer_social_security_rate'] ?? 0) * 100, 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <small class="am-hint">Em Portugal: 23,75%</small>
                                 </div>
                             </div>
                         </div>
 
                         <!-- ── BLOCO 3: Subsídios e Extras ── -->
-                        <div class="settings-section-block">
-                            <div class="settings-section-block-header">
-                                <i class="fas fa-coins" style="color:#16a34a;"></i>
-                                <span class="settings-section-block-title">Subsídios e Extras</span>
-                            </div>
-                            <div
-                                style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:.85rem; align-items:start;">
-                                <div style="display:grid; gap:.35rem;">
-                                    <label style="font-size:.875rem; font-weight:600;">Subsídio de Alimentação Padrão
-                                        (€)</label>
-                                    <input type="number" step="0.01" min="0" name="default_subsidios"
+                        <div class="am-section">
+                            <div class="am-sec-lbl"><i class="fas fa-coins"></i> Subsídios e Extras</div>
+                            <div class="am-g3">
+                                <div class="am-f">
+                                    <label class="am-lbl">Subsídio de Alimentação Padrão (€)</label>
+                                    <input class="am-inp" type="number" step="0.01" min="0" name="default_subsidios"
                                         value="<?php echo htmlspecialchars(number_format((float)($payrollAdminConfig['default_subsidios'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                        class="search-input" placeholder="0.00"
-                                        style="width:100%; max-width:100%; min-width:0; box-sizing:border-box;">
-                                    <small style="color:var(--text-secondary);">Valor aplicado quando não definido
+                                        placeholder="0.00">
+                                    <small class="am-hint">Valor aplicado quando não definido
                                         individualmente.</small>
                                 </div>
-                                <div style="display:grid; gap:.35rem;">
-                                    <label style="font-size:.875rem; font-weight:600;">Fator de Horas Extras</label>
-                                    <input type="number" step="0.01" min="1.00" max="5.00" name="fator_horas_extra"
-                                        value="<?php echo htmlspecialchars(number_format(max(1.0, (float)($payrollAdminConfig['default_horas_extra'] ?? 1.0)), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                        class="search-input"
-                                        style="width:100%; max-width:100%; min-width:0; box-sizing:border-box;">
-                                    <small style="color:var(--text-secondary);">1.25 = 25% acima da hora normal. Em PT:
+                                <div class="am-f">
+                                    <label class="am-lbl">Fator de Horas Extras</label>
+                                    <input class="am-inp" type="number" step="0.01" min="1.00" max="5.00" name="fator_horas_extra"
+                                        value="<?php echo htmlspecialchars(number_format(max(1.0, (float)($payrollAdminConfig['default_horas_extra'] ?? 1.0)), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <small class="am-hint">1.25 = 25% acima da hora normal. Em PT:
                                         1.25
                                         (1.ªs 60h/ano), 1.625 (excedentes).</small>
                                 </div>
-                                <div style="display:grid; gap:.35rem;">
-                                    <label style="font-size:.875rem; font-weight:600;">Bónus Padrão (€)</label>
-                                    <input type="number" step="0.01" min="0" name="default_bonus"
+                                <div class="am-f">
+                                    <label class="am-lbl">Bónus Padrão (€)</label>
+                                    <input class="am-inp" type="number" step="0.01" min="0" name="default_bonus"
                                         value="<?php echo htmlspecialchars(number_format((float)($payrollAdminConfig['default_bonus'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                        class="search-input" placeholder="0.00"
-                                        style="width:100%; max-width:100%; min-width:0; box-sizing:border-box;">
-                                    <small style="color:var(--text-secondary);">Bónus periódico aplicado a todos os
+                                        placeholder="0.00">
+                                    <small class="am-hint">Bónus periódico aplicado a todos os
                                         colaboradores.</small>
                                 </div>
                             </div>
                         </div>
 
                         <!-- ── BLOCO 4: Escalões de IRS (oculto no modo simples) ── -->
-                        <div class="settings-section-block" style="display:none;">
+                        <div class="am-section" style="display:none;">
                             <div
                                 style="display:flex; justify-content:space-between; align-items:center; gap:.8rem; flex-wrap:wrap; margin-bottom:.75rem;">
-                                <div style="display:flex; align-items:center; gap:.5rem;">
-                                    <i class="fas fa-table" style="color:#7c3aed;"></i>
-                                    <span class="settings-section-block-title">Escalões de IRS</span>
-                                </div>
-                                <button type="button" class="btn btn-secondary" id="btnAddIrsBracket"
+                                <div class="am-sec-lbl" style="margin-bottom:0; padding-bottom:0; border-bottom:none;"><i class="fas fa-table"></i> Escalões de IRS</div>
+                                <button type="button" class="am-btn-cancel" id="btnAddIrsBracket"
                                     style="padding:.45rem .85rem; font-size:.85rem;">
                                     <i class="fas fa-plus"></i> Adicionar Escalão
                                 </button>
                             </div>
-                            <p style="margin:0 0 .75rem; font-size:.8rem; color:var(--text-secondary);">
+                            <p style="margin:0 0 .75rem; font-size:.8rem; color:#94a3b8;">
                                 Fórmula: <strong>IRS = (Rendimento × Taxa) − Parcela a Abater</strong>. O último escalão
                                 sem
                                 máximo aplica-se a rendimentos superiores.
                                 Os intervalos não podem sobrepor-se.
                             </p>
-                            <div id="irsOverlapError"
-                                style="display:none; padding:.6rem .8rem; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:8px; margin-bottom:.75rem; font-size:.85rem;">
+                            <div id="irsOverlapError" class="am-error" style="display:none; margin-bottom:.75rem;">
                             </div>
-                            <div style="overflow:auto; border:1px solid var(--neutral-200); border-radius:8px;">
+                            <div style="overflow:auto; border:1px solid rgba(255,255,255,.1); border-radius:8px;">
                                 <table style="width:100%; border-collapse:collapse; min-width:680px;">
                                     <thead>
-                                        <tr style="background:var(--neutral-100);">
+                                        <tr style="background:rgba(255,255,255,.05);">
                                             <th
-                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap;">
+                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap; color:#cbd5e1;">
                                                 Mínimo (€)</th>
                                             <th
-                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap;">
+                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap; color:#cbd5e1;">
                                                 Máximo (€)</th>
                                             <th
-                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap;">
+                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap; color:#cbd5e1;">
                                                 Taxa (%)</th>
                                             <th
-                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap;">
+                                                style="padding:.65rem .75rem; text-align:left; font-size:.825rem; white-space:nowrap; color:#cbd5e1;">
                                                 Parcela a Abater (€)</th>
                                             <th style="padding:.65rem .75rem; width:60px; text-align:center;"></th>
                                         </tr>
@@ -394,26 +360,26 @@
                                             <td style="padding:.4rem .5rem;">
                                                 <input type="number" step="0.01" min="0" name="irs_min[]"
                                                     value="<?php echo htmlspecialchars(number_format((float)($br['min_amount'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                                    class="search-input" style="width:100%;">
+                                                    class="am-inp" style="width:100%;">
                                             </td>
                                             <td style="padding:.4rem .5rem;">
                                                 <input type="number" step="0.01" min="0" name="irs_max[]"
-                                                    value="<?php echo $brMax; ?>" class="search-input"
+                                                    value="<?php echo $brMax; ?>" class="am-inp"
                                                     style="width:100%;" placeholder="Sem limite">
                                             </td>
                                             <td style="padding:.4rem .5rem;">
                                                 <div style="display:flex; align-items:center; gap:.3rem;">
                                                     <input type="number" step="0.01" min="0" max="100" name="irs_taxa[]"
-                                                        value="<?php echo $brRate; ?>" class="search-input"
+                                                        value="<?php echo $brRate; ?>" class="am-inp"
                                                         style="width:100%;">
                                                     <span
-                                                        style="white-space:nowrap; color:var(--text-secondary); font-size:.85rem;">%</span>
+                                                        style="white-space:nowrap; color:#94a3b8; font-size:.85rem;">%</span>
                                                 </div>
                                             </td>
                                             <td style="padding:.4rem .5rem;">
                                                 <input type="number" step="0.01" min="0" name="irs_parcela[]"
                                                     value="<?php echo htmlspecialchars(number_format((float)($br['parcela_abater'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                                    class="search-input" style="width:100%;">
+                                                    class="am-inp" style="width:100%;">
                                             </td>
                                             <td style="padding:.4rem .5rem; text-align:center;">
                                                 <button type="button"
@@ -430,19 +396,16 @@
                         </div>
 
                         <!-- ── BLOCO 5: Gorjetas ── -->
-                        <div class="settings-section-block">
-                            <div class="settings-section-block-header">
-                                <i class="fas fa-hand-holding-usd" style="color:#d97706;"></i>
-                                <span class="settings-section-block-title">Gorjetas</span>
-                            </div>
+                        <div class="am-section">
+                            <div class="am-sec-lbl"><i class="fas fa-hand-holding-usd"></i> Gorjetas</div>
 
                             <!-- Toggle switch -->
                             <div
-                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.75rem 1rem; background:#fff; border:1px solid var(--neutral-200); border-radius:10px; margin-bottom:.85rem;">
+                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.75rem 1rem; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:10px; margin-bottom:.85rem;">
                                 <div>
-                                    <div style="font-weight:600; font-size:.9rem; color:#374151;">Dividir gorjetas
+                                    <div style="font-weight:600; font-size:.9rem; color:#e2e8f0;">Dividir gorjetas
                                         automaticamente</div>
-                                    <div style="font-size:.78rem; color:#6b7280; margin-top:.2rem;">
+                                    <div style="font-size:.78rem; color:#64748b; margin-top:.2rem;">
                                         <strong>ON</strong> — inserir total do mês e dividir igualmente pelos
                                         funcionários
                                         ativos.<br>
@@ -459,13 +422,13 @@
                                             style="opacity:0; width:0; height:0; position:absolute;">
                                         <span id="toggleGorjetasTrack"
                                             style="position:absolute; inset:0; border-radius:26px; cursor:pointer; transition:.3s;
-                                background:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? '#2563eb' : '#d1d5db'; ?>;"></span>
+                                background:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? '#2563eb' : '#475569'; ?>;"></span>
                                         <span id="toggleGorjetasThumb"
                                             style="position:absolute; left:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? '24px' : '2px'; ?>;
                                 top:2px; width:22px; height:22px; border-radius:50%; background:#fff; transition:.3s; box-shadow:0 1px 3px rgba(0,0,0,.3);"></span>
                                     </div>
                                     <span id="lblGorjetasToggle"
-                                        style="font-weight:700; font-size:.9rem; color:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? '#2563eb' : '#9ca3af'; ?>;">
+                                        style="font-weight:700; font-size:.9rem; color:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? '#3b82f6' : '#64748b'; ?>;">
                                         <?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? 'ON' : 'OFF'; ?>
                                     </span>
                                 </label>
@@ -474,17 +437,17 @@
                             <!-- Campo total gorjetas (só visível quando ON) -->
                             <div id="gorjetasTotalBlock"
                                 style="display:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? 'grid' : 'none'; ?>; gap:.35rem;">
-                                <label style="font-size:.875rem; font-weight:600; color:#374151;">Total de Gorjetas do
+                                <label class="am-lbl">Total de Gorjetas do
                                     Mês
                                     (€)</label>
                                 <div style="display:flex; align-items:center; gap:.5rem;">
-                                    <input type="number" step="0.01" min="0" name="gorjetas_total_mes"
+                                    <input class="am-inp" type="number" step="0.01" min="0" name="gorjetas_total_mes"
                                         id="gorjetasTotalMes"
                                         value="<?php echo htmlspecialchars(number_format((float)($payrollAdminConfig['gorjetas_total_mes'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                        class="search-input" style="max-width:200px;" placeholder="0.00">
-                                    <span style="color:var(--text-secondary); font-weight:700;">€</span>
+                                        style="max-width:200px;" placeholder="0.00">
+                                    <span style="color:#94a3b8; font-weight:700;">€</span>
                                 </div>
-                                <small style="color:#6b7280; font-size:.78rem;">
+                                <small class="am-hint">
                                     Valor dividido igualmente por todos os funcionários ativos no período.
                                     <?php
                             $nAtivos = 0;
@@ -503,7 +466,7 @@
                                 </small>
                             </div>
                             <div id="gorjetasManualInfo"
-                                style="display:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? 'none' : 'flex'; ?>; align-items:center; gap:.5rem; padding:.6rem .8rem; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; font-size:.82rem; color:#92400e;">
+                                style="display:<?php echo (int)($payrollAdminConfig['gorjetas_auto_split'] ?? 0) === 1 ? 'none' : 'flex'; ?>; align-items:center; gap:.5rem; padding:.6rem .8rem; background:rgba(217,119,6,.12); border:1px solid rgba(217,119,6,.3); border-radius:8px; font-size:.82rem; color:#fbbf24;">
                                 <i class="fas fa-info-circle"></i>
                                 Modo manual: insira a gorjeta de cada funcionário clicando em <strong>"Editar"</strong>
                                 na folha
@@ -511,10 +474,9 @@
                             </div>
                         </div>
 
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-secondary" id="btnCancelPayrollModal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" id="btnSubmitPayrollConfig"
-                                style="padding:.65rem 1.25rem;">
+                        <div class="am-footer">
+                            <button type="button" class="am-btn-cancel" id="btnCancelPayrollModal">Cancelar</button>
+                            <button type="submit" class="am-btn-submit" id="btnSubmitPayrollConfig">
                                 <i class="fas fa-save"></i> Guardar Configuração
                             </button>
                         </div>
@@ -852,47 +814,48 @@
             </script>
         </section>
 
-    <div id="modalHorariosEstabelecimento" class="modal" style="display:none;">
-        <div class="modal-content horarios-modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-clock"></i>
-                    Horários do Estabelecimento
-                </h3>
-                <span id="btnCloseHorariosModal" class="modal-close">&times;</span>
+    <div id="modalHorariosEstabelecimento" class="modal" style="display:none; overflow-y:auto; padding:24px 16px 48px;">
+        <div class="am-sheet" style="max-width:480px;">
+            <button type="button" id="btnCloseHorariosModal" class="am-close" aria-label="Fechar">&times;</button>
+            <div class="am-header">
+                <div class="am-header-icon"><i class="fas fa-clock"></i></div>
+                <div>
+                    <h2 class="am-title">Horários do Estabelecimento</h2>
+                    <p class="am-subtitle">Usados para cálculo de atrasos e controlo de presença</p>
+                </div>
             </div>
-            <p class="modal-desc">
-                Defina os horários padrão do estabelecimento. Estes horários são usados para cálculo
-                de atrasos e controle de presença.
-            </p>
-            <form method="post" action="dashboard.php?section=definicoes" class="modal-form">
+            <form method="post" action="dashboard.php?section=definicoes">
                 <input type="hidden" name="action" value="save_estabelecimento_horarios">
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Abertura</label>
-                <input type="time" name="hora_abertura" class="search-input"
-                    value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_abertura'], 0, 5)); ?>"
-                    required>
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Encerramento</label>
-                <input type="time" name="hora_encerramento" class="search-input"
-                    value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_encerramento'], 0, 5)); ?>"
-                    required>
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Entrada
-                    Padrão Funcionários</label>
-                <input type="time" name="hora_entrada_padrao" class="search-input"
-                    value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_entrada_padrao'], 0, 5)); ?>"
-                    required>
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Tolerância
-                    de atraso (min)</label>
-                <input type="number" min="0" max="180" name="tolerancia_atraso_min"
-                    class="search-input"
-                    value="<?php echo (int)$estHorario['tolerancia_atraso_min']; ?>" required>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary"
-                        id="btnCancelHorariosModal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
+                <div class="am-section">
+                    <div class="am-g2">
+                        <div class="am-f">
+                            <label class="am-lbl">Abertura</label>
+                            <input class="am-inp" type="time" name="hora_abertura"
+                                value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_abertura'], 0, 5)); ?>"
+                                required>
+                        </div>
+                        <div class="am-f">
+                            <label class="am-lbl">Encerramento</label>
+                            <input class="am-inp" type="time" name="hora_encerramento"
+                                value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_encerramento'], 0, 5)); ?>"
+                                required>
+                        </div>
+                        <div class="am-f">
+                            <label class="am-lbl">Entrada Padrão Funcionários</label>
+                            <input class="am-inp" type="time" name="hora_entrada_padrao"
+                                value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_entrada_padrao'], 0, 5)); ?>"
+                                required>
+                        </div>
+                        <div class="am-f">
+                            <label class="am-lbl">Tolerância de atraso (min)</label>
+                            <input class="am-inp" type="number" min="0" max="180" name="tolerancia_atraso_min"
+                                value="<?php echo (int)$estHorario['tolerancia_atraso_min']; ?>" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="am-footer">
+                    <button type="button" class="am-btn-cancel" id="btnCancelHorariosModal">Cancelar</button>
+                    <button type="submit" class="am-btn-submit">
                         <i class="fas fa-save"></i> Guardar Horários
                     </button>
                 </div>
@@ -919,43 +882,48 @@
     </script>
 
     <div id="modalAdminProfile" class="modal"
-        style="display:none; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto;">
-        <div class="modal-content horarios-modal-content" style="margin-top:2.5rem;">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-user-cog"></i>
-                    Editar Perfil do Administrador
-                </h3>
-                <span id="btnCloseAdminProfileModal" class="modal-close">&times;</span>
+        style="display:none; align-items:flex-start; justify-content:center; padding:24px 16px 48px; overflow-y:auto;">
+        <div class="am-sheet" style="max-width:480px; margin-top:2.5rem;">
+            <button type="button" id="btnCloseAdminProfileModal" class="am-close" aria-label="Fechar">&times;</button>
+            <div class="am-header">
+                <div class="am-header-icon"><i class="fas fa-user-cog"></i></div>
+                <div>
+                    <h2 class="am-title">Editar Perfil do Administrador</h2>
+                    <p class="am-subtitle">Dados pessoais, palavra-passe e preferências de conta</p>
+                </div>
             </div>
-            <form method="post" action="dashboard.php?section=definicoes" class="modal-form">
+            <form method="post" action="dashboard.php?section=definicoes">
                 <input type="hidden" name="action" value="save_admin_profile">
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Nome</label>
-                <input type="text" name="admin_nome" class="search-input"
-                    value="<?php echo htmlspecialchars($adminUser['name'] ?? ''); ?>" required>
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Email</label>
-                <input type="email" name="admin_email" class="search-input"
-                    value="<?php echo htmlspecialchars($adminUser['email'] ?? ''); ?>" required>
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Telefone</label>
-                <input type="text" name="admin_telefone" class="search-input"
-                    value="<?php echo htmlspecialchars($adminUser['phone'] ?? ''); ?>">
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Nova
-                    Senha</label>
-                <input type="password" name="admin_nova_senha" class="search-input"
-                    placeholder="Deixe em branco para não alterar">
-                <label
-                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Confirmar
-                    Nova Senha</label>
-                <input type="password" name="admin_confirmar_senha" class="search-input"
-                    placeholder="Confirme a nova senha">
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary"
-                        id="btnCancelAdminProfileModal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
+                <div class="am-section">
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Nome</label>
+                        <input class="am-inp" type="text" name="admin_nome"
+                            value="<?php echo htmlspecialchars($adminUser['name'] ?? ''); ?>" required>
+                    </div>
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Email</label>
+                        <input class="am-inp" type="email" name="admin_email"
+                            value="<?php echo htmlspecialchars($adminUser['email'] ?? ''); ?>" required>
+                    </div>
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Telefone</label>
+                        <input class="am-inp" type="text" name="admin_telefone"
+                            value="<?php echo htmlspecialchars($adminUser['phone'] ?? ''); ?>">
+                    </div>
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Nova Senha</label>
+                        <input class="am-inp" type="password" name="admin_nova_senha"
+                            placeholder="Deixe em branco para não alterar">
+                    </div>
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Confirmar Nova Senha</label>
+                        <input class="am-inp" type="password" name="admin_confirmar_senha"
+                            placeholder="Confirme a nova senha">
+                    </div>
+                </div>
+                <div class="am-footer">
+                    <button type="button" class="am-btn-cancel" id="btnCancelAdminProfileModal">Cancelar</button>
+                    <button type="submit" class="am-btn-submit">
                         <i class="fas fa-save"></i> Salvar Alterações
                     </button>
                 </div>

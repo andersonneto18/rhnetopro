@@ -1444,49 +1444,6 @@ body.dark-theme .bulk-close:hover {
   .relatorios-container { padding: 1rem; }
 }
 
-          
-     #modalConfiguracaoSalarial .search-input {
-                background: #ffffff !important;
-                color: #0f172a !important;
-                border: 1px solid #cbd5e1 !important;
-            }
-
-            #modalConfiguracaoSalarial .search-input::placeholder {
-                color: #94a3b8 !important;
-            }
-
-            #modalConfiguracaoSalarial .modal-content {
-                color: #1f2937;
-            }
-
-            #modalConfiguracaoSalarial .modal-content [style*="var(--text-primary)"] {
-                color: #1f2937 !important;
-            }
-
-            #modalConfiguracaoSalarial .modal-content [style*="var(--text-secondary)"] {
-                color: #64748b !important;
-            }
-
-            #modalConfiguracaoSalarial form label,
-            #modalConfiguracaoSalarial form th,
-            #modalConfiguracaoSalarial form td,
-            #modalConfiguracaoSalarial form span {
-                color: #334155;
-            }
-
-            #modalConfiguracaoSalarial form small,
-            #modalConfiguracaoSalarial form p {
-                color: #64748b !important;
-            }
-
-            #modalConfiguracaoSalarial form input[type="number"],
-            #modalConfiguracaoSalarial form select {
-                background: #ffffff;
-                color: #0f172a;
-            }
-
-  
-
         .recibo-row td {
             padding: .48rem .5rem;
             font-size: 1.01rem;

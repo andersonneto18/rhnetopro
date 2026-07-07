@@ -71,6 +71,22 @@
                         <h3 class="card-title">Plano e Assinatura</h3>
                     </div>
                     <div class="card-content">
+                        <div style="display:grid; gap:.4rem; font-size:.85rem; margin-bottom:.75rem;">
+                            <div style="display:flex; justify-content:space-between; gap:.5rem;">
+                                <span style="color:var(--text-secondary);">Plano atual</span>
+                                <strong><?php echo htmlspecialchars($subscriptionPlanName !== '' ? $subscriptionPlanName : 'RHNeto Pro Premium'); ?></strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; gap:.5rem;">
+                                <span style="color:var(--text-secondary);">Preço</span>
+                                <strong>2,00 € / mês</strong>
+                            </div>
+                            <?php if ($planStatusRaw === 'active' && $subscriptionRenewsAtIso !== ''): ?>
+                            <div style="display:flex; justify-content:space-between; gap:.5rem;">
+                                <span style="color:var(--text-secondary);">Próxima renovação</span>
+                                <strong><?php echo htmlspecialchars(date('d/m/Y', strtotime($subscriptionRenewsAtIso))); ?></strong>
+                            </div>
+                            <?php endif; ?>
+                        </div>
                         <div style="display:inline-block; padding:.3rem .75rem; border-radius:999px; font-size:.8rem; font-weight:700; background:<?php echo $planStatusBg; ?>; color:<?php echo $planStatusColor; ?>;">
                             <?php echo htmlspecialchars($planStatusLabel); ?>
                         </div>
@@ -81,11 +97,19 @@
                         <?php else: ?>
                         <p style="margin-top:.6rem;">Assine para continuar a usar o painel sem interrupções.</p>
                         <?php endif; ?>
-                        <div style="margin-top: 1rem;">
+                        <div style="margin-top: 1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
                             <a href="../planos/" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; text-decoration:none; display:inline-flex;">
                                 <i class="fas fa-bolt"></i>
                                 <span><?php echo $planStatusRaw === 'active' ? 'Ver plano' : 'Assinar agora'; ?></span>
                             </a>
+                            <?php if ($subscriptionStripeCustomerId !== ''): ?>
+                            <form method="POST" action="../planos/create-portal-session.php" style="display:inline;">
+                                <button type="submit" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Gerir Assinatura</span>
+                                </button>
+                            </form>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

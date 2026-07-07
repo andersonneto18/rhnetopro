@@ -2052,19 +2052,31 @@ $trialSubscriptionStatus = 'trial';
 $trialEndsAtIso = '';
 $trialBannerVisible = false;
 $trialExpired = false;
+$subscriptionStripeCustomerId = '';
+$subscriptionPlanName = '';
+$subscriptionRenewsAtIso = '';
 
 try {
-    $trialStmt = $pdo->prepare("SELECT subscription_status, trial_ends_at FROM usuarios WHERE id = ? LIMIT 1");
+    $trialStmt = $pdo->prepare("SELECT subscription_status, trial_ends_at, stripe_customer_id, subscription_plan, subscription_end_date FROM usuarios WHERE id = ? LIMIT 1");
     $trialStmt->execute([$user_id]);
     $trialRow = $trialStmt->fetch(PDO::FETCH_ASSOC) ?: null;
 
     if (!$trialRow && $loggedInClientId > 0) {
-        $trialStmt = $pdo->prepare("SELECT subscription_status, trial_ends_at FROM clients WHERE id = ? LIMIT 1");
+        $trialStmt = $pdo->prepare("SELECT subscription_status, trial_ends_at, stripe_customer_id, subscription_plan, subscription_end_date FROM clients WHERE id = ? LIMIT 1");
         $trialStmt->execute([$loggedInClientId]);
         $trialRow = $trialStmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
     if ($trialRow) {
+        $subscriptionStripeCustomerId = trim((string)($trialRow['stripe_customer_id'] ?? ''));
+        $subscriptionPlanName = trim((string)($trialRow['subscription_plan'] ?? ''));
+        $subscriptionEndDateValue = trim((string)($trialRow['subscription_end_date'] ?? ''));
+        if ($subscriptionEndDateValue !== '') {
+            $subscriptionEndTs = strtotime($subscriptionEndDateValue);
+            if ($subscriptionEndTs !== false) {
+                $subscriptionRenewsAtIso = date(DATE_ATOM, $subscriptionEndTs);
+            }
+        }
         $trialSubscriptionStatus = trim((string)($trialRow['subscription_status'] ?? 'trial')) ?: 'trial';
         $trialEndsAtValue = trim((string)($trialRow['trial_ends_at'] ?? ''));
 

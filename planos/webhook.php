@@ -96,8 +96,15 @@ function ensure_stripe_columns(PDO $pdo): void
     }
 }
 
-function apply_status_for_invoice(PDO $pdo, ?string $customerId, ?string $subscriptionId, string $status): void
-{
+function apply_status_for_invoice(
+    PDO $pdo,
+    ?string $customerId,
+    ?string $subscriptionId,
+    string $status,
+    ?string $periodStart = null,
+    ?string $periodEnd = null,
+    ?string $planName = null
+): void {
     $customerId = trim((string)$customerId);
     $subscriptionId = trim((string)$subscriptionId);
 
@@ -120,13 +127,27 @@ function apply_status_for_invoice(PDO $pdo, ?string $customerId, ?string $subscr
 
     $whereSql = implode(' OR ', $whereParts);
 
-    $sqlUsers = "UPDATE usuarios SET subscription_status = ? WHERE {$whereSql}";
-    $stmtUsers = $pdo->prepare($sqlUsers);
-    $stmtUsers->execute(array_merge([$status], $params));
+    $setParts = ['subscription_status = ?'];
+    $setParams = [$status];
+    if ($periodStart !== null) {
+        $setParts[] = 'subscription_start_date = ?';
+        $setParams[] = $periodStart;
+    }
+    if ($periodEnd !== null) {
+        $setParts[] = 'subscription_end_date = ?';
+        $setParams[] = $periodEnd;
+    }
+    if ($planName !== null) {
+        $setParts[] = 'subscription_plan = ?';
+        $setParams[] = $planName;
+    }
+    $setSql = implode(', ', $setParts);
 
-    $sqlClients = "UPDATE clients SET subscription_status = ? WHERE {$whereSql}";
-    $stmtClients = $pdo->prepare($sqlClients);
-    $stmtClients->execute(array_merge([$status], $params));
+    $sqlUsers = "UPDATE usuarios SET {$setSql} WHERE {$whereSql}";
+    $pdo->prepare($sqlUsers)->execute(array_merge($setParams, $params));
+
+    $sqlClients = "UPDATE clients SET {$setSql} WHERE {$whereSql}";
+    $pdo->prepare($sqlClients)->execute(array_merge($setParams, $params));
 }
 
 function handle_subscription_updated(PDO $pdo, object $subscription): void
@@ -151,7 +172,15 @@ function handle_subscription_updated(PDO $pdo, object $subscription): void
     ];
 
     $internalStatus = $statusMap[$stripeStatus] ?? 'blocked';
-    apply_status_for_invoice($pdo, $customerId, $subscriptionId, $internalStatus);
+
+    $periodStart = !empty($subscription->current_period_start)
+        ? date('Y-m-d H:i:s', (int)$subscription->current_period_start)
+        : null;
+    $periodEnd = !empty($subscription->current_period_end)
+        ? date('Y-m-d H:i:s', (int)$subscription->current_period_end)
+        : null;
+
+    apply_status_for_invoice($pdo, $customerId, $subscriptionId, $internalStatus, $periodStart, $periodEnd, 'RHNeto Pro Premium');
 }
 
 function handle_subscription_deleted(PDO $pdo, object $subscription): void
@@ -170,6 +199,22 @@ function handle_checkout_completed(PDO $pdo, object $session): void
         return;
     }
 
+    $periodStart = null;
+    $periodEnd = null;
+    try {
+        $subscriptionClass = '\\Stripe\\Subscription';
+        $subscription = $subscriptionClass::retrieve($subscriptionId);
+        if (!empty($subscription->current_period_start)) {
+            $periodStart = date('Y-m-d H:i:s', (int)$subscription->current_period_start);
+        }
+        if (!empty($subscription->current_period_end)) {
+            $periodEnd = date('Y-m-d H:i:s', (int)$subscription->current_period_end);
+        }
+    } catch (\Throwable $e) {
+        error_log('Nao foi possivel obter periodo da subscricao no checkout: ' . $e->getMessage());
+    }
+    $planName = 'RHNeto Pro Premium';
+
     $metadata = (array)($session->metadata ?? []);
     $userId = (int)($metadata['user_id'] ?? 0);
     $clientId = (int)($metadata['client_id'] ?? 0);
@@ -184,19 +229,21 @@ function handle_checkout_completed(PDO $pdo, object $session): void
         if ($userId > 0) {
             $stmtUser = $pdo->prepare(
                 'UPDATE usuarios
-                 SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?
+                 SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?,
+                     subscription_start_date = ?, subscription_end_date = ?, subscription_plan = ?
                  WHERE id = ?'
             );
-            $stmtUser->execute([$customerId, $subscriptionId, 'active', $userId]);
+            $stmtUser->execute([$customerId, $subscriptionId, 'active', $periodStart, $periodEnd, $planName, $userId]);
 
             if ($stmtUser->rowCount() > 0) {
                 $stmtClientFromUser = $pdo->prepare(
                     'UPDATE clients c
                      INNER JOIN usuarios u ON u.client_id = c.id
-                     SET c.stripe_customer_id = ?, c.stripe_subscription_id = ?, c.subscription_status = ?
+                     SET c.stripe_customer_id = ?, c.stripe_subscription_id = ?, c.subscription_status = ?,
+                         c.subscription_start_date = ?, c.subscription_end_date = ?, c.subscription_plan = ?
                      WHERE u.id = ?'
                 );
-                $stmtClientFromUser->execute([$customerId, $subscriptionId, 'active', $userId]);
+                $stmtClientFromUser->execute([$customerId, $subscriptionId, 'active', $periodStart, $periodEnd, $planName, $userId]);
                 $pdo->commit();
                 return;
             }
@@ -205,18 +252,20 @@ function handle_checkout_completed(PDO $pdo, object $session): void
         if ($clientId > 0) {
             $stmtClient = $pdo->prepare(
                 'UPDATE clients
-                 SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?
+                 SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?,
+                     subscription_start_date = ?, subscription_end_date = ?, subscription_plan = ?
                  WHERE id = ?'
             );
-            $stmtClient->execute([$customerId, $subscriptionId, 'active', $clientId]);
+            $stmtClient->execute([$customerId, $subscriptionId, 'active', $periodStart, $periodEnd, $planName, $clientId]);
 
             if ($stmtClient->rowCount() > 0) {
                 $stmtUsers = $pdo->prepare(
                     'UPDATE usuarios
-                     SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?
+                     SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?,
+                         subscription_start_date = ?, subscription_end_date = ?, subscription_plan = ?
                      WHERE client_id = ?'
                 );
-                $stmtUsers->execute([$customerId, $subscriptionId, 'active', $clientId]);
+                $stmtUsers->execute([$customerId, $subscriptionId, 'active', $periodStart, $periodEnd, $planName, $clientId]);
                 $pdo->commit();
                 return;
             }
@@ -226,19 +275,21 @@ function handle_checkout_completed(PDO $pdo, object $session): void
         if ($email !== '') {
             $stmtByEmail = $pdo->prepare(
                 'UPDATE usuarios
-                 SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?
+                 SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = ?,
+                     subscription_start_date = ?, subscription_end_date = ?, subscription_plan = ?
                  WHERE email = ?'
             );
-            $stmtByEmail->execute([$customerId, $subscriptionId, 'active', $email]);
+            $stmtByEmail->execute([$customerId, $subscriptionId, 'active', $periodStart, $periodEnd, $planName, $email]);
 
             if ($stmtByEmail->rowCount() > 0) {
                 $stmtClientsByEmail = $pdo->prepare(
                     'UPDATE clients c
                      INNER JOIN usuarios u ON u.client_id = c.id
-                     SET c.stripe_customer_id = ?, c.stripe_subscription_id = ?, c.subscription_status = ?
+                     SET c.stripe_customer_id = ?, c.stripe_subscription_id = ?, c.subscription_status = ?,
+                         c.subscription_start_date = ?, c.subscription_end_date = ?, c.subscription_plan = ?
                      WHERE u.email = ?'
                 );
-                $stmtClientsByEmail->execute([$customerId, $subscriptionId, 'active', $email]);
+                $stmtClientsByEmail->execute([$customerId, $subscriptionId, 'active', $periodStart, $periodEnd, $planName, $email]);
             }
         }
 
@@ -260,6 +311,11 @@ if ($webhookSecret === null) {
         'message' => 'Variavel de ambiente STRIPE_WEBHOOK_SECRET nao definida.',
     ]);
     exit();
+}
+
+$stripeSecretKey = env_value('STRIPE_SECRET_KEY');
+if ($stripeSecretKey !== null) {
+    \Stripe\Stripe::setApiKey($stripeSecretKey);
 }
 
 $payload = file_get_contents('php://input') ?: '';
@@ -297,7 +353,7 @@ try {
             (string)($eventObject->subscription ?? ''),
             'blocked'
         );
-    } elseif ($eventType === 'customer.subscription.updated' && is_object($eventObject)) {
+    } elseif (($eventType === 'customer.subscription.updated' || $eventType === 'customer.subscription.created') && is_object($eventObject)) {
         handle_subscription_updated($pdo, $eventObject);
     } elseif ($eventType === 'customer.subscription.deleted' && is_object($eventObject)) {
         handle_subscription_deleted($pdo, $eventObject);

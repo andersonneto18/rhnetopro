@@ -566,6 +566,18 @@
             animation: statusPulse 2s infinite;
         }
 
+        /* Tabela de Assiduidade: Status mais estreito para o Roteiro ganhar espaço */
+        #presencaTable .fr-th-status,
+        #presencaTable .fr-td-status {
+            width: 130px;
+            max-width: 130px;
+        }
+
+        #presencaTable .fr-th-roteiro,
+        #presencaTable .fr-td-roteiro {
+            width: auto;
+        }
+
         .status-active {
             background: linear-gradient(135deg, #38d39f 0%, #27ae60 100%);
             color: #fff;

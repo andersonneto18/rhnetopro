@@ -555,7 +555,7 @@
                         <tr class="fr-thead-row">
                             <th class="fr-th-emp">Funcionário</th>
                             <th class="fr-th-status">Status</th>
-                            <th>Roteiro</th>
+                            <th class="fr-th-roteiro">Roteiro</th>
                             <th class="fr-th-acts">Ações</th>
                         </tr>
                     </thead>
@@ -1105,7 +1105,7 @@
                                 <div class="fr-roteiro">
                                     <?php if ($_totalEventosCell === 0): ?>
                                         <span class="fr-roteiro-label">Sem registo</span>
-                                    <?php elseif ($_totalEventosCell <= 3): ?>
+                                    <?php elseif ($_totalEventosCell <= 5): ?>
                                         <?php foreach ($_timelineEventos as $_iCell => $_evCell): ?>
                                             <?php if ($_iCell > 0): ?><span class="fr-roteiro-sep"></span><?php endif; ?>
                                             <span class="fr-roteiro-item" title="<?php echo htmlspecialchars($_evCell['label'] . ($_evCell['hora'] ? ' ' . $_evCell['hora'] : '')); ?>">

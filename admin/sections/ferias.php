@@ -441,15 +441,18 @@
                                 <button type="submit" class="fr-btn fr-btn-deact" title="Cancelar"><i class="fas fa-ban"></i></button>
                             </form>
                             <?php elseif ($fStatusFilterKey === 'em_curso'): ?>
-                            <?php $canCancelInCourse = ($fInicioIso !== '' && $todayDate === $fInicioIso); ?>
+                            <?php $isFirstDayOfFerias = ($fInicioIso !== '' && $todayDate === $fInicioIso); ?>
                             <form method="POST" style="display:contents;" class="ferias-cancel-form"
-                                data-confirm-message="Cancelar férias em curso? Só permitido no primeiro dia.">
+                                data-confirm-message="<?php echo $isFirstDayOfFerias
+                                    ? 'Cancelar estas férias?'
+                                    : 'Encerrar estas férias hoje? Os dias já gozados até ontem continuam a contar, os restantes voltam ao saldo do funcionário.'; ?>">
                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                 <input type="hidden" name="action" value="cancel_ferias_admin">
                                 <input type="hidden" name="ferias_id" value="<?php echo $feriasIdRow; ?>">
-                                <button type="submit" class="fr-btn fr-btn-deact <?php echo $canCancelInCourse ? '' : 'fr-btn-off'; ?>"
-                                    title="<?php echo $canCancelInCourse ? 'Cancelar' : 'Só pode cancelar no primeiro dia'; ?>"
-                                    <?php echo $canCancelInCourse ? '' : 'disabled'; ?>><i class="fas fa-ban"></i></button>
+                                <button type="submit" class="fr-btn fr-btn-deact"
+                                    title="<?php echo $isFirstDayOfFerias ? 'Cancelar' : 'Encerrar antecipadamente'; ?>">
+                                    <i class="fas <?php echo $isFirstDayOfFerias ? 'fa-ban' : 'fa-door-open'; ?>"></i>
+                                </button>
                             </form>
                             <?php endif; ?>
                         </div>

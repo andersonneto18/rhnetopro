@@ -1844,13 +1844,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 if ($solicitacaoAction === 'cancel_ferias_admin') {
                     $canCancel = false;
+                    $encerrarAntecipado = false;
                     if ($statusAtual === 'aprovada') {
                         if ($inicioAtual !== '' && $todayIso < $inicioAtual) {
-                            // Agendada: pode cancelar livremente.
+                            // Agendada (ainda não começou): pode cancelar livremente, 0 dias usados.
                             $canCancel = true;
                         } elseif ($inicioAtual !== '' && $fimAtual !== '' && $todayIso >= $inicioAtual && $todayIso <= $fimAtual) {
-                            // Em curso: regra restrita - apenas no primeiro dia.
-                            $canCancel = ($todayIso === $inicioAtual);
+                            if ($todayIso === $inicioAtual) {
+                                // Primeiro dia: ainda não usou nenhum dia, cancela totalmente.
+                                $canCancel = true;
+                            } else {
+                                // Em curso, já passou o primeiro dia: encerra antecipadamente em vez de
+                                // bloquear — conta como usados só os dias já decorridos (até ontem).
+                                $canCancel = true;
+                                $encerrarAntecipado = true;
+                            }
                         }
                     }
 
@@ -1859,8 +1867,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         exit;
                     }
 
-                    $stmtCancel = $pdo->prepare('UPDATE ferias SET status = ? WHERE id = ?');
-                    $stmtCancel->execute(['cancelada', $feriasId]);
+                    if ($encerrarAntecipado) {
+                        $novoFim = date('Y-m-d', strtotime($todayIso . ' -1 day'));
+                        $stmtCancel = $pdo->prepare('UPDATE ferias SET data_fim = ? WHERE id = ?');
+                        $stmtCancel->execute([$novoFim, $feriasId]);
+                    } else {
+                        $stmtCancel = $pdo->prepare('UPDATE ferias SET status = ? WHERE id = ?');
+                        $stmtCancel->execute(['cancelada', $feriasId]);
+                    }
 
                     $feriasEmployeeId = (int)($feriasRow['employee_id'] ?? 0);
                     if ($feriasEmployeeId > 0) {

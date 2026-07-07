@@ -904,7 +904,8 @@
                                             $status_texto = 'FALTA';
                                             $status_classe = 'status-falta';
                                         } elseif ($agoraTs > $turnoTs) {
-                                            $status_texto = 'ATRASADO';
+                                            $_minAtrasoAtual = (int)round(($agoraTs - $turnoTs) / 60);
+                                            $status_texto = 'ATRASADO (' . $_minAtrasoAtual . ' min)';
                                             $status_classe = 'status-warning';
                                         } else {
                                             $status_texto = 'NÃO REGISTADO';

@@ -555,7 +555,7 @@ if (!$pontoAberto && !$lastPonto && $turnoHorarioInicio) {
     $agoraTs    = time();
     $inicioTs   = strtotime('today ' . $turnoHorarioInicio);
     $diffAtMin  = (int)round(($agoraTs - $inicioTs) / 60);
-    if ($diffAtMin > $toleranciaMin && $diffAtMin < 240) {
+    if ($diffAtMin > 0 && $diffAtMin < 240) {
         $alertaAtraso = ['inicio' => substr($turnoHorarioInicio, 0, 5), 'minutos' => $diffAtMin];
     }
 }
@@ -1069,7 +1069,7 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
             <div class="presenca-alert-banner">
                 <i class="fas fa-exclamation-triangle"></i>
                 O seu turno começou às <strong><?= htmlspecialchars($alertaAtraso['inicio']) ?></strong>.
-                Está com <strong><?= $alertaAtraso['minutos'] ?> minutos de atraso</strong> — registe a entrada agora.
+                Está com <strong><?= $alertaAtraso['minutos'] ?> minuto<?= $alertaAtraso['minutos'] !== 1 ? 's' : '' ?> de atraso</strong> — registe a entrada agora.
             </div>
             <?php endif; ?>
 

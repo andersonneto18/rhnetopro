@@ -5,6 +5,7 @@ if (empty($_SESSION['employee_id'])) {
     exit;
 }
 require_once '../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 $employee_id = (int)$_SESSION['employee_id'];
 $employee_name = $_SESSION['employee_name'] ?? 'Funcionário';

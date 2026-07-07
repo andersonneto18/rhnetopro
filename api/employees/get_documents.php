@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 // Verifica autenticação
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['client_id'])) {

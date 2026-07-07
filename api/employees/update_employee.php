@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 require_once '../../includes/activity_logger.php';
 
 // Verifica autenticação

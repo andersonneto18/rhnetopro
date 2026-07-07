@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 require_once '../../includes/activity_logger.php';
 header('Content-Type: application/json; charset=utf-8');
 

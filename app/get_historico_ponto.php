@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 require_once '../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 if (empty($_SESSION['employee_id']) || empty($_SESSION['client_id'])) {
     echo json_encode(['success' => false, 'message' => 'Não autorizado']);

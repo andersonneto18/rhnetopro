@@ -2,6 +2,7 @@
 // api/employees/validate_attendance.php
 session_start();
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['client_id'])) {

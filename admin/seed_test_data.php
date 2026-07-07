@@ -14,6 +14,7 @@ if (!$isCliMode && (!isset($_SESSION['user_id']) || empty($_SESSION['client_id']
 }
 
 require_once '../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 try {
     $pdo = new PDO(

@@ -3,6 +3,8 @@
 
 header('Content-Type: application/json; charset=utf-8');
 
+date_default_timezone_set('Europe/Lisbon');
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

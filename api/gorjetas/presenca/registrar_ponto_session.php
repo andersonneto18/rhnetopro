@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 if (empty($_SESSION['employee_id'])) {
     echo json_encode(['success' => false, 'message' => 'Não autenticado']);

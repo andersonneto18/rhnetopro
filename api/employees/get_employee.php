@@ -2,6 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 $response = ['success' => false, 'message' => ''];
 

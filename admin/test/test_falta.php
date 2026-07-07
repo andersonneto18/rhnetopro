@@ -5,6 +5,7 @@
 // =====================================================================
 session_start();
 require_once '../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 if (empty($_SESSION['user_id']) || empty($_SESSION['client_id'])) {
     header('Location: login.php');

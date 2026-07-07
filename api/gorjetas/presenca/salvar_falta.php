@@ -2,6 +2,7 @@
 
 session_start();
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 // Adiciona log para debug
 error_log("Iniciando registro de falta");

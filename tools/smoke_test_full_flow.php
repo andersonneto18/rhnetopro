@@ -7,6 +7,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 require_once __DIR__ . '/../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     fwrite(STDERR, "Falha ao iniciar conexao PDO.\n");

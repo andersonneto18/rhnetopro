@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once '../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 $employeeId = (int)$_SESSION['employee_id'];
 $clientIdSession = (int)($_SESSION['client_id'] ?? 0);

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 // Simular uma sessão de admin (para teste)
 if (!isset($_SESSION['user_id'])) {

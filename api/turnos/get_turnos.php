@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../config/db_connection.php';
+date_default_timezone_set('Europe/Lisbon');
 
 // Sempre retornar JSON
 header('Content-Type: application/json; charset=utf-8');

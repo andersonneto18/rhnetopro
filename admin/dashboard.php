@@ -4675,45 +4675,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
- <script>
-                                (function() {
-                                    var modal = document.getElementById('modalAdminProfile');
-                                    // Seleciona o botão "Editar Perfil" do card correto
-                                    var adminCard = Array.from(document.querySelectorAll('.info-card')).find(function(card) {
-                                        var title = card.querySelector('.card-title');
-                                        return title && title.innerText.trim() === 'Perfil do Administrador';
-                                    });
-                                    var btn = adminCard ? adminCard.querySelector('.btn.btn-primary') : null;
-
-                                    function openModal() {
-                                        if (modal) {
-                                            modal.style.display = 'flex';
-                                            window.scrollTo({
-                                                top: 0,
-                                                behavior: 'smooth'
-                                            });
-                                        }
-                                    }
-
-                                    function closeModal() {
-                                        if (modal) modal.style.display = 'none';
-                                    }
-                                    document.getElementById('btnCloseAdminProfileModal') && document.getElementById('btnCloseAdminProfileModal').addEventListener('click', closeModal);
-                                    document.getElementById('btnCancelAdminProfileModal') && document.getElementById('btnCancelAdminProfileModal').addEventListener('click', closeModal);
-                                    if (modal) {
-                                        modal.addEventListener('click', function(e) {
-                                            if (e.target === modal) closeModal();
-                                        });
-                                    }
-                                    if (btn) {
-                                        btn.addEventListener('click', function(e) {
-                                            e.preventDefault();
-                                            openModal();
-                                        });
-                                    }
-                                })();
-                            </script>
-
 <style>
     /* Relatório Tabs Styling */
     .relatorios-cards-grid .relatorio-tab {

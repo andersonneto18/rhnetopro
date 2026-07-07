@@ -61,6 +61,17 @@
                 }
             }
             ?>
+            <style>
+                #definicoes-section .settings-plan-rows { display: grid; gap: .4rem; font-size: .85rem; margin-bottom: .85rem; }
+                #definicoes-section .settings-plan-row { display: flex; justify-content: space-between; gap: .5rem; }
+                #definicoes-section .settings-plan-row span:first-child { color: var(--text-secondary); }
+                #definicoes-section .settings-badge { display: inline-flex; align-items: center; padding: .3rem .75rem; border-radius: 999px; font-size: .8rem; font-weight: 700; }
+                #definicoes-section .settings-card-note { margin-top: .6rem; }
+                #definicoes-section .settings-card-actions { margin-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+                #definicoes-section .settings-card-actions form { display: inline; }
+                #definicoes-section .info-card--soon { opacity: .7; }
+                #definicoes-section .settings-soon-badge { display: inline-flex; align-items: center; padding: .15rem .55rem; border-radius: 999px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: var(--neutral-100, #f3f4f6); color: var(--text-secondary, #6b7280); margin-left: .5rem; }
+            </style>
             <div class="card-grid">
 
                 <div class="info-card">
@@ -71,39 +82,39 @@
                         <h3 class="card-title">Plano e Assinatura</h3>
                     </div>
                     <div class="card-content">
-                        <div style="display:grid; gap:.4rem; font-size:.85rem; margin-bottom:.75rem;">
-                            <div style="display:flex; justify-content:space-between; gap:.5rem;">
-                                <span style="color:var(--text-secondary);">Plano atual</span>
+                        <div class="settings-plan-rows">
+                            <div class="settings-plan-row">
+                                <span>Plano atual</span>
                                 <strong><?php echo htmlspecialchars($subscriptionPlanName !== '' ? $subscriptionPlanName : 'RHNeto Pro Premium'); ?></strong>
                             </div>
-                            <div style="display:flex; justify-content:space-between; gap:.5rem;">
-                                <span style="color:var(--text-secondary);">Preço</span>
+                            <div class="settings-plan-row">
+                                <span>Preço</span>
                                 <strong>2,00 € / mês</strong>
                             </div>
                             <?php if ($planStatusRaw === 'active' && $subscriptionRenewsAtIso !== ''): ?>
-                            <div style="display:flex; justify-content:space-between; gap:.5rem;">
-                                <span style="color:var(--text-secondary);">Próxima renovação</span>
+                            <div class="settings-plan-row">
+                                <span>Próxima renovação</span>
                                 <strong><?php echo htmlspecialchars(date('d/m/Y', strtotime($subscriptionRenewsAtIso))); ?></strong>
                             </div>
                             <?php endif; ?>
                         </div>
-                        <div style="display:inline-block; padding:.3rem .75rem; border-radius:999px; font-size:.8rem; font-weight:700; background:<?php echo $planStatusBg; ?>; color:<?php echo $planStatusColor; ?>;">
+                        <div class="settings-badge" style="background:<?php echo $planStatusBg; ?>; color:<?php echo $planStatusColor; ?>;">
                             <?php echo htmlspecialchars($planStatusLabel); ?>
                         </div>
                         <?php if ($planTrialText !== ''): ?>
-                        <p style="margin-top:.6rem;"><?php echo htmlspecialchars($planTrialText); ?></p>
+                        <p class="settings-card-note"><?php echo htmlspecialchars($planTrialText); ?></p>
                         <?php elseif ($planStatusRaw === 'active'): ?>
-                        <p style="margin-top:.6rem;">A sua assinatura está ativa. Obrigado por usar o RHNeto Pro.</p>
+                        <p class="settings-card-note">A sua assinatura está ativa. Obrigado por usar o RHNeto Pro.</p>
                         <?php else: ?>
-                        <p style="margin-top:.6rem;">Assine para continuar a usar o painel sem interrupções.</p>
+                        <p class="settings-card-note">Assine para continuar a usar o painel sem interrupções.</p>
                         <?php endif; ?>
-                        <div style="margin-top: 1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+                        <div class="settings-card-actions">
                             <a href="../planos/" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; text-decoration:none; display:inline-flex;">
                                 <i class="fas fa-bolt"></i>
                                 <span><?php echo $planStatusRaw === 'active' ? 'Ver plano' : 'Assinar agora'; ?></span>
                             </a>
                             <?php if ($subscriptionStripeCustomerId !== ''): ?>
-                            <form method="POST" action="../planos/create-portal-session.php" style="display:inline;">
+                            <form method="POST" action="../planos/create-portal-session.php">
                                 <button type="submit" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
                                     <i class="fas fa-credit-card"></i>
                                     <span>Gerir Assinatura</span>
@@ -123,24 +134,13 @@
                     </div>
                     <div class="card-content">
                         <p>Defina horário padrão para cálculo automático de atraso no módulo de presença.</p>
-                        <div style="margin-top: 1rem;">
+                        <div class="settings-card-actions">
                             <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
                                 onclick="document.getElementById('modalHorariosEstabelecimento').style.display='flex'">
                                 <i class="fas fa-clock"></i>
                                 <span>Configurar Horários</span>
                             </button>
                         </div>
-
-
-
-
-
-
-
-
-
-
-                    
                     </div>
                 </div>
 
@@ -153,7 +153,7 @@
                     </div>
                     <div class="card-content">
                         <p>Definir parâmetros básicos de registo mensal (sem cálculos fiscais automáticos).</p>
-                        <div style="margin-top: 1rem;">
+                        <div class="settings-card-actions">
                             <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
                                 onclick="document.getElementById('modalConfiguracaoSalarial').style.display='flex'">
                                 <i class="fas fa-cogs"></i>
@@ -171,73 +171,30 @@
                     </div>
                     <div class="card-content">
                         <p>Alterar dados pessoais, palavra-passe e preferências de conta.</p>
-                        <div style="margin-top: 1rem;">
-                            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
+                        <div class="settings-card-actions">
+                            <button type="button" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
+                                onclick="document.getElementById('modalAdminProfile').style.display='flex'">
                                 <i class="fas fa-edit"></i>
                                 <span>Editar Perfil</span>
                             </button>
-                            
-                           
                         </div>
                     </div>
                 </div>
 
-                <div class="info-card">
+                <div class="info-card info-card--soon">
                     <div class="card-header">
                         <div class="card-icon" style="background: var(--secondary-100); color: var(--secondary-600);">
                             <i class="fas fa-building"></i>
                         </div>
-                        <h3 class="card-title">Dados da Empresa</h3>
+                        <h3 class="card-title">Dados da Empresa <span class="settings-soon-badge">Em breve</span></h3>
                     </div>
                     <div class="card-content">
                         <p>Configurar informações da empresa, logotipo e dados fiscais.</p>
-                        <div style="margin-top: 1rem;">
-                            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
-                                <i class="fas fa-edit"></i>
+                        <div class="settings-card-actions">
+                            <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;" disabled title="Funcionalidade ainda não disponível">
+                                <i class="fas fa-lock"></i>
                                 <span>Configurar</span>
                             </button>
-                            
-                            <script>
-                            (function() {
-                                var modal = document.getElementById('modalEmpresa');
-                                // Seleciona o botão "Configurar" do card correto
-                                var empresaCard = Array.from(document.querySelectorAll('.info-card')).find(function(
-                                    card) {
-                                    var title = card.querySelector('.card-title');
-                                    return title && title.innerText.trim() === 'Dados da Empresa';
-                                });
-                                var btn = empresaCard ? empresaCard.querySelector('.btn.btn-secondary') : null;
-
-                                function openModal() {
-                                    if (modal) {
-                                        modal.style.display = 'flex';
-                                        window.scrollTo({
-                                            top: 0,
-                                            behavior: 'smooth'
-                                        });
-                                    }
-                                }
-
-                                function closeModal() {
-                                    if (modal) modal.style.display = 'none';
-                                }
-                                document.getElementById('btnCloseEmpresaModal') && document.getElementById(
-                                    'btnCloseEmpresaModal').addEventListener('click', closeModal);
-                                document.getElementById('btnCancelEmpresaModal') && document.getElementById(
-                                    'btnCancelEmpresaModal').addEventListener('click', closeModal);
-                                if (modal) {
-                                    modal.addEventListener('click', function(e) {
-                                        if (e.target === modal) closeModal();
-                                    });
-                                }
-                                if (btn) {
-                                    btn.addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                        openModal();
-                                    });
-                                }
-                            })();
-                            </script>
                         </div>
                     </div>
                 </div>
@@ -251,7 +208,7 @@
                     </div>
                     <div class="card-content">
                         <p>Aceda rapidamente às notificações e à lista de mensagens enviadas para gerir envios no app.</p>
-                        <div style="margin-top: 1rem;">
+                        <div class="settings-card-actions">
                             <button type="button" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
                                 onclick="openNotificationsSentSection()">
                                 <i class="fas fa-paper-plane"></i>
@@ -260,39 +217,22 @@
                         </div>
                     </div>
                 </div>
-
-
-
-
-
-
-               
-
-               
                 </div>
             </div>
-
-
-
-
 
             <!-- Modal: Configuração de Registo Salarial -->
             <div id="modalConfiguracaoSalarial" class="modal"
                 style="display:none; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto;">
-                <div class="modal-content"
-                    style="max-width:920px; width:100%; margin:auto; max-height:92vh; overflow-y:auto; padding:1.75rem;">
+                <div class="modal-content modal-content-wide">
 
-                    <!-- Cabeçalho -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.25rem;">
-                        <h3 style="margin:0; font-size:1.25rem; font-weight:700; color:var(--text-primary);">
-                            <i class="fas fa-sliders-h" style="margin-right:.5rem; color:var(--primary-600);"></i>
+                    <div class="modal-header">
+                        <h3 class="modal-title">
+                            <i class="fas fa-sliders-h"></i>
                             Configuração de Registo Salarial
                         </h3>
-                        <span id="btnClosePayrollModal"
-                            style="font-size:1.75rem; line-height:1; cursor:pointer; color:var(--text-secondary); padding:.25rem .5rem;">&times;</span>
+                        <span id="btnClosePayrollModal" class="modal-close">&times;</span>
                     </div>
-                    <p
-                        style="margin:0 0 1.5rem; font-size:.85rem; color:var(--text-secondary); border-bottom:1px solid var(--neutral-200); padding-bottom:1rem;">
+                    <p class="modal-desc">
                         Defina apenas regras básicas de registo salarial mensal. Cálculos fiscais e legais devem ser
                         tratados externamente pelo contabilista.
                     </p>
@@ -304,11 +244,10 @@
                             value="<?php echo (int)$payrollConfigYear; ?>">
 
                         <!-- ── BLOCO 1: Ano Fiscal ── -->
-                        <div
-                                                    style="background:#f1f5f9; border:1px solid var(--neutral-200); border-radius:12px; padding:1rem 1.25rem;">
-                            <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem;">
+                        <div class="settings-section-block">
+                            <div class="settings-section-block-header">
                                 <i class="fas fa-calendar-alt" style="color:var(--primary-600);"></i>
-                                <span style="font-weight:700; font-size:.95rem;">Ano Fiscal</span>
+                                <span class="settings-section-block-title">Ano Fiscal</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
                                 <select name="config_year" id="payrollConfigYearSelect" class="search-input"
@@ -327,11 +266,10 @@
                         </div>
 
                         <!-- ── BLOCO 2: Segurança Social (oculto no modo simples) ── -->
-                        <div
-                            style="display:none; background:var(--neutral-50,#f9fafb); border:1px solid var(--neutral-200); border-radius:12px; padding:1rem 1.25rem;">
-                            <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem;">
+                        <div class="settings-section-block" style="display:none;">
+                            <div class="settings-section-block-header">
                                 <i class="fas fa-shield-alt" style="color:#0284c7;"></i>
-                                <span style="font-weight:700; font-size:.95rem;">Segurança Social</span>
+                                <span class="settings-section-block-title">Segurança Social</span>
                             </div>
                             <div
                                 style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.85rem;">
@@ -361,11 +299,10 @@
                         </div>
 
                         <!-- ── BLOCO 3: Subsídios e Extras ── -->
-                        <div
-                            style="background:var(--neutral-50,#f9fafb); border:1px solid var(--neutral-200); border-radius:12px; padding:1rem 1.25rem;">
-                            <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem;">
+                        <div class="settings-section-block">
+                            <div class="settings-section-block-header">
                                 <i class="fas fa-coins" style="color:#16a34a;"></i>
-                                <span style="font-weight:700; font-size:.95rem;">Subsídios e Extras</span>
+                                <span class="settings-section-block-title">Subsídios e Extras</span>
                             </div>
                             <div
                                 style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:.85rem; align-items:start;">
@@ -402,13 +339,12 @@
                         </div>
 
                         <!-- ── BLOCO 4: Escalões de IRS (oculto no modo simples) ── -->
-                        <div
-                            style="display:none; background:var(--neutral-50,#f9fafb); border:1px solid var(--neutral-200); border-radius:12px; padding:1rem 1.25rem;">
+                        <div class="settings-section-block" style="display:none;">
                             <div
                                 style="display:flex; justify-content:space-between; align-items:center; gap:.8rem; flex-wrap:wrap; margin-bottom:.75rem;">
                                 <div style="display:flex; align-items:center; gap:.5rem;">
                                     <i class="fas fa-table" style="color:#7c3aed;"></i>
-                                    <span style="font-weight:700; font-size:.95rem;">Escalões de IRS</span>
+                                    <span class="settings-section-block-title">Escalões de IRS</span>
                                 </div>
                                 <button type="button" class="btn btn-secondary" id="btnAddIrsBracket"
                                     style="padding:.45rem .85rem; font-size:.85rem;">
@@ -494,11 +430,10 @@
                         </div>
 
                         <!-- ── BLOCO 5: Gorjetas ── -->
-                        <div
-                            style="background:var(--neutral-50,#f9fafb); border:1px solid var(--neutral-200); border-radius:12px; padding:1rem 1.25rem;">
-                            <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem;">
+                        <div class="settings-section-block">
+                            <div class="settings-section-block-header">
                                 <i class="fas fa-hand-holding-usd" style="color:#d97706;"></i>
-                                <span style="font-weight:700; font-size:.95rem;">Gorjetas</span>
+                                <span class="settings-section-block-title">Gorjetas</span>
                             </div>
 
                             <!-- Toggle switch -->
@@ -576,8 +511,7 @@
                             </div>
                         </div>
 
-                        <!-- Ações -->
-                        <div style="display:flex; justify-content:flex-end; gap:.75rem; padding-top:.25rem;">
+                        <div class="modal-actions">
                             <button type="button" class="btn btn-secondary" id="btnCancelPayrollModal">Cancelar</button>
                             <button type="submit" class="btn btn-primary" id="btnSubmitPayrollConfig"
                                 style="padding:.65rem 1.25rem;">
@@ -589,54 +523,6 @@
             </div>
 
             <script>
-            // --- Solicitações: Ativar apenas um card e tabela ---
-            function focusSolicitacoesTable(tableId) {
-                // Esconde todas as tabelas de solicitações
-                document.querySelectorAll('.data-table.solicitacoes-table').forEach(function(tbl) {
-                    tbl.style.display = 'none';
-                });
-                // Mostra a tabela selecionada
-                var table = document.getElementById(tableId);
-                if (table) table.style.display = '';
-
-                // Remove destaque de todos os cards de solicitações
-                document.querySelectorAll('.stats-grid .solicitacao-card-btn').forEach(function(btn) {
-                    btn.classList.remove('active-solicitacao-card');
-                });
-
-                // Adiciona destaque ao card clicado
-                // Busca todos os cards e compara o onclick
-                var btns = document.querySelectorAll('.stats-grid .solicitacao-card-btn');
-                btns.forEach(function(btn) {
-                    var onclickAttr = btn.getAttribute('onclick') || '';
-                    if (onclickAttr.includes(tableId)) {
-                        btn.classList.add('active-solicitacao-card');
-                    }
-                });
-            }
-            // --- Relatórios: Ativar apenas um card e tabela ---
-            function focusSolicitacoesTable(tableId) {
-                // Esconde todas as tabelas de relatório
-                document.querySelectorAll('.data-table.solicitacoes-table').forEach(function(tbl) {
-                    tbl.style.display = 'none';
-                });
-                // Mostra a tabela selecionada
-                var table = document.getElementById(tableId);
-                if (table) table.style.display = '';
-
-                // Remove destaque de todos os cards
-                document.querySelectorAll('.relatorios-flex-grid .solicitacao-card-btn').forEach(function(btn) {
-                    btn.classList.remove('active-relatorio-card');
-                });
-                // Adiciona destaque ao card clicado
-                var btns = document.querySelectorAll('.relatorios-flex-grid .solicitacao-card-btn');
-                btns.forEach(function(btn) {
-                    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tableId)) {
-                        btn.classList.add('active-relatorio-card');
-                    }
-                });
-            }
-
             (function restoreSolicitacoesTableFromQuery() {
                 var params = new URLSearchParams(window.location.search);
                 if (params.get('section') !== 'solicitacoes') {
@@ -967,113 +853,112 @@
         </section>
 
     <div id="modalHorariosEstabelecimento" class="modal" style="display:none;">
-                            <div class="modal-content horarios-modal-content">
-                                <div class="modal-header">
-                                    <h3 class="modal-title">
-                                        <i class="fas fa-clock"></i>
-                                        Horários do Estabelecimento
-                                    </h3>
-                                    <span id="btnCloseHorariosModal" class="modal-close">&times;</span>
-                                </div>
-                                <p class="modal-desc">
-                                    Defina os horários padrão do estabelecimento. Estes horários são usados para cálculo
-                                    de atrasos e controle de presença.
-                                </p>
-                                <form method="post" action="dashboard.php?section=definicoes" class="modal-form">
-                                    <input type="hidden" name="action" value="save_estabelecimento_horarios">
-                                    <label
-                                        style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Abertura</label>
-                                    <input type="time" name="hora_abertura" class="search-input"
-                                        value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_abertura'], 0, 5)); ?>"
-                                        required>
-                                    <label
-                                        style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Encerramento</label>
-                                    <input type="time" name="hora_encerramento" class="search-input"
-                                        value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_encerramento'], 0, 5)); ?>"
-                                        required>
-                                    <label
-                                        style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Entrada
-                                        Padrão Funcionários</label>
-                                    <input type="time" name="hora_entrada_padrao" class="search-input"
-                                        value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_entrada_padrao'], 0, 5)); ?>"
-                                        required>
-                                    <label
-                                        style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Tolerância
-                                        de atraso (min)</label>
-                                    <input type="number" min="0" max="180" name="tolerancia_atraso_min"
-                                        class="search-input"
-                                        value="<?php echo (int)$estHorario['tolerancia_atraso_min']; ?>" required>
-                                    <div class="modal-actions">
-                                        <button type="button" class="btn btn-secondary"
-                                            id="btnCancelHorariosModal">Cancelar</button>
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-save"></i> Guardar Horários
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+        <div class="modal-content horarios-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-clock"></i>
+                    Horários do Estabelecimento
+                </h3>
+                <span id="btnCloseHorariosModal" class="modal-close">&times;</span>
+            </div>
+            <p class="modal-desc">
+                Defina os horários padrão do estabelecimento. Estes horários são usados para cálculo
+                de atrasos e controle de presença.
+            </p>
+            <form method="post" action="dashboard.php?section=definicoes" class="modal-form">
+                <input type="hidden" name="action" value="save_estabelecimento_horarios">
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Abertura</label>
+                <input type="time" name="hora_abertura" class="search-input"
+                    value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_abertura'], 0, 5)); ?>"
+                    required>
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Encerramento</label>
+                <input type="time" name="hora_encerramento" class="search-input"
+                    value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_encerramento'], 0, 5)); ?>"
+                    required>
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Entrada
+                    Padrão Funcionários</label>
+                <input type="time" name="hora_entrada_padrao" class="search-input"
+                    value="<?php echo htmlspecialchars(substr((string)$estHorario['hora_entrada_padrao'], 0, 5)); ?>"
+                    required>
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Tolerância
+                    de atraso (min)</label>
+                <input type="number" min="0" max="180" name="tolerancia_atraso_min"
+                    class="search-input"
+                    value="<?php echo (int)$estHorario['tolerancia_atraso_min']; ?>" required>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary"
+                        id="btnCancelHorariosModal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Horários
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+    (function() {
+        var modal = document.getElementById('modalHorariosEstabelecimento');
+        if (!modal) return;
 
+        function closeModal() {
+            modal.style.display = 'none';
+        }
 
+        var btnClose = document.getElementById('btnCloseHorariosModal');
+        var btnCancel = document.getElementById('btnCancelHorariosModal');
+        if (btnClose) btnClose.addEventListener('click', closeModal);
+        if (btnCancel) btnCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+    })();
+    </script>
 
-
-
-
-
-
-<div id="modalAdminProfile" class="modal"
-                                style="display:none; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto;">
-                                <div class="modal-content"
-                                    style="max-width: 480px; width:100%; margin:auto; margin-top:2.5rem; max-height:92vh; overflow-y:auto; padding:1.75rem; box-shadow:0 8px 32px rgba(0,0,0,0.18); border-radius:14px; background:#fff;">
-                                    <div
-                                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.25rem;">
-                                        <h3
-                                            style="margin:0; font-size:1.25rem; font-weight:700; color:var(--text-primary);">
-                                            <i class="fas fa-user-cog"
-                                                style="margin-right:.5rem; color:var(--primary-600);"></i>
-                                            Editar Perfil do Administrador
-                                        </h3>
-                                        <span id="btnCloseAdminProfileModal"
-                                            style="font-size:1.75rem; line-height:1; cursor:pointer; color:var(--text-secondary); padding:.25rem .5rem;">&times;</span>
-                                    </div>
-                                    <form method="post" action="dashboard.php?section=definicoes"
-                                        style="display:grid; gap:.85rem;">
-                                        <input type="hidden" name="action" value="save_admin_profile">
-                                        <label
-                                            style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Nome</label>
-                                        <input type="text" name="admin_nome" class="search-input"
-                                            value="<?php echo htmlspecialchars($adminUser['name'] ?? ''); ?>" required>
-                                        <label
-                                            style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Email</label>
-                                        <input type="email" name="admin_email" class="search-input"
-                                            value="<?php echo htmlspecialchars($adminUser['email'] ?? ''); ?>" required>
-                                        <label
-                                            style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Telefone</label>
-                                        <input type="text" name="admin_telefone" class="search-input"
-                                            value="<?php echo htmlspecialchars($adminUser['phone'] ?? ''); ?>">
-                                        <label
-                                            style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Nova
-                                            Senha</label>
-                                        <input type="password" name="admin_nova_senha" class="search-input"
-                                            placeholder="Deixe em branco para não alterar">
-                                        <label
-                                            style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Confirmar
-                                            Nova Senha</label>
-                                        <input type="password" name="admin_confirmar_senha" class="search-input"
-                                            placeholder="Confirme a nova senha">
-                                        <div
-                                            style="display:flex; justify-content:flex-end; gap:.75rem; padding-top:.25rem;">
-                                            <button type="button" class="btn btn-secondary"
-                                                id="btnCancelAdminProfileModal">Cancelar</button>
-                                            <button type="submit" class="btn btn-primary"
-                                                style="padding:.65rem 1.25rem;">
-                                                <i class="fas fa-save"></i> Salvar Alterações
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-
-
-
+    <div id="modalAdminProfile" class="modal"
+        style="display:none; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto;">
+        <div class="modal-content horarios-modal-content" style="margin-top:2.5rem;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-user-cog"></i>
+                    Editar Perfil do Administrador
+                </h3>
+                <span id="btnCloseAdminProfileModal" class="modal-close">&times;</span>
+            </div>
+            <form method="post" action="dashboard.php?section=definicoes" class="modal-form">
+                <input type="hidden" name="action" value="save_admin_profile">
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Nome</label>
+                <input type="text" name="admin_nome" class="search-input"
+                    value="<?php echo htmlspecialchars($adminUser['name'] ?? ''); ?>" required>
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Email</label>
+                <input type="email" name="admin_email" class="search-input"
+                    value="<?php echo htmlspecialchars($adminUser['email'] ?? ''); ?>" required>
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Telefone</label>
+                <input type="text" name="admin_telefone" class="search-input"
+                    value="<?php echo htmlspecialchars($adminUser['phone'] ?? ''); ?>">
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Nova
+                    Senha</label>
+                <input type="password" name="admin_nova_senha" class="search-input"
+                    placeholder="Deixe em branco para não alterar">
+                <label
+                    style="font-size:.85rem; font-weight:600; color:var(--text-secondary);">Confirmar
+                    Nova Senha</label>
+                <input type="password" name="admin_confirmar_senha" class="search-input"
+                    placeholder="Confirme a nova senha">
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary"
+                        id="btnCancelAdminProfileModal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>

@@ -379,7 +379,21 @@ $estimativaTotalFormatted = is_numeric($salarioBaseRaw)
 $turnoRef          = $turnos[0] ?? null;
 $turnoHorarioInicio = $turnoRef ? (string)($turnoRef['horario_inicio'] ?? '') : '';
 $turnoHorarioFim    = $turnoRef ? (string)($turnoRef['horario_fim']    ?? '') : '';
-$toleranciaMin      = 15; // minutos de tolerância padrão
+
+// Tolerância real do estabelecimento — mesma fonte usada pelo admin em Assiduidade,
+// para os dois lados concordarem sobre quando alguém está "atrasado". Sem linha
+// configurada, o padrão é 0 (mesmo comportamento do admin nesse caso).
+$toleranciaMin = 0;
+try {
+    $stmtToleranciaEmp = $pdo->prepare("SELECT tolerancia_atraso_min FROM estabelecimento_horarios WHERE client_id = ? LIMIT 1");
+    $stmtToleranciaEmp->execute([$client_id]);
+    $toleranciaRow = $stmtToleranciaEmp->fetch(PDO::FETCH_ASSOC);
+    if ($toleranciaRow) {
+        $toleranciaMin = max(0, (int)($toleranciaRow['tolerancia_atraso_min'] ?? 0));
+    }
+} catch (PDOException $e) {
+    $toleranciaMin = 0;
+}
 
 // Estado dos botões de ponto — baseado no último registo de hoje
 $pontoAberto = $lastPonto && !empty($lastPonto['hora_entrada']) && empty($lastPonto['hora_saida']);

@@ -1690,12 +1690,17 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
 
                     <?php if (count($turnos) > 0): ?>
                         <?php foreach ($turnos as $turno): ?>
-                            <?php $turnoFoiTrocado = !empty($turnosTrocadosIds[(int)($turno['id'] ?? 0)]); ?>
+                            <?php
+                                $turnoFoiTrocado = !empty($turnosTrocadosIds[(int)($turno['id'] ?? 0)]);
+                                $turnoEmAndamento = $pontoAberto && (int)($turno['id'] ?? 0) === (int)($turnoRef['id'] ?? 0);
+                                $turnoBadgeClass = $turnoFoiTrocado ? 'badge-warning' : ($turnoEmAndamento ? 'badge-info' : 'badge-success');
+                                $turnoBadgeLabel = $turnoFoiTrocado ? 'Trocado' : ($turnoEmAndamento ? 'Em andamento' : 'Ativo');
+                            ?>
                             <div class="turno-item">
                                 <div class="turno-topo">
                                     <strong><?php echo htmlspecialchars($turno['turno_tipo']); ?></strong>
-                                    <span class="status-badge <?php echo $turnoFoiTrocado ? 'badge-warning' : 'badge-success'; ?>">
-                                        <?php echo $turnoFoiTrocado ? 'Trocado' : 'Ativo'; ?>
+                                    <span class="status-badge <?php echo $turnoBadgeClass; ?>">
+                                        <?php echo $turnoBadgeLabel; ?>
                                     </span>
                                 </div>
                                 <div class="info-row turno-row">

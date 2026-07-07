@@ -352,6 +352,7 @@ body {
 .badge-success { background: var(--accent-100); color: var(--accent-600); }
 .badge-warning { background: var(--warning-100); color: var(--warning-700); }
 .badge-danger { background: var(--error-100); color: var(--error-600); }
+.badge-info { background: rgba(59, 130, 246, 0.15); color: var(--primary-500); }
 
 .info-row {
     display: flex;

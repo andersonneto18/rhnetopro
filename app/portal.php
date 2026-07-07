@@ -375,8 +375,38 @@ $estimativaTotalFormatted = is_numeric($salarioBaseRaw)
     ? number_format((float)$salarioBaseRaw + (float)$totalGorjetas, 2, ',', '.') . '€'
     : 'N/D';
 
+// Turno de referência para comparações
+$turnoRef          = $turnos[0] ?? null;
+$turnoHorarioInicio = $turnoRef ? (string)($turnoRef['horario_inicio'] ?? '') : '';
+$turnoHorarioFim    = $turnoRef ? (string)($turnoRef['horario_fim']    ?? '') : '';
+$toleranciaMin      = 15; // minutos de tolerância padrão
+
 // Estado dos botões de ponto — baseado no último registo de hoje
 $pontoAberto = $lastPonto && !empty($lastPonto['hora_entrada']) && empty($lastPonto['hora_saida']);
+
+// Alerta de atraso/falta actual (funcionário ainda não entrou hoje mas devia ter).
+// Segue o mesmo motor de estados do admin: dentro da tolerância fica em silêncio,
+// atrasado mostra os minutos até o turno terminar, e só então vira falta.
+// Calculado aqui em cima (antes do "hero" de status) para poder destacar a Falta
+// já no topo do app, não só na secção de Presença.
+$alertaAtraso = null;
+if (!$pontoAberto && !$lastPonto && $turnoHorarioInicio) {
+    $agoraTs  = time();
+    $inicioTs = strtotime('today ' . $turnoHorarioInicio);
+    $fimTs    = $turnoHorarioFim !== '' ? strtotime('today ' . $turnoHorarioFim) : false;
+    if ($inicioTs !== false && $fimTs !== false && $fimTs <= $inicioTs) {
+        $fimTs += 24 * 60 * 60; // suporte a turno noturno
+    }
+    $diffAtMin = $inicioTs !== false ? (int)round(($agoraTs - $inicioTs) / 60) : 0;
+
+    if ($inicioTs !== false && $diffAtMin > $toleranciaMin) {
+        if ($fimTs !== false && $agoraTs > $fimTs) {
+            $alertaAtraso = ['tipo' => 'falta', 'inicio' => substr($turnoHorarioInicio, 0, 5)];
+        } else {
+            $alertaAtraso = ['tipo' => 'atraso', 'inicio' => substr($turnoHorarioInicio, 0, 5), 'minutos' => $diffAtMin];
+        }
+    }
+}
 
 // Observação do último registo — distingue Pausa / Regresso / Saída final
 $_ultimaObs     = mb_strtolower(trim((string)($lastPonto['observacao'] ?? '')));
@@ -388,7 +418,12 @@ $emPausa  = $_isPausaUlt;
 $semPonto = empty($pontosHoje);
 
 // Ícone / label / hora para o bloco ponto-status-display
-if ($semPonto || !$lastPonto) {
+if (($semPonto || !$lastPonto) && $alertaAtraso && $alertaAtraso['tipo'] === 'falta') {
+    // Turno já terminou sem qualquer entrada: destaca a Falta logo no topo do app,
+    // não só lá em baixo na secção de Presença.
+    $_pStatusIcon = 'fa-times-circle'; $_pStatusLabel = 'Falta hoje'; $_pStatusClass = 'ponto-status--falta';
+    $_pStatusHora = 'Turno das ' . $alertaAtraso['inicio'] . ' terminou sem registo';
+} elseif ($semPonto || !$lastPonto) {
     $_pStatusIcon = 'fa-clock'; $_pStatusLabel = 'Sem ponto hoje'; $_pStatusClass = 'ponto-status--none';
     $_pStatusHora = 'Registe a sua entrada';
 } elseif ($_isRegressoUlt) {
@@ -509,12 +544,6 @@ foreach ($pontosHoje as $_ti => $_tp) {
     }
 }
 
-// Turno de referência para comparações
-$turnoRef          = $turnos[0] ?? null;
-$turnoHorarioInicio = $turnoRef ? (string)($turnoRef['horario_inicio'] ?? '') : '';
-$turnoHorarioFim    = $turnoRef ? (string)($turnoRef['horario_fim']    ?? '') : '';
-$toleranciaMin      = 15; // minutos de tolerância padrão
-
 // Estatísticas do mês corrente — agrupadas por dia (múltiplos períodos por dia)
 $totalAtrasos     = 0;
 $totalIncompletos = 0;
@@ -546,28 +575,6 @@ foreach ($_statsByDate as $_dk => $_dayRecs) {
     if ($turnoHorarioInicio && $_firstHEnt) {
         $diffS = strtotime('today ' . substr($_firstHEnt, 0, 5)) - strtotime('today ' . $turnoHorarioInicio);
         if ($diffS > $toleranciaMin * 60) $totalAtrasos++;
-    }
-}
-
-// Alerta de atraso/falta actual (funcionário ainda não entrou hoje mas devia ter).
-// Segue o mesmo motor de estados do admin: dentro da tolerância fica em silêncio,
-// atrasado mostra os minutos até o turno terminar, e só então vira falta.
-$alertaAtraso = null;
-if (!$pontoAberto && !$lastPonto && $turnoHorarioInicio) {
-    $agoraTs  = time();
-    $inicioTs = strtotime('today ' . $turnoHorarioInicio);
-    $fimTs    = $turnoHorarioFim !== '' ? strtotime('today ' . $turnoHorarioFim) : false;
-    if ($inicioTs !== false && $fimTs !== false && $fimTs <= $inicioTs) {
-        $fimTs += 24 * 60 * 60; // suporte a turno noturno
-    }
-    $diffAtMin = $inicioTs !== false ? (int)round(($agoraTs - $inicioTs) / 60) : 0;
-
-    if ($inicioTs !== false && $diffAtMin > $toleranciaMin) {
-        if ($fimTs !== false && $agoraTs > $fimTs) {
-            $alertaAtraso = ['tipo' => 'falta', 'inicio' => substr($turnoHorarioInicio, 0, 5)];
-        } else {
-            $alertaAtraso = ['tipo' => 'atraso', 'inicio' => substr($turnoHorarioInicio, 0, 5), 'minutos' => $diffAtMin];
-        }
     }
 }
 
@@ -940,7 +947,7 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                     </div>
                 </div>
                 <div class="dashboard-quick-btns">
-                    <?php if ($semPonto): ?>
+                    <?php if ($semPonto && (!$alertaAtraso || $alertaAtraso['tipo'] !== 'falta')): ?>
                         <button class="btn btn-success btn-ponto-action" onclick="registrarPonto('entrada')">
                             <i class="fas fa-sign-in-alt"></i> Entrada
                         </button>
@@ -1141,10 +1148,12 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                     <?php endif; ?>
 
                     <div class="btn-grid">
-                        <?php if ($semPonto): ?>
+                        <?php if ($semPonto && (!$alertaAtraso || $alertaAtraso['tipo'] !== 'falta')): ?>
                             <button class="btn btn-success btn-ponto-action" onclick="registrarPonto('entrada')">
                                 <i class="fas fa-sign-in-alt"></i> Entrada
                             </button>
+                        <?php elseif ($semPonto): ?>
+                            <p class="empty-hint" style="color:var(--error-500);"><i class="fas fa-times-circle"></i> Falta registada — turno já terminou.</p>
                         <?php elseif ($pontoAberto && !$_hasCompletePeriod): ?>
                             <button class="btn btn-warning btn-ponto-action" onclick="registrarPausa()">
                                 <i class="fas fa-pause-circle"></i> Pausa

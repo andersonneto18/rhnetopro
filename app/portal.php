@@ -121,10 +121,11 @@ try {
     // buscar directamente o turno activo do funcionário
     if (empty($turnos) && $checkTable->rowCount() > 0) {
         $stmtTurnoFallback = $pdo->prepare("
-            SELECT * FROM turnos
-            WHERE funcionario_id = ? AND client_id = ?
-              AND LOWER(COALESCE(status, 'ativo')) IN ('ativo', 'active')
-            ORDER BY id DESC LIMIT 5
+            SELECT t.* FROM turnos t
+            INNER JOIN employees e ON e.id = t.funcionario_id
+            WHERE t.funcionario_id = ? AND e.client_id = ?
+              AND LOWER(COALESCE(t.status, 'ativo')) IN ('ativo', 'active')
+            ORDER BY t.id DESC LIMIT 5
         ");
         $stmtTurnoFallback->execute([$employee_id, $client_id]);
         $turnos = $stmtTurnoFallback->fetchAll(PDO::FETCH_ASSOC);
@@ -133,10 +134,11 @@ try {
     try {
         if ($checkTable->rowCount() > 0) {
             $stmtHist = $pdo->prepare("
-                SELECT * FROM turnos
-                WHERE funcionario_id = ? AND client_id = ?
-                  AND LOWER(COALESCE(status,'')) NOT IN ('ativo','active','')
-                ORDER BY COALESCE(data_fim, updated_at, created_at) DESC LIMIT 10
+                SELECT t.* FROM turnos t
+                INNER JOIN employees e ON e.id = t.funcionario_id
+                WHERE t.funcionario_id = ? AND e.client_id = ?
+                  AND LOWER(COALESCE(t.status,'')) NOT IN ('ativo','active','')
+                ORDER BY COALESCE(t.data_fim, t.updated_at, t.created_at) DESC LIMIT 10
             ");
             $stmtHist->execute([$employee_id, $client_id]);
             $turnosHistorico = $stmtHist->fetchAll(PDO::FETCH_ASSOC);
@@ -1629,7 +1631,11 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
         <section id="turnos-section" class="portal-section">
             <h3 class="section-title"><i class="fas fa-business-time"></i> Meus Turnos</h3>
             <div class="grid">
-                <div class="card">
+                
+            
+            
+            
+            <div class="card">
                     <div class="card-header">
                         <i class="fas fa-calendar-alt"></i>
                         <h3>Escala de Turnos</h3>

@@ -30,8 +30,66 @@
             </div>
             <?php endif; ?>
 
+            <?php
+            $planStatusRaw = strtolower((string)($trialSubscriptionStatus ?? 'trial'));
+            $planStatusLabel = 'Período de Teste';
+            $planStatusColor = '#92400e';
+            $planStatusBg = '#fef3c7';
+            if ($planStatusRaw === 'active') {
+                $planStatusLabel = 'Ativo';
+                $planStatusColor = '#166534';
+                $planStatusBg = '#dcfce7';
+            } elseif ($planStatusRaw === 'blocked') {
+                $planStatusLabel = 'Pagamento em Atraso';
+                $planStatusColor = '#991b1b';
+                $planStatusBg = '#fee2e2';
+            } elseif ($planStatusRaw === 'inactive') {
+                $planStatusLabel = 'Inativo';
+                $planStatusColor = '#374151';
+                $planStatusBg = '#f3f4f6';
+            } elseif (!empty($trialExpired)) {
+                $planStatusLabel = 'Período de Teste Expirado';
+                $planStatusColor = '#991b1b';
+                $planStatusBg = '#fee2e2';
+            }
+
+            $planTrialText = '';
+            if ($planStatusRaw === 'trial' && !empty($trialEndsAtIso)) {
+                $trialEndTs = strtotime((string)$trialEndsAtIso);
+                if ($trialEndTs !== false) {
+                    $planTrialText = 'Termina em ' . date('d/m/Y \à\s H:i', $trialEndTs);
+                }
+            }
+            ?>
             <div class="card-grid">
-               
+
+                <div class="info-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #ede9fe; color: #6d28d9;">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <h3 class="card-title">Plano e Assinatura</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="display:inline-block; padding:.3rem .75rem; border-radius:999px; font-size:.8rem; font-weight:700; background:<?php echo $planStatusBg; ?>; color:<?php echo $planStatusColor; ?>;">
+                            <?php echo htmlspecialchars($planStatusLabel); ?>
+                        </div>
+                        <?php if ($planTrialText !== ''): ?>
+                        <p style="margin-top:.6rem;"><?php echo htmlspecialchars($planTrialText); ?></p>
+                        <?php elseif ($planStatusRaw === 'active'): ?>
+                        <p style="margin-top:.6rem;">A sua assinatura está ativa. Obrigado por usar o RHNeto Pro.</p>
+                        <?php else: ?>
+                        <p style="margin-top:.6rem;">Assine para continuar a usar o painel sem interrupções.</p>
+                        <?php endif; ?>
+                        <div style="margin-top: 1rem;">
+                            <a href="../planos/" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; text-decoration:none; display:inline-flex;">
+                                <i class="fas fa-bolt"></i>
+                                <span><?php echo $planStatusRaw === 'active' ? 'Ver plano' : 'Assinar agora'; ?></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="info-card">
                     <div class="card-header">
                         <div class="card-icon" style="background: var(--primary-100); color: var(--primary-600);">

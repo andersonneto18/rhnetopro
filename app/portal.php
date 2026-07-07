@@ -1716,6 +1716,28 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                                     <span class="info-value"><?php echo htmlspecialchars($turno['escala']); ?></span>
                                 </div>
                                 <?php
+                                    $_turnoDataInicioRaw = trim((string)($turno['data_inicio'] ?? ''));
+                                    $_turnoDataFimRaw = trim((string)($turno['data_fim'] ?? ''));
+                                    $_turnoInicioFmt = ($_turnoDataInicioRaw !== '' && $_turnoDataInicioRaw !== '0000-00-00')
+                                        ? date('d/m/Y', strtotime($_turnoDataInicioRaw)) : null;
+                                    $_turnoFimFmt = ($_turnoDataFimRaw !== '' && $_turnoDataFimRaw !== '0000-00-00')
+                                        ? date('d/m/Y', strtotime($_turnoDataFimRaw)) : null;
+                                ?>
+                                <?php if ($_turnoInicioFmt || $_turnoFimFmt): ?>
+                                <div class="info-row turno-row">
+                                    <span class="info-label"><i class="fas fa-calendar-check"></i> Vigência:</span>
+                                    <span class="info-value">
+                                        <?php if ($_turnoInicioFmt && $_turnoFimFmt): ?>
+                                            <?php echo htmlspecialchars($_turnoInicioFmt . ' a ' . $_turnoFimFmt); ?>
+                                        <?php elseif ($_turnoInicioFmt): ?>
+                                            A partir de <?php echo htmlspecialchars($_turnoInicioFmt); ?>
+                                        <?php else: ?>
+                                            Até <?php echo htmlspecialchars($_turnoFimFmt); ?>
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+                                <?php endif; ?>
+                                <?php
                                     $_diasOn = _parseDiasSemana((string)($turno['dias_semana'] ?? ''));
                                     $_calLabels = ['D','S','T','Q','Q','S','S'];
                                 ?>

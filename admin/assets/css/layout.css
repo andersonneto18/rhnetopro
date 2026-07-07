@@ -558,6 +558,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .status-badge i {

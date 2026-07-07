@@ -760,6 +760,7 @@
                                         SELECT hora_entrada, hora_saida, observacao
                                         FROM registros_ponto
                                         WHERE funcionario_id = ? AND {$pontoDateColumn} = ?
+                                          AND LOWER(COALESCE(status, '')) <> 'invalidado'
                                         ORDER BY id ASC
                                     ");
                                     $stmtTimelinePresenca->execute([(int)$employee['id'], $dateIso]);
@@ -803,9 +804,12 @@
                             $_timelineEventosJson = htmlspecialchars(json_encode($_timelineEventos, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
 
                             // 2. Determinar o status automático
-                            $entrada = isset($registro['hora_entrada']) && $registro['hora_entrada'] !== null && $registro['hora_entrada'] !== '';
-                            $saida = isset($registro['hora_saida']) && $registro['hora_saida'] !== null && $registro['hora_saida'] !== '';
-                            $confirmado = isset($registro['status_confirmacao']) && $registro['status_confirmacao'] === 'confirmado';
+                            // Um registo invalidado (entrada rejeitada pelo admin) não deve contar como
+                            // presença nem deixar o dia preso em "Em Aberto" — é tratado como se não existisse.
+                            $registroInvalidado = isset($registro['status']) && $registro['status'] === 'invalidado';
+                            $entrada = !$registroInvalidado && isset($registro['hora_entrada']) && $registro['hora_entrada'] !== null && $registro['hora_entrada'] !== '';
+                            $saida = !$registroInvalidado && isset($registro['hora_saida']) && $registro['hora_saida'] !== null && $registro['hora_saida'] !== '';
+                            $confirmado = !$registroInvalidado && isset($registro['status_confirmacao']) && $registro['status_confirmacao'] === 'confirmado';
 
                             // Primeira entrada do dia (não a última) — é ela que decide pontualidade/atraso;
                             // regressos de pausa não devem reabrir ou mudar essa avaliação.
@@ -889,9 +893,6 @@
                             //   nunca antes disso, mesmo que a tolerância já tenha passado há horas.
                             if (!$temTurno) {
                                 $status_texto = 'SEM TURNO';
-                                $status_classe = 'status-nao-marcado';
-                            } elseif (isset($registro['status']) && $registro['status'] === 'invalidado') {
-                                $status_texto = '—';
                                 $status_classe = 'status-nao-marcado';
                             } elseif ($presencaStatus === 'falta') {
                                 $status_texto = $faltaTipoRaw === 'justificada' ? 'FALTA JUSTIFICADA' : 'FALTA INJUSTIFICADA';

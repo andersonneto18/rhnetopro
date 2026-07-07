@@ -10,7 +10,7 @@ if (empty($_SESSION['user_id'])) {
 
 $companyName = $_SESSION['company_name'] ?? $_SESSION['client_name'] ?? 'RHNeto Pro';
 $planName = 'Plano Unico Pro';
-$planPrice = '19,90';
+$planPrice = '2,00';
 $planBilling = 'por mes';
 $planFeatures = [
     'Funcionarios ilimitados',
@@ -265,6 +265,13 @@ $planFeatures = [
             </div>
             <a class="back-link" href="/admin/dashboard.php"><i class="fas fa-arrow-left"></i> Voltar ao painel</a>
         </div>
+
+        <?php if (!empty($_GET['trial_expirado'])): ?>
+            <div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4);color:#fecaca;border-radius:12px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-triangle-exclamation"></i>
+                <span>O seu periodo de teste de 7 dias terminou. Assine o plano abaixo para continuar a usar o painel.</span>
+            </div>
+        <?php endif; ?>
 
         <section class="hero">
             <div class="eyebrow"><i class="fas fa-bolt"></i> Planos</div>

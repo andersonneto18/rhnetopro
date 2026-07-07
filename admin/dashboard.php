@@ -2051,6 +2051,7 @@ $loggedInClientId = $_SESSION['client_id']; // ID do cliente do utilizador logad
 $trialSubscriptionStatus = 'trial';
 $trialEndsAtIso = '';
 $trialBannerVisible = false;
+$trialExpired = false;
 
 try {
     $trialStmt = $pdo->prepare("SELECT subscription_status, trial_ends_at FROM usuarios WHERE id = ? LIMIT 1");
@@ -2067,18 +2068,26 @@ try {
         $trialSubscriptionStatus = trim((string)($trialRow['subscription_status'] ?? 'trial')) ?: 'trial';
         $trialEndsAtValue = trim((string)($trialRow['trial_ends_at'] ?? ''));
 
-        if ($trialEndsAtValue === '') {
-            $trialEndsAtValue = date('Y-m-d H:i:s', strtotime('+7 days'));
-        }
-
-        $trialEndsAtTimestamp = strtotime($trialEndsAtValue);
-        if ($trialEndsAtTimestamp !== false && $trialEndsAtTimestamp > time()) {
-            $trialEndsAtIso = date(DATE_ATOM, $trialEndsAtTimestamp);
-            $trialBannerVisible = strtolower($trialSubscriptionStatus) === 'trial' || $trialEndsAtValue !== '';
+        if ($trialEndsAtValue !== '') {
+            $trialEndsAtTimestamp = strtotime($trialEndsAtValue);
+            if ($trialEndsAtTimestamp !== false) {
+                if ($trialEndsAtTimestamp > time()) {
+                    $trialEndsAtIso = date(DATE_ATOM, $trialEndsAtTimestamp);
+                    $trialBannerVisible = strtolower($trialSubscriptionStatus) === 'trial';
+                } else {
+                    $trialExpired = true;
+                }
+            }
         }
     }
 } catch (Throwable $e) {
     error_log('Erro ao carregar trial do dashboard: ' . $e->getMessage());
+}
+
+// Bloqueia o acesso ao painel quando o trial expirou e não há assinatura ativa.
+if ($trialExpired && strtolower($trialSubscriptionStatus) !== 'active') {
+    header('Location: /planos/?trial_expirado=1');
+    exit();
 }
 
 // ===== Configuração de horários do estabelecimento =====

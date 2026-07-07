@@ -109,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 1. Inserir um novo cliente na tabela 'clients' e obter o novo client_id
     // Usamos o nome da empresa como nome inicial do cliente.
-    $stmt_client = $conn->prepare("INSERT INTO clients (client_name) VALUES (?)");
+    $stmt_client = $conn->prepare("INSERT INTO clients (client_name, subscription_status, trial_ends_at) VALUES (?, 'trial', DATE_ADD(NOW(), INTERVAL 7 DAY))");
     $stmt_client->bind_param("s", $nome_empresa);
 
     if (!$stmt_client->execute()) {
@@ -131,10 +131,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 2. Insere os dados do novo utilizador na base de dados, INCLUINDO o client_id
     // A coluna 'company_name' na tabela 'usuarios' é opcional. Se quiser, adicione-a.
     // O seu formulário HTML já tem a coluna 'company-name' no formulário.
-    $stmt_user_insert = $conn->prepare("INSERT INTO usuarios (nome_completo, email, telefone, nif, nome_usuario, senha, client_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    
+    $stmt_user_insert = $conn->prepare("INSERT INTO usuarios (nome_completo, email, telefone, nif, nome_usuario, senha, client_id, subscription_status, trial_ends_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'trial', DATE_ADD(NOW(), INTERVAL 7 DAY))");
+
     // Note o 'i' no 'ssssssi' para indicar que o último parâmetro (client_id) é um inteiro.
-    $stmt_user_insert->bind_param("ssssssi", $nome_completo, $email, $telefone, $nif, $nome_usuario, $senha_hashed, $new_client_id); 
+    $stmt_user_insert->bind_param("ssssssi", $nome_completo, $email, $telefone, $nif, $nome_usuario, $senha_hashed, $new_client_id);
 
     if ($stmt_user_insert->execute()) {
         $_SESSION['register_success_message'] = "Registo realizado com sucesso! Pode agora fazer login.";

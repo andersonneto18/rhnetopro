@@ -1105,7 +1105,7 @@
                                 <div class="fr-roteiro">
                                     <?php if ($_totalEventosCell === 0): ?>
                                         <span class="fr-roteiro-label">Sem registo</span>
-                                    <?php elseif ($_totalEventosCell <= 5): ?>
+                                    <?php elseif ($_totalEventosCell <= 8): ?>
                                         <?php foreach ($_timelineEventos as $_iCell => $_evCell): ?>
                                             <?php if ($_iCell > 0): ?><span class="fr-roteiro-sep"></span><?php endif; ?>
                                             <span class="fr-roteiro-item" title="<?php echo htmlspecialchars($_evCell['label'] . ($_evCell['hora'] ? ' ' . $_evCell['hora'] : '')); ?>">

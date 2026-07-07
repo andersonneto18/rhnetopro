@@ -82,15 +82,19 @@ try {
     }
 
     // Se marcar entrada, o turno de hoje precisa de ainda estar em curso — não deixa
-    // marcar entrada para um turno que já terminou (esse fica só para o próximo turno agendado).
+    // marcar entrada antes do turno começar nem depois de já ter terminado (esse fica
+    // só para o próximo turno agendado).
     if ($tipo === 'entrada' && $turnoDeHoje) {
         $horaFimTurno = substr((string)($turnoDeHoje['horario_fim'] ?? ''), 0, 5);
         $horaInicioTurno = substr((string)($turnoDeHoje['horario_inicio'] ?? ''), 0, 5);
-        if ($horaFimTurno !== '') {
+        if ($horaFimTurno !== '' && $horaInicioTurno !== '') {
             $fimTurnoTs = strtotime($data_hoje . ' ' . $horaFimTurno);
             $inicioTurnoTs = strtotime($data_hoje . ' ' . $horaInicioTurno);
             if ($fimTurnoTs !== false && $inicioTurnoTs !== false && $fimTurnoTs <= $inicioTurnoTs) {
                 $fimTurnoTs += 24 * 60 * 60; // turno noturno
+            }
+            if ($inicioTurnoTs !== false && time() < $inicioTurnoTs) {
+                throw new Exception('O seu turno começa às ' . $horaInicioTurno . '. Ainda não pode marcar entrada.');
             }
             if ($fimTurnoTs !== false && time() > $fimTurnoTs) {
                 throw new Exception('O seu turno já terminou. Só poderá marcar entrada no próximo turno agendado.');

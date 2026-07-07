@@ -51,10 +51,13 @@ try {
         $pontoDateColumn = $dateColumn;
         
         if ($dateColumn) {
-            // Todos os períodos de hoje (suporte a múltiplos períodos: pausa de almoço, etc.)
+            // Todos os períodos de hoje (suporte a múltiplos períodos: pausa de almoço, etc.).
+            // Exclui registos invalidados (entrada rejeitada pelo admin) — para o funcionário
+            // isso deve contar como se nunca tivesse batido ponto, liberando o botão Entrada de novo.
             $stmtPontoHoje = $pdo->prepare("
                 SELECT * FROM registros_ponto
                 WHERE funcionario_id = ? AND $dateColumn = ?
+                  AND LOWER(COALESCE(status, '')) <> 'invalidado'
                 ORDER BY id ASC
             ");
             $stmtPontoHoje->execute([$employee_id, $today]);
@@ -66,6 +69,7 @@ try {
                 SELECT * FROM registros_ponto
                 WHERE funcionario_id = ?
                   AND DATE_FORMAT($dateColumn, '%Y-%m') = ?
+                  AND LOWER(COALESCE(status, '')) <> 'invalidado'
                 ORDER BY $dateColumn ASC, id ASC
             ");
             $stmtHistorico->execute([$employee_id, date('Y-m')]);
@@ -351,6 +355,7 @@ try {
               AND DATE_FORMAT({$pontoDateColumn}, '%Y-%m') = ?
               AND hora_entrada IS NOT NULL AND hora_entrada != ''
               AND hora_saida IS NOT NULL AND hora_saida != ''
+              AND LOWER(COALESCE(status, '')) <> 'invalidado'
         ");
         $stmtHoras->execute([$employee_id, date('Y-m')]);
         $datesWorked = [];
@@ -1022,14 +1027,7 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                     </div>
                 </div>
                 <?php $nTrocasPendentes = count($trocasTurnoRecebidas); ?>
-                <div class="kpi-card kpi-orange<?php echo $nTrocasPendentes > 0 ? ' kpi-alert' : ''; ?>">
-                    <div class="kpi-icon"><i class="fas fa-exchange-alt"></i></div>
-                    <div class="kpi-body">
-                        <span class="kpi-value"><?php echo $nTrocasPendentes; ?></span>
-                        <span class="kpi-label">Trocas pendentes</span>
-                        <span class="kpi-sub">Para a sua aprovação</span>
-                    </div>
-                </div>
+                
                 <?php
                 $diasFeriasTotal = max(22, (int)($employee['vacation_days'] ?? 22));
                 $diasFeriasDisp  = max(0, $diasFeriasTotal - $diasUsadosAno);
@@ -1084,10 +1082,7 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                     <i class="fas fa-coins shortcut-icon sc-green"></i>
                     <span class="shortcut-label">Gorjetas</span>
                 </button>
-                <button class="shortcut-card" data-section="sms-section">
-                    <i class="fas fa-sms shortcut-icon sc-orange"></i>
-                    <span class="shortcut-label">Mensagens</span>
-                </button>
+               
                 <button class="shortcut-card" data-section="recibos-section">
                     <i class="fas fa-file-invoice-dollar shortcut-icon sc-indigo"></i>
                     <span class="shortcut-label">Recibos</span>

@@ -602,7 +602,7 @@
                         $expectedStartByEmployee = [];
                         try {
                             $stmtExpectedStart = $pdo->prepare(
-                                "SELECT t.funcionario_id, t.horario_inicio, t.dias_semana, t.data_inicio, t.data_fim
+                                "SELECT t.funcionario_id, t.horario_inicio, t.horario_fim, t.dias_semana, t.data_inicio, t.data_fim
                      FROM turnos t
                      INNER JOIN employees e ON e.id = t.funcionario_id
                      WHERE e.client_id = ? AND LOWER(COALESCE(t.status, '')) IN ('ativo', 'active')
@@ -628,7 +628,10 @@
                                     && ($fimVigencia === '' || $fimVigencia === '0000-00-00' || $fimVigencia >= $_expectedDateRef);
 
                                 if ($diaCorreto && $dentroVigencia) {
-                                    $expectedStartByEmployee[$empIdExp] = (string)($rowExpected['horario_inicio'] ?? '');
+                                    $expectedStartByEmployee[$empIdExp] = [
+                                        'inicio' => (string)($rowExpected['horario_inicio'] ?? ''),
+                                        'fim' => (string)($rowExpected['horario_fim'] ?? ''),
+                                    ];
                                 }
                             }
                         } catch (Exception $e) {
@@ -805,6 +808,17 @@
                             $saida = isset($registro['hora_saida']) && $registro['hora_saida'] !== null && $registro['hora_saida'] !== '';
                             $confirmado = isset($registro['status_confirmacao']) && $registro['status_confirmacao'] === 'confirmado';
 
+                            // Primeira entrada do dia (não a última) — é ela que decide pontualidade/atraso;
+                            // regressos de pausa não devem reabrir ou mudar essa avaliação.
+                            $primeiraEntradaHoje = '';
+                            foreach ($_pontosTimeline as $_ptPrimeira) {
+                                if (!empty($_ptPrimeira['hora_entrada'])) {
+                                    $primeiraEntradaHoje = (string)$_ptPrimeira['hora_entrada'];
+                                    break;
+                                }
+                            }
+                            $temEntradaHoje = $primeiraEntradaHoje !== '';
+
                             // Soma TODOS os períodos do dia (entrada/saída, regresso/saída, ...), não só o
                             // último registo — assim uma pausa (ex.: almoço) nunca é contada como horas trabalhadas.
                             $horasTrabalhadas = '--:--';
@@ -850,13 +864,15 @@
                             }
                             $faltaTipoLabel = $faltaTipoRaw === 'justificada' ? 'Falta Justificada' : ($faltaTipoRaw === 'injustificada' ? 'Falta Injustificada' : '-');
 
-                            $temTurno = isset($expectedStartByEmployee[(int)$employee['id']]) && $expectedStartByEmployee[(int)$employee['id']] !== '';
-                            $horarioPrevisto = $temTurno ? $expectedStartByEmployee[(int)$employee['id']] : null;
+                            $temTurno = isset($expectedStartByEmployee[(int)$employee['id']]) && $expectedStartByEmployee[(int)$employee['id']]['inicio'] !== '';
+                            $horarioPrevisto = $temTurno ? $expectedStartByEmployee[(int)$employee['id']]['inicio'] : null;
+                            $horarioFimPrevisto = $temTurno ? $expectedStartByEmployee[(int)$employee['id']]['fim'] : null;
+                            $toleranciaMin = max(0, (int)($estHorario['tolerancia_atraso_min'] ?? 0));
+
                             $atrasoTexto = '—';
-                            if ($entrada && !in_array($tipoDia, ['folga', 'feriado', 'falta'], true)) {
-                                $entradaTsCalc = strtotime('1970-01-01 ' . (string)$registro['hora_entrada']);
+                            if ($temEntradaHoje && !in_array($tipoDia, ['folga', 'feriado', 'falta'], true)) {
+                                $entradaTsCalc = strtotime('1970-01-01 ' . $primeiraEntradaHoje);
                                 $previstoTsCalc = strtotime('1970-01-01 ' . (string)$horarioPrevisto);
-                                $toleranciaMin = max(0, (int)($estHorario['tolerancia_atraso_min'] ?? 0));
 
                                 if ($entradaTsCalc !== false && $previstoTsCalc !== false) {
                                     $diffMinAtraso = (int) floor(($entradaTsCalc - $previstoTsCalc) / 60) - $toleranciaMin;
@@ -868,6 +884,10 @@
                                 }
                             }
 
+                            // Motor de estados da assiduidade:
+                            //   Agendado -> Dentro da tolerância -> Atrasado -> (Presente | Presente com atraso)
+                            //   Falta só é atribuída quando o turno termina sem qualquer entrada registada —
+                            //   nunca antes disso, mesmo que a tolerância já tenha passado há horas.
                             if (!$temTurno) {
                                 $status_texto = 'SEM TURNO';
                                 $status_classe = 'status-nao-marcado';
@@ -880,48 +900,58 @@
                             } elseif ($presencaStatus === 'presente') {
                                 $status_texto = 'PRESENTE';
                                 $status_classe = 'status-presente';
-                            } elseif (!$entrada) {
-                                // Se não marcou presença: o dia avaliado ($dateIso) pode ser passado, hoje ou futuro
-                                // em relação à data real do servidor — a comparação por hora só faz sentido para hoje.
-                                $_hojeRealAssiduidade = date('Y-m-d');
-                                if ($dateIso !== '' && $dateIso > $_hojeRealAssiduidade) {
-                                    // Dia futuro: o turno ainda nem começou, não é falta nem atraso.
-                                    $status_texto = 'AGENDADO';
-                                    $status_classe = 'status-nao-marcado';
-                                } elseif ($dateIso !== '' && $dateIso < $_hojeRealAssiduidade) {
-                                    // Dia passado sem marcação: já esgotou o dia inteiro, é falta direta.
-                                    $status_texto = 'FALTA';
-                                    $status_classe = 'status-falta';
-                                } else {
-                                    $agora = date('H:i');
-                                    $horaTurno = substr($horarioPrevisto, 0, 5);
-                                    $toleranciaMin = max(0, (int)($estHorario['tolerancia_atraso_min'] ?? 0));
-                                    $agoraTs = strtotime('1970-01-01 ' . $agora);
-                                    $turnoTs = strtotime('1970-01-01 ' . $horaTurno);
-                                    $toleranciaTs = $turnoTs !== false ? $turnoTs + ($toleranciaMin * 60) : false;
-                                    if ($agoraTs !== false && $toleranciaTs !== false) {
-                                        if ($agoraTs > $toleranciaTs) {
-                                            $status_texto = 'FALTA';
-                                            $status_classe = 'status-falta';
-                                        } elseif ($agoraTs > $turnoTs) {
-                                            $_minAtrasoAtual = (int)round(($agoraTs - $turnoTs) / 60);
-                                            $status_texto = 'ATRASADO (' . $_minAtrasoAtual . ' min)';
-                                            $status_classe = 'status-warning';
-                                        } else {
-                                            $status_texto = 'NÃO REGISTADO';
-                                            $status_classe = 'status-nao-marcado';
-                                        }
-                                    } else {
-                                        $status_texto = 'NÃO REGISTADO';
-                                        $status_classe = 'status-nao-marcado';
-                                    }
-                                }
+                            } elseif ($dateIso !== '' && $dateIso > date('Y-m-d')) {
+                                // Dia futuro: o turno ainda nem começou.
+                                $status_texto = 'AGENDADO';
+                                $status_classe = 'status-nao-marcado';
                             } elseif ($entrada && (!$saida && !$confirmado)) {
+                                // Ponto em aberto tem prioridade — é sobre o período em curso, não sobre pontualidade.
                                 $status_texto = 'EM ABERTO';
                                 $status_classe = 'status-warning';
                             } else {
-                                $status_texto = 'PRESENTE';
-                                $status_classe = 'status-presente';
+                                $horaInicioTurno = substr((string)$horarioPrevisto, 0, 5);
+                                $horaFimTurno = substr((string)$horarioFimPrevisto, 0, 5);
+                                $inicioTurnoTs = strtotime($dateIso . ' ' . $horaInicioTurno);
+                                $fimTurnoTs = strtotime($dateIso . ' ' . $horaFimTurno);
+                                if ($inicioTurnoTs !== false && $fimTurnoTs !== false && $fimTurnoTs <= $inicioTurnoTs) {
+                                    // Turno noturno (termina no dia seguinte).
+                                    $fimTurnoTs += 24 * 60 * 60;
+                                }
+                                $toleranciaTs = $inicioTurnoTs !== false ? $inicioTurnoTs + ($toleranciaMin * 60) : false;
+
+                                // "Agora" só é o instante real para o dia de hoje — um dia passado já
+                                // esgotou o turno inteiro, então tratamos como se já tivesse terminado.
+                                $_hojeRealAssiduidade = date('Y-m-d');
+                                $agoraTs = ($dateIso === $_hojeRealAssiduidade) ? time() : (($fimTurnoTs !== false) ? $fimTurnoTs + 1 : time());
+
+                                if ($inicioTurnoTs === false || $fimTurnoTs === false || $toleranciaTs === false) {
+                                    $status_texto = 'NÃO REGISTADO';
+                                    $status_classe = 'status-nao-marcado';
+                                } elseif ($temEntradaHoje) {
+                                    $entradaTs = strtotime($dateIso . ' ' . substr($primeiraEntradaHoje, 0, 5));
+                                    if ($entradaTs !== false && $entradaTs > $toleranciaTs) {
+                                        $_minAtrasoChegada = (int)round(($entradaTs - $inicioTurnoTs) / 60);
+                                        $status_texto = 'PRESENTE COM ATRASO (' . $_minAtrasoChegada . ' min)';
+                                        $status_classe = 'status-warning';
+                                    } else {
+                                        $status_texto = 'PRESENTE';
+                                        $status_classe = 'status-presente';
+                                    }
+                                } elseif ($agoraTs > $fimTurnoTs) {
+                                    // Turno terminou e nunca houve entrada: falta definitiva.
+                                    $status_texto = 'FALTA';
+                                    $status_classe = 'status-falta';
+                                } elseif ($agoraTs < $inicioTurnoTs) {
+                                    $status_texto = 'AGENDADO';
+                                    $status_classe = 'status-nao-marcado';
+                                } elseif ($agoraTs <= $toleranciaTs) {
+                                    $status_texto = 'DENTRO DA TOLERÂNCIA';
+                                    $status_classe = 'status-nao-marcado';
+                                } else {
+                                    $_minAtrasoAtual = (int)round(($agoraTs - $inicioTurnoTs) / 60);
+                                    $status_texto = 'ATRASADO (' . $_minAtrasoAtual . ' min)';
+                                    $status_classe = 'status-warning';
+                                }
                             }
 
                             if (isset($registro['status']) && $registro['status'] === 'invalidado') {
@@ -1058,6 +1088,8 @@
                                     } elseif (mb_stripos($normalizedStatusTexto, 'presente') !== false) {
                                         $statusKey = 'presente';
                                     } elseif (mb_stripos($normalizedStatusTexto, 'nao regist') !== false || mb_stripos($normalizedStatusTexto, 'não regist') !== false) {
+                                        $statusKey = 'nao-registrado';
+                                    } elseif (mb_stripos($normalizedStatusTexto, 'toler') !== false) {
                                         $statusKey = 'nao-registrado';
                                     } else {
                                         $statusKey = 'invalidado';

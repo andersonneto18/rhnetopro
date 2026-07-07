@@ -549,14 +549,25 @@ foreach ($_statsByDate as $_dk => $_dayRecs) {
     }
 }
 
-// Alerta de atraso actual (funcionário ainda não entrou mas devia ter)
+// Alerta de atraso/falta actual (funcionário ainda não entrou hoje mas devia ter).
+// Segue o mesmo motor de estados do admin: dentro da tolerância fica em silêncio,
+// atrasado mostra os minutos até o turno terminar, e só então vira falta.
 $alertaAtraso = null;
 if (!$pontoAberto && !$lastPonto && $turnoHorarioInicio) {
-    $agoraTs    = time();
-    $inicioTs   = strtotime('today ' . $turnoHorarioInicio);
-    $diffAtMin  = (int)round(($agoraTs - $inicioTs) / 60);
-    if ($diffAtMin > 0 && $diffAtMin < 240) {
-        $alertaAtraso = ['inicio' => substr($turnoHorarioInicio, 0, 5), 'minutos' => $diffAtMin];
+    $agoraTs  = time();
+    $inicioTs = strtotime('today ' . $turnoHorarioInicio);
+    $fimTs    = $turnoHorarioFim !== '' ? strtotime('today ' . $turnoHorarioFim) : false;
+    if ($inicioTs !== false && $fimTs !== false && $fimTs <= $inicioTs) {
+        $fimTs += 24 * 60 * 60; // suporte a turno noturno
+    }
+    $diffAtMin = $inicioTs !== false ? (int)round(($agoraTs - $inicioTs) / 60) : 0;
+
+    if ($inicioTs !== false && $diffAtMin > $toleranciaMin) {
+        if ($fimTs !== false && $agoraTs > $fimTs) {
+            $alertaAtraso = ['tipo' => 'falta', 'inicio' => substr($turnoHorarioInicio, 0, 5)];
+        } else {
+            $alertaAtraso = ['tipo' => 'atraso', 'inicio' => substr($turnoHorarioInicio, 0, 5), 'minutos' => $diffAtMin];
+        }
     }
 }
 
@@ -1065,7 +1076,13 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
         <section id="presenca-section" class="portal-section">
             <h3 class="section-title"><i class="fas fa-user-check"></i> Presença &amp; Ponto</h3>
 
-            <?php if ($alertaAtraso): ?>
+            <?php if ($alertaAtraso && $alertaAtraso['tipo'] === 'falta'): ?>
+            <div class="presenca-alert-banner presenca-alert-banner--falta">
+                <i class="fas fa-times-circle"></i>
+                O seu turno começou às <strong><?= htmlspecialchars($alertaAtraso['inicio']) ?></strong> e já terminou sem registo de entrada.
+                Ficou marcado como <strong>Falta</strong> hoje.
+            </div>
+            <?php elseif ($alertaAtraso): ?>
             <div class="presenca-alert-banner">
                 <i class="fas fa-exclamation-triangle"></i>
                 O seu turno começou às <strong><?= htmlspecialchars($alertaAtraso['inicio']) ?></strong>.

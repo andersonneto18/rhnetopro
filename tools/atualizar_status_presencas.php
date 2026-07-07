@@ -51,11 +51,9 @@ $weekdayToken = $weekdayMap[(int)date('w')];
 
 // Todos os funcionarios ativos com turno ativo, de todos os clientes (script corre sem sessao).
 $stmtEmployees = $pdo->prepare("
-    SELECT e.id, e.client_id, t.horario_inicio, t.dias_semana, t.data_inicio, t.data_fim,
-           COALESCE(h.tolerancia_atraso_min, 0) AS tolerancia_atraso_min
+    SELECT e.id, e.client_id, t.horario_inicio, t.horario_fim, t.dias_semana, t.data_inicio, t.data_fim
     FROM employees e
     INNER JOIN turnos t ON t.funcionario_id = e.id AND LOWER(COALESCE(t.status, '')) IN ('ativo', 'active')
-    LEFT JOIN estabelecimento_horarios h ON h.client_id = e.client_id
     WHERE LOWER(COALESCE(e.status, '')) = 'active'
 ");
 $stmtEmployees->execute();
@@ -82,17 +80,21 @@ foreach ($funcionarios as $func) {
     }
 
     $horaEntrada = substr((string)$func['horario_inicio'], 0, 5);
-    if ($horaEntrada === '') {
+    $horaFim = substr((string)$func['horario_fim'], 0, 5);
+    if ($horaEntrada === '' || $horaFim === '') {
         continue;
     }
 
-    // 2) So decide falta depois de a tolerancia ja ter passado (corre ao final do dia).
-    $tolerancia = max(0, (int)$func['tolerancia_atraso_min']);
+    // 2) So decide falta depois de o TURNO TERMINAR — nunca so por passar a tolerancia
+    // (um atraso de horas ainda pode virar presenca se a pessoa aparecer antes do fim do turno).
     $entradaTs = strtotime($dataHoje . ' ' . $horaEntrada);
-    $toleranciaTs = $entradaTs !== false ? $entradaTs + ($tolerancia * 60) : false;
+    $fimTs = strtotime($dataHoje . ' ' . $horaFim);
+    if ($entradaTs !== false && $fimTs !== false && $fimTs <= $entradaTs) {
+        $fimTs += 24 * 60 * 60; // suporte a turno noturno
+    }
     $agoraTs = strtotime($dataHoje . ' ' . date('H:i'));
 
-    if ($entradaTs === false || $toleranciaTs === false || $agoraTs <= $toleranciaTs) {
+    if ($entradaTs === false || $fimTs === false || $agoraTs <= $fimTs) {
         continue;
     }
 
@@ -117,7 +119,7 @@ foreach ($funcionarios as $func) {
         continue;
     }
 
-    // 5) Sem ponto, sem presenca e ja passou a tolerancia: grava falta definitiva do dia.
+    // 5) Sem ponto, sem presenca e o turno ja terminou: grava falta definitiva do dia.
     $stmtInsert = $pdo->prepare("
         INSERT INTO presencas (funcionario_id, client_id, status, data_registro)
         VALUES (?, ?, 'falta', ?)

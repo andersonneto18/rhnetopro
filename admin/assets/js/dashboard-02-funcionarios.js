@@ -579,8 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Seleciona o modal e o formulário de edição
     const editModal = document.getElementById('editEmployeeModal');
     const editForm = document.getElementById('editEmployeeForm');
-    const closeBtn = document.querySelector('.close-btn');
-    
+
     console.log('Botões de editar encontrados:', editButtons.length);
     console.log('Botões de excluir encontrados:', deleteButtons.length);
 
@@ -886,11 +885,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Lógica para fechar o modal de edição
-    closeBtn.addEventListener('click', () => {
-        editModal.style.display = 'none';
-    });
-    
     // Fechar modal de visualização
     document.querySelectorAll('.close-btn-view').forEach(btn => {
         btn.addEventListener('click', (event) => closeViewEmployeeModal(event));

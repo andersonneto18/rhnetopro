@@ -3825,6 +3825,11 @@ if (session_status() === PHP_SESSION_NONE) {
 // Verifique se este caminho está correto para chegar ao seu config
 
 $recentActivities = [];
+$ativPage      = max(1, (int)($_GET['ativ_page'] ?? 1));
+$ativPerPage   = 10;
+$ativOffset    = ($ativPage - 1) * $ativPerPage;
+$ativTotalRows = 0;
+$ativTotalPages = 1;
 $loggedInClientId = $_SESSION['client_id'] ?? null;
 if ($loggedInClientId) {
     try {
@@ -3850,10 +3855,22 @@ if ($loggedInClientId) {
             $join = 'LEFT JOIN employees e ON ar.employee_id = e.id';
         }
 
-        $sql = "SELECT " . implode(', ', $fields) . " FROM atividades_recentes ar $join WHERE ar.client_id = ? AND ar.timestamp >= (NOW() - INTERVAL 24 HOUR) ORDER BY ar.timestamp DESC LIMIT 10";
+        $stmtAtivCount = $pdo->prepare("SELECT COUNT(*) FROM atividades_recentes ar WHERE ar.client_id = ?");
+        $stmtAtivCount->execute([$loggedInClientId]);
+        $ativTotalRows  = (int)$stmtAtivCount->fetchColumn();
+        $ativTotalPages = max(1, (int)ceil($ativTotalRows / $ativPerPage));
+        if ($ativPage > $ativTotalPages) {
+            $ativPage   = $ativTotalPages;
+            $ativOffset = ($ativPage - 1) * $ativPerPage;
+        }
+
+        $sql = "SELECT " . implode(', ', $fields) . " FROM atividades_recentes ar $join WHERE ar.client_id = ? ORDER BY ar.timestamp DESC LIMIT ? OFFSET ?";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$loggedInClientId]);
+        $stmt->bindValue(1, $loggedInClientId, PDO::PARAM_INT);
+        $stmt->bindValue(2, $ativPerPage, PDO::PARAM_INT);
+        $stmt->bindValue(3, $ativOffset, PDO::PARAM_INT);
+        $stmt->execute();
         $recentActivities = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Erro ao ler atividades: " . $e->getMessage());

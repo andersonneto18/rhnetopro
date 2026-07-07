@@ -126,6 +126,13 @@
         window.location.href = url.pathname + (url.search ? url.search : '');
     }
 
+    function goToAtividadesPage(page) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('ativ_page', page);
+        sessionStorage.setItem('activeSection', 'inicio');
+        window.location.href = url.pathname + (url.search ? url.search : '');
+    }
+
     function applySolicitacoesServerFilter() {
         const start = document.getElementById('filterSolStart')?.value || '';
         const end   = document.getElementById('filterSolEnd')?.value || '';
@@ -388,6 +395,7 @@
     window.applyHistoryPresencaServerFilter = applyHistoryPresencaServerFilter;
     window.clearHistoryPresencaServerFilter = clearHistoryPresencaServerFilter;
     window.goToHistoryPage = goToHistoryPage;
+    window.goToAtividadesPage = goToAtividadesPage;
     window.applySolicitacoesServerFilter = applySolicitacoesServerFilter;
     window.clearSolicitacoesServerFilter = clearSolicitacoesServerFilter;
 

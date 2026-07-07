@@ -64,7 +64,7 @@
                             </div>
                             <div>
                                 <div style="font-size:.95rem;font-weight:700;color:var(--text-primary,#f1f5f9);line-height:1.1;">Atividade Recente</div>
-                                <div style="font-size:.72rem;color:#64748b;margin-top:1px;">Eventos de hoje</div>
+                                <div style="font-size:.72rem;color:#64748b;margin-top:1px;">Histórico de eventos</div>
                             </div>
                         </div>
                     </div>
@@ -247,6 +247,26 @@
                     <?php endif; ?>
                     </tbody>
                 </table>
+                <?php if ($ativTotalPages > 1): ?>
+                <div style="display:flex; justify-content:center; align-items:center; gap:.75rem; padding:1rem 0; flex-wrap:wrap;">
+                    <?php if ($ativPage > 1): ?>
+                    <button type="button" class="btn btn-secondary" onclick="goToAtividadesPage(<?php echo $ativPage - 1; ?>)"
+                        style="padding:.5rem 1rem;">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <?php endif; ?>
+                    <span style="color:var(--text-secondary); font-size:.9rem; background:var(--bg-tertiary); border:1px solid var(--border-primary); border-radius:8px; padding:.4rem .8rem;">
+                        Página <?php echo $ativPage; ?> de <?php echo $ativTotalPages; ?>
+                        &nbsp;&middot;&nbsp;<?php echo number_format($ativTotalRows); ?> evento(s)
+                    </span>
+                    <?php if ($ativPage < $ativTotalPages): ?>
+                    <button type="button" class="btn btn-secondary" onclick="goToAtividadesPage(<?php echo $ativPage + 1; ?>)"
+                        style="padding:.5rem 1rem;">
+                        Próxima <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             </div>
 
         </section>

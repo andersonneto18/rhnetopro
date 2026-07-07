@@ -90,40 +90,32 @@ $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' :
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $baseUrl = $scheme . '://' . $host;
 
-$planIdentifier = 'prod_UPhoRXmrgqucAH';
+$resolvedPriceId = getenv('STRIPE_PRICE_ID');
+if (!$resolvedPriceId && isset($_ENV['STRIPE_PRICE_ID'])) {
+    $resolvedPriceId = $_ENV['STRIPE_PRICE_ID'];
+}
+if (!$resolvedPriceId && isset($_SERVER['STRIPE_PRICE_ID'])) {
+    $resolvedPriceId = $_SERVER['STRIPE_PRICE_ID'];
+}
+
+if (!$resolvedPriceId) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => false,
+        'message' => 'Variavel de ambiente STRIPE_PRICE_ID nao definida.',
+    ]);
+    exit();
+}
+
 $userId = (int)($_SESSION['user_id'] ?? 0);
 $clientId = (int)($_SESSION['client_id'] ?? 0);
 
 try {
     $stripeClass = '\\Stripe\\Stripe';
     $checkoutSessionClass = '\\Stripe\\Checkout\\Session';
-    $priceClass = '\\Stripe\\Price';
 
     $stripeClass::setApiKey($secretKey);
-
-    $resolvedPriceId = $planIdentifier;
-    if (strpos($planIdentifier, 'prod_') === 0) {
-        $prices = $priceClass::all([
-            'product' => $planIdentifier,
-            'active' => true,
-            'type' => 'recurring',
-            'limit' => 10,
-        ]);
-
-        $resolvedPriceId = '';
-        if (!empty($prices->data) && is_array($prices->data)) {
-            foreach ($prices->data as $priceItem) {
-                if (!empty($priceItem->id) && !empty($priceItem->recurring)) {
-                    $resolvedPriceId = (string)$priceItem->id;
-                    break;
-                }
-            }
-        }
-
-        if ($resolvedPriceId === '') {
-            throw new RuntimeException('Nenhum price recorrente ativo encontrado para o produto informado.');
-        }
-    }
 
     $session = $checkoutSessionClass::create([
         'mode' => 'subscription',

@@ -2,6 +2,7 @@ config/sms_config.local.php
 .env
 vendor/
 node_modules/
+composer.phar
 .claude/settings.local.json
 
 # Dados reais de funcionários / uploads (PII) - não versionar

@@ -3,8 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (empty($_SESSION['user_id'])) {
-    header('Location: /admin/views/login.php?error=sessao_invalida');
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../admin/views/login.php?error=sessao_invalida');
     exit();
 }
 
@@ -263,7 +263,7 @@ $planFeatures = [
                     <small>Escolha o unico plano disponivel</small>
                 </div>
             </div>
-            <a class="back-link" href="/admin/dashboard.php"><i class="fas fa-arrow-left"></i> Voltar ao painel</a>
+            <a class="back-link" href="../admin/dashboard.php"><i class="fas fa-arrow-left"></i> Voltar ao painel</a>
         </div>
 
         <?php if (!empty($_GET['trial_expirado'])): ?>
@@ -294,7 +294,7 @@ $planFeatures = [
                             <li><i class="fas fa-check-circle"></i> <span><?php echo htmlspecialchars($feature); ?></span></li>
                         <?php endforeach; ?>
                     </ul>
-                    <form method="POST" action="/planos/create-checkout-session.php" id="checkoutForm">
+                    <form method="POST" action="create-checkout-session.php" id="checkoutForm">
                         <button type="submit" class="cta" id="checkoutBtn">
                             <i class="fab fa-stripe"></i>
                             <span id="checkoutBtnLabel">Assinar Plano Premium</span>
@@ -316,7 +316,7 @@ $planFeatures = [
         label.textContent = 'A preparar pagamento...';
         errEl.style.display = 'none';
 
-        fetch('/planos/create-checkout-session.php', { method: 'POST', credentials: 'same-origin' })
+        fetch('create-checkout-session.php', { method: 'POST', credentials: 'same-origin' })
             .then(function(res) {
                 if (res.redirected) { window.location.href = res.url; return null; }
                 return res.json();

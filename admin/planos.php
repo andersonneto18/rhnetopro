@@ -1,3 +1,3 @@
 <?php
-header('Location: /planos/');
+header('Location: ../planos/');
 exit();

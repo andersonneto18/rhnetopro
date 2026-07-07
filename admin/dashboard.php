@@ -2086,7 +2086,7 @@ try {
 
 // Bloqueia o acesso ao painel quando o trial expirou e não há assinatura ativa.
 if ($trialExpired && strtolower($trialSubscriptionStatus) !== 'active') {
-    header('Location: /planos/?trial_expirado=1');
+    header('Location: ../planos/?trial_expirado=1');
     exit();
 }
 
@@ -4396,7 +4396,7 @@ try {
                 </div>
             </div>
             <div class="trial-banner__actions">
-                <a class="trial-banner__button" href="/planos/">
+                <a class="trial-banner__button" href="../planos/">
                     <i class="fas fa-bolt"></i>
                     Assinar agora
                 </a>

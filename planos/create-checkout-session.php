@@ -88,7 +88,8 @@ if (!$secretKey) {
 
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$baseUrl = $scheme . '://' . $host;
+$scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/planos/create-checkout-session.php')), '/');
+$baseUrl = $scheme . '://' . $host . $scriptDir;
 
 $resolvedPriceId = getenv('STRIPE_PRICE_ID');
 if (!$resolvedPriceId && isset($_ENV['STRIPE_PRICE_ID'])) {
@@ -128,8 +129,8 @@ try {
             'price' => $resolvedPriceId,
             'quantity' => 1,
         ]],
-        'success_url' => $baseUrl . '/sucesso?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => $baseUrl . '/cancelado',
+        'success_url' => $baseUrl . '/sucesso.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => $baseUrl . '/cancelado.php',
     ]);
 
     header('Location: ' . $session->url, true, 303);

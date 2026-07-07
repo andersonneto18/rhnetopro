@@ -2403,6 +2403,7 @@ try {
 $reportMonth = (int)date('n');
 $reportYear = (int)date('Y');
 $horasPorFuncionario = [];
+$diasTrabalhadosPorFuncionario = [];
 $faltasPorFuncionario = [];
 $faltasVariaveisPorFuncionario = [];
 $gorjetasPorFuncionario = [];
@@ -2418,10 +2419,18 @@ foreach ($folhaPagamento as $folhaRow) {
 try {
     $stmtHoras = $pdo->prepare("SELECT
             rp.funcionario_id,
+            COUNT(DISTINCT CASE
+                    WHEN rp.hora_entrada IS NOT NULL
+                         AND rp.hora_saida IS NOT NULL
+                         AND LOWER(COALESCE(rp.status, '')) <> 'invalidado'
+                        THEN DATE(rp.data_registro)
+                    ELSE NULL
+                END) AS dias_trabalhados,
             ROUND(SUM(
                 CASE
                     WHEN rp.hora_entrada IS NOT NULL
                          AND rp.hora_saida IS NOT NULL
+                         AND LOWER(COALESCE(rp.status, '')) <> 'invalidado'
                          AND EXISTS (
                             SELECT 1
                             FROM turnos t
@@ -2461,9 +2470,11 @@ try {
     $stmtHoras->execute([$loggedInClientId, $reportYear, $reportMonth]);
     foreach (($stmtHoras->fetchAll(PDO::FETCH_ASSOC) ?: []) as $rowHoras) {
         $horasPorFuncionario[(int)$rowHoras['funcionario_id']] = (float)($rowHoras['horas_total'] ?? 0);
+        $diasTrabalhadosPorFuncionario[(int)$rowHoras['funcionario_id']] = (int)($rowHoras['dias_trabalhados'] ?? 0);
     }
 } catch (Throwable $e) {
     $horasPorFuncionario = [];
+    $diasTrabalhadosPorFuncionario = [];
 }
 
 try {
@@ -2671,6 +2682,7 @@ foreach ($employees as &$emp) {
     $salarioBaseReal = (float)($folhaEmp['salario_base'] ?? ($emp['salary_base'] ?? 0));
     $gorjetasReais = (float)($gorjetasPorFuncionario[$empId] ?? ($folhaEmp['gorjetas'] ?? 0));
     $horasReais = (float)($horasPorFuncionario[$empId] ?? 0);
+    $diasTrabalhadosReais = (int)($diasTrabalhadosPorFuncionario[$empId] ?? 0);
     $faltasRegistos = array_key_exists($empId, $faltasPorFuncionario) ? (float)$faltasPorFuncionario[$empId] : null;
     $faltasFolha = (float)($folhaEmp['faltas_dias'] ?? 0);
     $faltasVariaveis = (float)($faltasVariaveisPorFuncionario[$empId] ?? 0);
@@ -2686,6 +2698,7 @@ foreach ($employees as &$emp) {
     }
 
     $emp['rel_horas_trabalhadas'] = round($horasReais, 2);
+    $emp['rel_dias_trabalhados'] = $diasTrabalhadosReais;
     $emp['rel_faltas'] = $faltasReais;
     $emp['rel_salary_base'] = round($salarioBaseReal, 2);
     $emp['rel_gorjetas'] = round($gorjetasReais, 2);

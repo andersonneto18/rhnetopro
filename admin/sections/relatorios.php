@@ -228,6 +228,7 @@
                             <th>Funcionário</th>
                             <th>Cargo</th>
                             <th>Horas</th>
+                            <th>Dias Trab.</th>
                             <th>Faltas</th>
                             <th>Base (€)</th>
                             <th>Gorjetas (€)</th>
@@ -254,6 +255,7 @@
                                 default => ($empStatusRaw !== '' ? ucfirst($empStatusRaw) : '—')
                             };
                             $empHorasTrabalhadas = (float)($emp['rel_horas_trabalhadas'] ?? ($emp['horas_trabalhadas'] ?? 0));
+                            $empDiasTrabalhados = (int)($emp['rel_dias_trabalhados'] ?? 0);
                             $empFaltas = (int)($emp['rel_faltas'] ?? ($emp['faltas'] ?? 0));
                             $empSalarioBase = (float)($emp['rel_salary_base'] ?? ($emp['salary_base'] ?? 0));
                             $empGorjetas = (float)($emp['rel_gorjetas'] ?? ($emp['gorjetas'] ?? 0));
@@ -277,6 +279,7 @@
                             data-rel-department="<?php echo htmlspecialchars($empDepartamento, ENT_QUOTES, 'UTF-8'); ?>"
                             data-rel-status="<?php echo htmlspecialchars($empStatusFilter, ENT_QUOTES, 'UTF-8'); ?>"
                             data-rel-hours="<?php echo htmlspecialchars((string)$empHorasTrabalhadas, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-rel-dias="<?php echo htmlspecialchars((string)$empDiasTrabalhados, ENT_QUOTES, 'UTF-8'); ?>"
                             data-rel-faltas="<?php echo htmlspecialchars((string)$empFaltas, ENT_QUOTES, 'UTF-8'); ?>"
                             data-rel-date="<?php echo htmlspecialchars($empDataAdmissaoIso, ENT_QUOTES, 'UTF-8'); ?>"
                             data-rel-total="<?php echo htmlspecialchars((string)$empTotalLiquido, ENT_QUOTES, 'UTF-8'); ?>">
@@ -298,6 +301,7 @@
                             </td>
                             <td><?php echo htmlspecialchars($empCargo !== '' ? $empCargo : '—'); ?></td>
                             <td><?php echo number_format($empHorasTrabalhadas, 2, ',', '.'); ?></td>
+                            <td><?php echo $empDiasTrabalhados; ?></td>
                             <td><?php echo $empFaltas; ?></td>
                             <td>€ <?php echo number_format($empSalarioBase, 2, ',', '.'); ?></td>
                             <td>€ <?php echo number_format($empGorjetas, 2, ',', '.'); ?></td>

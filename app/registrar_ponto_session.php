@@ -4,6 +4,8 @@ header('Content-Type: application/json');
 
 require_once '../config/db_connection.php';
 
+date_default_timezone_set('Europe/Lisbon');
+
 // Verifica autenticação
 if (!isset($_SESSION['employee_id']) || !isset($_SESSION['client_id'])) {
     echo json_encode(['success' => false, 'message' => 'Não autorizado']);

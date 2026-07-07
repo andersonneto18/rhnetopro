@@ -307,33 +307,15 @@ $planFeatures = [
         </section>
     </div>
     <script>
-    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    document.getElementById('checkoutForm').addEventListener('submit', function() {
         const btn = document.getElementById('checkoutBtn');
         const label = document.getElementById('checkoutBtnLabel');
-        const errEl = document.getElementById('checkoutError');
         btn.disabled = true;
         label.textContent = 'A preparar pagamento...';
-        errEl.style.display = 'none';
-
-        fetch('create-checkout-session.php', { method: 'POST', credentials: 'same-origin' })
-            .then(function(res) {
-                if (res.redirected) { window.location.href = res.url; return null; }
-                return res.json();
-            })
-            .then(function(data) {
-                if (!data) return;
-                errEl.textContent = data.message || 'Erro desconhecido. Tente novamente.';
-                errEl.style.display = 'block';
-                btn.disabled = false;
-                label.textContent = 'Assinar Plano Premium';
-            })
-            .catch(function() {
-                errEl.textContent = 'Erro de ligacao. Verifique a sua conexao e tente novamente.';
-                errEl.style.display = 'block';
-                btn.disabled = false;
-                label.textContent = 'Assinar Plano Premium';
-            });
+        // Deixa o formulario submeter normalmente: o navegador segue o
+        // redirect 303 da Stripe nativamente, preservando o fragmento (#...)
+        // da URL que o Checkout precisa para carregar a sessao. Um fetch()
+        // manual + window.location.href quebra esse fragmento.
     });
     </script>
 </body>

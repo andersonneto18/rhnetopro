@@ -566,11 +566,18 @@
             animation: statusPulse 2s infinite;
         }
 
-        /* Tabela de Assiduidade: Status mais estreito para o Roteiro ganhar espaço */
+        /* Tabela de Assiduidade: Status mais estreito para o Roteiro ganhar espaço.
+           Sem max-width: em table-layout:auto isto é só uma preferência — se o texto
+           do badge (nowrap) precisar de mais espaço, a coluna cresce em vez de
+           deixar o badge invadir visualmente a coluna do Roteiro. */
         #presencaTable .fr-th-status,
         #presencaTable .fr-td-status {
-            width: 130px;
-            max-width: 130px;
+            width: 105px;
+            white-space: nowrap;
+        }
+
+        #presencaTable .fr-td-status .status-badge {
+            max-width: 100%;
         }
 
         #presencaTable .fr-th-roteiro,

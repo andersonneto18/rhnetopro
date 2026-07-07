@@ -930,7 +930,7 @@
                                     $entradaTs = strtotime($dateIso . ' ' . substr($primeiraEntradaHoje, 0, 5));
                                     if ($entradaTs !== false && $entradaTs > $toleranciaTs) {
                                         $_minAtrasoChegada = (int)round(($entradaTs - $inicioTurnoTs) / 60);
-                                        $status_texto = 'PRESENTE COM ATRASO (' . $_minAtrasoChegada . ' min)';
+                                        $status_texto = 'PRES. ATRASO (' . $_minAtrasoChegada . ' min)';
                                         $status_classe = 'status-warning';
                                     } else {
                                         $status_texto = 'PRESENTE';
@@ -944,7 +944,7 @@
                                     $status_texto = 'AGENDADO';
                                     $status_classe = 'status-nao-marcado';
                                 } elseif ($agoraTs <= $toleranciaTs) {
-                                    $status_texto = 'DENTRO DA TOLERÂNCIA';
+                                    $status_texto = 'TOLERÂNCIA';
                                     $status_classe = 'status-nao-marcado';
                                 } else {
                                     $_minAtrasoAtual = (int)round(($agoraTs - $inicioTurnoTs) / 60);

@@ -423,6 +423,11 @@ if (($semPonto || !$lastPonto) && $alertaAtraso && $alertaAtraso['tipo'] === 'fa
     // não só lá em baixo na secção de Presença.
     $_pStatusIcon = 'fa-times-circle'; $_pStatusLabel = 'Falta hoje'; $_pStatusClass = 'ponto-status--falta';
     $_pStatusHora = 'Turno das ' . $alertaAtraso['inicio'] . ' terminou sem registo';
+} elseif (($semPonto || !$lastPonto) && $alertaAtraso && $alertaAtraso['tipo'] === 'atraso') {
+    // Turno em curso, tolerância já passou e ainda não registou entrada: mostra os
+    // minutos de atraso já aqui no topo, não só na secção de Presença.
+    $_pStatusIcon = 'fa-exclamation-triangle'; $_pStatusLabel = 'Atrasado'; $_pStatusClass = 'ponto-status--atrasado';
+    $_pStatusHora = $alertaAtraso['minutos'] . ' minuto' . ($alertaAtraso['minutos'] !== 1 ? 's' : '') . ' de atraso';
 } elseif ($semPonto || !$lastPonto) {
     $_pStatusIcon = 'fa-clock'; $_pStatusLabel = 'Sem ponto hoje'; $_pStatusClass = 'ponto-status--none';
     $_pStatusHora = 'Registe a sua entrada';

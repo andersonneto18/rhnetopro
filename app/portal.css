@@ -1637,6 +1637,12 @@ body {
     color: var(--error-500);
 }
 
+.ponto-status--atrasado {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: var(--warning-500);
+}
+
 .dashboard-quick-btns {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;

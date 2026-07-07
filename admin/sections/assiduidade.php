@@ -555,14 +555,13 @@
                         <tr class="fr-thead-row">
                             <th class="fr-th-emp">Funcionário</th>
                             <th class="fr-th-status">Status</th>
-                            <th>Data</th>
                             <th>Roteiro</th>
                             <th class="fr-th-acts">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-                        // **IMPORTANTE:** O bloco de código a seguir assume que a variável $pdo 
+                        // **IMPORTANTE:** O bloco de código a seguir assume que a variável $pdo
                         // para a conexão com o banco de dados está definida e disponível aqui.
 
                         $pontoDateColumn = 'data_registro';
@@ -1101,7 +1100,6 @@
                                     data-status-key="<?php echo htmlspecialchars($statusKey); ?>"><?php echo $pLabel; ?></span>
                             </td>
 
-                            <td><?php echo $dateDisplay; ?></td>
                             <?php $_totalEventosCell = count($_timelineEventos); ?>
                             <td class="fr-td-roteiro">
                                 <div class="fr-roteiro">

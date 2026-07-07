@@ -444,6 +444,18 @@ try {
             KEY idx_turno_swap_target (target_employee_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
+
+    // Repara tabelas legadas criadas sem AUTO_INCREMENT em `id` (visto em produção: toda
+    // solicitação após a primeira falhava com "Duplicate entry '0' for key 'PRIMARY'",
+    // pois cada INSERT sem valor explícito de id caía sempre em 0).
+    $idColInfo = $pdo->query("SHOW COLUMNS FROM turno_swap_requests LIKE 'id'")->fetch(PDO::FETCH_ASSOC);
+    if ($idColInfo && stripos((string)($idColInfo['Extra'] ?? ''), 'auto_increment') === false) {
+        if ($pdo->query("SELECT id FROM turno_swap_requests WHERE id = 0 LIMIT 1")->fetch(PDO::FETCH_ASSOC)) {
+            $maxId = (int)$pdo->query("SELECT COALESCE(MAX(id), 0) AS m FROM turno_swap_requests")->fetch(PDO::FETCH_ASSOC)['m'];
+            $pdo->exec("UPDATE turno_swap_requests SET id = " . ($maxId + 1) . " WHERE id = 0");
+        }
+        $pdo->exec("ALTER TABLE turno_swap_requests MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT");
+    }
 } catch (Throwable $e) {
     error_log('Erro ao preparar tabela turno_swap_requests: ' . $e->getMessage());
 }

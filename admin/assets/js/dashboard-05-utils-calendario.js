@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
-    function updatePresencaSummaryCards(rows) {
+    function updatePresencaSummaryCards(rows, searchValue = '', startValue = '', endValue = '') {
         const counts = {
             visible: 0,
             presente: 0,
@@ -601,8 +601,16 @@ document.addEventListener('DOMContentLoaded', function() {
             'sem-turno': 0
         };
 
+        // As contagens ignoram o filtro de status de propósito: cada card deve
+        // sempre mostrar o total real da sua categoria, para que clicar num
+        // card (que só altera o filtro de status) não zere os outros.
         rows.forEach(row => {
-            if (row.style.display === 'none') return;
+            const name = normalizePresencaValue(row.cells[0]?.textContent || '');
+            const rowDate = row.dataset.presencaDate || '';
+
+            const matchesSearch = searchValue === '' || name.includes(searchValue);
+            const matchesPeriod = matchesDateInterval(rowDate, startValue, endValue);
+            if (!matchesSearch || !matchesPeriod) return;
 
             counts.visible += 1;
             const statusKey = getPresencaStatusKey(row);
@@ -680,7 +688,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const hasFilters = searchValue || statusValue || startValue || endValue;
         if (clearFiltersPresenca) clearFiltersPresenca.style.display = hasFilters ? 'block' : 'none';
 
-        updatePresencaSummaryCards(Array.from(rows));
+        updatePresencaSummaryCards(Array.from(rows), searchValue, startValue, endValue);
         syncPresencaKpiActive(statusValue);
         updatePresencaFilterBadge();
     }

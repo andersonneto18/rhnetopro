@@ -185,24 +185,20 @@
                             <span id="resultCountHistoryPresenca"
                                 style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; white-space: nowrap; background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 8px; padding: 0.45rem 0.75rem;"></span>
 
-                            <div class="dropdown" style="position: relative; display: inline-block;">
-                                <button class="btn btn-accent" style="white-space: nowrap;"
-                                    onclick="toggleExportHistoryPresencaDropdown()">
-                                    <i class="fas fa-download"></i>
+                            <div class="fr-export-wrap" style="position: relative;">
+                                <button class="fr-export-btn" onclick="toggleExportHistoryPresencaDropdown()">
+                                    <i class="fas fa-arrow-up-from-bracket"></i>
                                     <span>Exportar Histórico</span>
                                     <i class="fas fa-chevron-down" style="margin-left: 5px; font-size: 0.8em;"></i>
                                 </button>
-                                <div id="exportHistoryPresencaDropdown" class="dropdown-content"
-                                    style="display: none; position: absolute; right: 0; background-color: white; min-width: 210px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1; margin-top: 5px;">
-                                    <a href="#" onclick="exportHistoryPresencaPDF(); return false;"
-                                        style="color: #1f2937; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #e5e7eb;">
-                                        <i class="fas fa-file-pdf" style="color: #e74c3c; margin-right: 8px;"></i>
-                                        Exportar PDF
+                                <div id="exportHistoryPresencaDropdown" class="fr-export-menu" style="display: none;">
+                                    <a href="#" onclick="exportHistoryPresencaPDF(); return false;" class="fr-export-item">
+                                        <i class="fas fa-file-pdf" style="color: #e74c3c;"></i>
+                                        PDF
                                     </a>
-                                    <a href="#" onclick="exportHistoryPresencaCSV(); return false;"
-                                        style="color: #1f2937; padding: 12px 16px; text-decoration: none; display: block;">
-                                        <i class="fas fa-file-csv" style="color: #27ae60; margin-right: 8px;"></i>
-                                        Exportar CSV
+                                    <a href="#" onclick="exportHistoryPresencaCSV(); return false;" class="fr-export-item">
+                                        <i class="fas fa-file-csv" style="color: #27ae60;"></i>
+                                        CSV
                                     </a>
                                 </div>
                             </div>
@@ -496,22 +492,18 @@
                             <span>Histórico</span>
                             <i class="fas fa-chevron-down" style="margin-left:.3rem; font-size:.78em;"></i>
                         </button>
-                        <div class="dropdown" style="position:relative; display:inline-block;">
-                            <button class="btn btn-accent" style="white-space:nowrap; padding:.5rem .9rem;"
-                                onclick="toggleExportPresencaDropdown()">
-                                <i class="fas fa-download"></i>
+                        <div class="fr-export-wrap" style="position:relative;">
+                            <button class="fr-export-btn" onclick="toggleExportPresencaDropdown()">
+                                <i class="fas fa-arrow-up-from-bracket"></i>
                                 <span>Exportar</span>
                                 <i class="fas fa-chevron-down" style="margin-left:4px; font-size:.78em;"></i>
                             </button>
-                            <div id="exportPresencaDropdown" class="dropdown-content"
-                                style="display:none; position:absolute; right:0; background-color:white; min-width:180px; box-shadow:0 8px 16px rgba(0,0,0,.2); border-radius:8px; z-index:1; margin-top:5px;">
-                                <a href="#" id="exportPresencaPDF" onclick="exportPresencaPDF(); return false;"
-                                    style="color:#1f2937; padding:12px 16px; text-decoration:none; display:block; border-bottom:1px solid #e5e7eb;">
-                                    <i class="fas fa-file-pdf" style="color:#e74c3c; margin-right:8px;"></i> Exportar PDF
+                            <div id="exportPresencaDropdown" class="fr-export-menu" style="display:none;">
+                                <a href="#" id="exportPresencaPDF" onclick="exportPresencaPDF(); return false;" class="fr-export-item">
+                                    <i class="fas fa-file-pdf" style="color:#e74c3c;"></i> PDF
                                 </a>
-                                <a href="#" id="expotpresenca" onclick="exportPresencaCSV(); return false;"
-                                    style="color:#1f2937; padding:12px 16px; text-decoration:none; display:block;">
-                                    <i class="fas fa-file-csv" style="color:#27ae60; margin-right:8px;"></i> Exportar CSV
+                                <a href="#" id="expotpresenca" onclick="exportPresencaCSV(); return false;" class="fr-export-item">
+                                    <i class="fas fa-file-csv" style="color:#27ae60;"></i> CSV
                                 </a>
                             </div>
                         </div>
@@ -519,10 +511,7 @@
 
                     <!-- Collapsible advanced filters -->
                     <div class="fr-adv-filters" id="paAdvFilters">
-                        <input type="date" id="filterPresencaStart" class="fr-select"
-                            title="Data inicial" value="<?php echo htmlspecialchars($presencaServerStart); ?>">
-                        <input type="date" id="filterPresencaEnd" class="fr-select"
-                            title="Data final" value="<?php echo htmlspecialchars($presencaServerEnd); ?>">
+                        
                         <select id="filterPresencaStatus" class="fr-select">
                             <option value="">Todos os status</option>
                             <option value="presente">Presente</option>

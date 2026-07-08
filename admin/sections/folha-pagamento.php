@@ -155,7 +155,7 @@
                                 <?php endif; ?>
                             </form>
 
-                            <?php if ($folhaFechada && isset($_SESSION['user_level']) && in_array(mb_strtolower($_SESSION['user_level']), ['admin', 'administrador', 'superadmin'], true)): ?>
+                            <?php if ($folhaFechada): ?>
                             <form id="reopenFolhaForm" method="post"
                                 action="dashboard.php?section=folha-pagamento&folha_mes=<?php echo (int)$folhaFiscalMonth; ?>&folha_ano=<?php echo (int)$folhaFiscalYear; ?>"
                                 style="display:inline;">
@@ -164,7 +164,7 @@
                                 <input type="hidden" name="fiscal_month" value="<?php echo (int)$folhaFiscalMonth; ?>">
                                 <button type="submit" class="fp-tb-btn"
                                     style="background:rgba(239,68,68,.12);color:#fca5a5;border-color:rgba(239,68,68,.3);"
-                                    title="Reabrir folha para permitir edições (admin only)">
+                                    title="Reabrir folha para permitir edições">
                                     <i class="fas fa-unlock"></i> Reabrir
                                 </button>
                             </form>

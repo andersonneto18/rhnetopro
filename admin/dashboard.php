@@ -3672,15 +3672,6 @@ try {
         $rfYear  = max($currentYear - 5, min($currentYear + 1, $rfYear));
         $rfMonth = max(1, min(12, $rfMonth));
 
-        // Verificar se é admin (user_level = 'admin' ou similar)
-        $isAdmin = isset($_SESSION['user_level']) && in_array(mb_strtolower($_SESSION['user_level']), ['admin', 'administrador', 'superadmin'], true);
-
-        if (!$isAdmin) {
-            error_log("Permissão negada: utilizador {$_SESSION['user_id']} tentou reabrir folha");
-            header('Location: dashboard.php?section=folha-pagamento&folha_mes=' . $rfMonth . '&folha_ano=' . $rfYear . '&error=permissao');
-            exit;
-        }
-
         try {
             // Remover snapshot do histórico (permite recalcular)
             $stmtDelSnap = $pdo->prepare(

@@ -565,11 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const shouldOpenPresencaHistory = sessionStorage.getItem('openPresencaHistory') === '1';
             if (shouldOpenPresencaHistory) {
                 setTimeout(() => {
-                    const historyPanel = document.getElementById('presencaHistoryPanel');
-                    const historyButton = document.getElementById('togglePresencaHistoryBtn');
-                    if (historyPanel && historyPanel.dataset.open !== 'true') {
-                        togglePresencaHistoryPanel(historyButton || null);
-                    }
+                    openPresencaHistoryModal();
                     sessionStorage.removeItem('openPresencaHistory');
                 }, 220);
             }
@@ -737,33 +733,36 @@ function toggleExportTurnosDropdown() {
     dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
 }
 
-function togglePresencaHistoryPanel(button) {
+function openPresencaHistoryModal() {
     const panel = document.getElementById('presencaHistoryPanel');
     if (!panel) return;
-
-    const isOpen = panel.dataset.open === 'true';
-    const nextOpen = !isOpen;
-
-    if (nextOpen) {
-        panel.style.marginTop = '1.25rem';
-        panel.style.maxHeight = panel.scrollHeight + 'px';
-        panel.style.opacity = '1';
-        panel.dataset.open = 'true';
-    } else {
-        panel.style.maxHeight = '0';
-        panel.style.opacity = '0';
-        panel.style.marginTop = '0';
-        panel.dataset.open = 'false';
-    }
-
-    if (button) {
-        button.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
-        button.classList.toggle('history-active', nextOpen);
-        button.innerHTML = nextOpen
-            ? '<i class="fas fa-history"></i><span>Ocultar Histórico</span><i class="fas fa-chevron-up" style="margin-left: .35rem; font-size: 0.8em;"></i>'
-            : '<i class="fas fa-history"></i><span>Histórico</span><i class="fas fa-chevron-down" style="margin-left: .35rem; font-size: 0.8em;"></i>';
-    }
+    panel.style.display = 'flex';
+    panel.dataset.open = 'true';
+    const button = document.getElementById('togglePresencaHistoryBtn');
+    if (button) button.classList.add('history-active');
 }
+
+function closePresencaHistoryModal() {
+    const panel = document.getElementById('presencaHistoryPanel');
+    if (!panel) return;
+    panel.style.display = 'none';
+    panel.dataset.open = 'false';
+    const button = document.getElementById('togglePresencaHistoryBtn');
+    if (button) button.classList.remove('history-active');
+}
+
+(function wirePresencaHistoryModal() {
+    document.addEventListener('DOMContentLoaded', function () {
+        const panel = document.getElementById('presencaHistoryPanel');
+        const closeBtn = document.getElementById('btnClosePresencaHistory');
+        if (closeBtn) closeBtn.addEventListener('click', closePresencaHistoryModal);
+        if (panel) {
+            panel.addEventListener('click', function (e) {
+                if (e.target === panel) closePresencaHistoryModal();
+            });
+        }
+    });
+})();
 
 // Fechar dropdown ao clicar fora
 window.onclick = function(event) {

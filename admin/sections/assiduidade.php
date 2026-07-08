@@ -135,15 +135,19 @@
                 </div>
             </div>
 
-            <div id="presencaHistoryPanel"
-                style="max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease; margin-top: 0;">
-                <div class="data-table" style="margin-top: 1.25rem;">
+            <div id="presencaHistoryPanel" class="modal" style="display:none; align-items:flex-start; justify-content:center; padding:24px 16px 48px; overflow-y:auto;">
+                <div class="am-sheet" style="max-width:1100px;">
+                    <button type="button" id="btnClosePresencaHistory" class="am-close" aria-label="Fechar">&times;</button>
+                    <div class="am-header">
+                        <div class="am-header-icon"><i class="fas fa-history"></i></div>
+                        <div>
+                            <h2 class="am-title">Histórico de Presença</h2>
+                            <p class="am-subtitle">Pesquisa, filtros e exportação dos registos anteriores</p>
+                        </div>
+                    </div>
+                <div class="data-table" style="margin-top: 0; background:transparent; border:none; box-shadow:none; padding:0;">
                     <div class="table-header"
-                        style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                        <h3
-                            style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--text-primary); white-space: nowrap;">
-                            Histórico de Presença
-                        </h3>
+                        style="display: flex; justify-content: flex-end; align-items: center; gap: 1rem; flex-wrap: wrap; background:transparent; padding:0 0 1rem;">
 
                         <div style="display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; margin-left:auto;">
                             <input type="text" id="searchHistoryPresenca" placeholder="Pesquisar no histórico..."
@@ -412,6 +416,7 @@
                     </div>
                     <?php endif; ?>
                 </div>
+                </div>
             </div>
 
             <div id="presencaSummaryCards" class="pa-kpi-strip">
@@ -483,14 +488,13 @@
                             <i class="fas fa-sliders-h"></i> Filtros
                             <span class="fr-filter-badge" id="paFilterBadge" style="display:none"></span>
                         </button>
-                        <button type="button" id="togglePresencaHistoryBtn" class="btn btn-secondary" disabled
-                            aria-expanded="false"
+                        <button type="button" id="togglePresencaHistoryBtn" class="btn btn-secondary"
+                            aria-haspopup="dialog"
                             aria-controls="presencaHistoryPanel"
-                            title="Indisponível no momento"
+                            onclick="openPresencaHistoryModal()"
                             style="padding:.5rem .9rem; white-space:nowrap;">
                             <i class="fas fa-history"></i>
                             <span>Histórico</span>
-                            <i class="fas fa-chevron-down" style="margin-left:.3rem; font-size:.78em;"></i>
                         </button>
                         <div class="fr-export-wrap" style="position:relative;">
                             <button class="fr-export-btn" onclick="toggleExportPresencaDropdown()">

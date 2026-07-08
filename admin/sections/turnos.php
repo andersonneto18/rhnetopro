@@ -137,15 +137,6 @@
                                 <i class="fas fa-sliders-h"></i> Filtros
                                 <span class="fr-filter-badge" id="turnosFilterBadge" style="display:none"></span>
                             </button>
-                            <div style="position:relative;">
-                                <button class="fr-export-btn" onclick="toggleExportTurnosDropdown()">
-                                    <i class="fas fa-arrow-up-from-bracket"></i> Exportar <i class="fas fa-chevron-down" style="font-size:.7em;margin-left:2px;"></i>
-                                </button>
-                                <div id="exportTurnosDropdown" class="fr-export-menu" style="display:none;">
-                                    <a href="#" onclick="exportTurnosPDF(); return false;" class="fr-export-item"><i class="fas fa-file-pdf" style="color:#e74c3c;"></i> PDF</a>
-                                    <a href="#" onclick="exportTurnosExcel(); return false;" class="fr-export-item"><i class="fas fa-file-excel" style="color:#27ae60;"></i> Excel</a>
-                                </div>
-                            </div>
                         </div>
                     </div>
 

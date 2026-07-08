@@ -7,6 +7,7 @@
         const fd = new FormData();
         fd.append('id', employeeId);
         fd.append('status', 'inactive');
+        fd.append('quick_status_toggle', '1');
 
         try {
             const res = await fetch('../api/employees/update_employee.php', {
@@ -808,6 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const formData = new FormData();
                 formData.append('id', employeeId);
                 formData.append('status', 'inactive');
+                formData.append('quick_status_toggle', '1');
 
                 fetch('../api/employees/update_employee.php', {
                     method: 'POST',

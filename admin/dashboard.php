@@ -2306,9 +2306,8 @@ try {
     error_log('migrate employees vacation_days/endDate: ' . $e->getMessage());
 }
 
-// Reposição automática de status: funcionários marcados como 'ferias' sem um
-// período aprovado em curso hoje voltam a 'ativo' (cobre férias terminadas e
-// aprovações futuras que não devem refletir 'ferias' antes da data de início).
+// Reposição automática de status: mantém employees.status sincronizado com os
+// períodos de férias aprovados, nos dois sentidos.
 try {
     $checkFeriasTableAutoExp = $pdo->query("SHOW TABLES LIKE 'ferias'");
     if ($checkFeriasTableAutoExp && $checkFeriasTableAutoExp->rowCount() > 0) {
@@ -2318,8 +2317,22 @@ try {
             ? 'funcionario_id'
             : (in_array('employee_id', $feriasColsAutoExp, true) ? 'employee_id' : 'funcionario_id');
         $todayIsoAutoExp = date('Y-m-d');
+
+        // Períodos que já começaram hoje: marca 'ferias' quem ainda estava 'active'.
         $pdo->prepare("UPDATE employees e
-                SET e.status = 'ativo'
+                SET e.status = 'ferias'
+                WHERE e.client_id = ? AND e.status = 'active'
+                  AND EXISTS (
+                      SELECT 1 FROM ferias f
+                      WHERE f.{$feriasEmployeeColAutoExp} = e.id
+                        AND LOWER(COALESCE(f.status, '')) IN ('aprovada', 'aprovado')
+                        AND f.data_inicio <= ? AND f.data_fim >= ?
+                  )")
+            ->execute([$loggedInClientId, $todayIsoAutoExp, $todayIsoAutoExp]);
+
+        // Períodos terminados (ou sem aprovação em curso hoje): volta a 'active'.
+        $pdo->prepare("UPDATE employees e
+                SET e.status = 'active'
                 WHERE e.client_id = ? AND e.status = 'ferias'
                   AND NOT EXISTS (
                       SELECT 1 FROM ferias f

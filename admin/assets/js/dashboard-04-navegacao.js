@@ -767,7 +767,9 @@ function togglePresencaHistoryPanel(button) {
 
 // Fechar dropdown ao clicar fora
 window.onclick = function(event) {
-    if (!event.target.matches('.btn-accent') && !event.target.closest('.btn-accent')) {
+    const isExportTrigger = event.target.matches('.btn-accent') || event.target.closest('.btn-accent')
+        || event.target.matches('.fr-export-btn') || event.target.closest('.fr-export-btn');
+    if (!isExportTrigger) {
         const dropdown = document.getElementById('exportDropdown');
         if (dropdown && dropdown.style.display === 'block') {
             dropdown.style.display = 'none';

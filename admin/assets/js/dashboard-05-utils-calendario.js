@@ -1057,6 +1057,78 @@ document.addEventListener('DOMContentLoaded', function() {
         return String(date.getDate()).padStart(2, '0') + '/' + String(date.getMonth() + 1).padStart(2, '0');
     }
 
+    let turnoStatusMapCache = null;
+    let turnoStatusMapCacheKey = '';
+
+    function fetchTurnoStatusMap(startDate, endDate) {
+        const startIso = dateToIsoLocal(startDate);
+        const endIso = dateToIsoLocal(endDate);
+        const cacheKey = `${startIso}_${endIso}`;
+
+        if (turnoStatusMapCacheKey === cacheKey && turnoStatusMapCache) {
+            return Promise.resolve(turnoStatusMapCache);
+        }
+
+        return fetch(`../api/turnos/status_periodo.php?data_inicio=${startIso}&data_fim=${endIso}`, {
+            credentials: 'same-origin'
+        })
+            .then(res => res.json())
+            .then(data => {
+                const map = (data && data.success && data.status) ? data.status : {};
+                turnoStatusMapCache = map;
+                turnoStatusMapCacheKey = cacheKey;
+                return map;
+            })
+            .catch(() => ({}));
+    }
+
+    function getTurnoLiveStatus(statusMap, funcionarioId, dayDate) {
+        if (!statusMap) return null;
+        const key = `${funcionarioId}_${dateToIsoLocal(dayDate)}`;
+        return statusMap[key] || null;
+    }
+
+    function appendTurnoStatusChip(card, liveStatus) {
+        if (!liveStatus || liveStatus === 'agendado') return;
+
+        const chip = document.createElement('div');
+        const labels = {
+            em_andamento: 'Em andamento',
+            concluido: 'Concluído',
+            falta: 'Falta'
+        };
+        const icons = {
+            em_andamento: null,
+            concluido: 'fas fa-check-circle',
+            falta: 'fas fa-exclamation-circle'
+        };
+        chip.className = `turno-status-chip turno-status-chip--${liveStatus === 'em_andamento' ? 'andamento' : liveStatus}`;
+
+        if (liveStatus === 'em_andamento') {
+            const dot = document.createElement('span');
+            dot.className = 'turno-status-dot';
+            chip.appendChild(dot);
+        } else if (icons[liveStatus]) {
+            const icon = document.createElement('i');
+            icon.className = icons[liveStatus];
+            chip.appendChild(icon);
+        }
+
+        const label = document.createElement('span');
+        label.textContent = labels[liveStatus] || liveStatus;
+        chip.appendChild(label);
+
+        card.appendChild(chip);
+
+        if (liveStatus === 'em_andamento') {
+            card.style.borderLeft = '4px solid #3b82f6';
+        } else if (liveStatus === 'concluido') {
+            card.style.borderLeft = '4px solid #22c55e';
+        } else if (liveStatus === 'falta') {
+            card.style.borderLeft = '4px solid #ef4444';
+        }
+    }
+
     function formatWeekRangeLabel(anchorDate) {
         const weekStart = startOfWeek(anchorDate);
         const weekEnd = addDays(weekStart, 6);
@@ -1146,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function createTurnoCard(turno) {
+    function createTurnoCard(turno, dayDate, statusMap) {
         const card = document.createElement('div');
         const statusClass = turno.statusText.includes('inativo') ? 'is-inativo' : 'is-ativo';
         const typeClass = getTurnoTypeClass(turno.turnoTipo);
@@ -1173,25 +1245,27 @@ document.addEventListener('DOMContentLoaded', function() {
         meta.style.color = '#94a3b8';
         meta.style.fontSize = '0.76rem';
 
+        card.appendChild(title);
+        card.appendChild(subtitle);
+        card.appendChild(meta);
+
         if (turno.vigenciaText) {
             const rangeMeta = document.createElement('div');
             rangeMeta.textContent = `Vigência: ${turno.vigenciaText}`;
             rangeMeta.style.color = '#94a3b8';
             rangeMeta.style.fontSize = '0.74rem';
-            card.appendChild(title);
-            card.appendChild(subtitle);
-            card.appendChild(meta);
             card.appendChild(rangeMeta);
-            return card;
         }
 
-        card.appendChild(title);
-        card.appendChild(subtitle);
-        card.appendChild(meta);
+        if (dayDate && turno.funcionarioId) {
+            const liveStatus = getTurnoLiveStatus(statusMap, turno.funcionarioId, dayDate);
+            appendTurnoStatusChip(card, liveStatus);
+        }
+
         return card;
     }
 
-    function renderWeekCalendar(turnosData) {
+    function renderWeekCalendar(turnosData, statusMap) {
         if (!turnosCalendarGrid) return;
         styleCalendarShell();
 
@@ -1278,7 +1352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 dayTurnos
                     .sort((a, b) => a.horarioInicio.localeCompare(b.horarioInicio, 'pt'))
-                    .forEach(turno => body.appendChild(createTurnoCard(turno)));
+                    .forEach(turno => body.appendChild(createTurnoCard(turno, dayDate, statusMap)));
             }
 
             dayCol.appendChild(header);
@@ -1291,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function renderMonthCalendar(turnosData) {
+    function renderMonthCalendar(turnosData, statusMap) {
         if (!turnosCalendarGrid) return;
         styleCalendarShell();
 
@@ -1389,7 +1463,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dayTurnos
                     .sort((a, b) => a.horarioInicio.localeCompare(b.horarioInicio, 'pt'))
                     .slice(0, 3)
-                    .forEach(turno => list.appendChild(createTurnoCard(turno)));
+                    .forEach(turno => list.appendChild(createTurnoCard(turno, currentDate, statusMap)));
                 if (dayTurnos.length > 3) {
                     const more = document.createElement('p');
                     more.className = 'turnos-calendar-more';
@@ -1419,12 +1493,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const visibleRows = getTurnosRows(false);
             const turnosData = visibleRows.map(extractTurnoModel);
 
+            let rangeStart;
+            let rangeEnd;
             if (turnosCalendarView === 'week') {
-                renderWeekCalendar(turnosData);
-                return;
+                rangeStart = startOfWeek(turnosCalendarAnchor);
+                rangeEnd = addDays(rangeStart, 6);
+            } else {
+                const firstDay = new Date(turnosCalendarAnchor.getFullYear(), turnosCalendarAnchor.getMonth(), 1);
+                rangeStart = startOfWeek(firstDay);
+                rangeEnd = addDays(rangeStart, 41);
             }
 
-            renderMonthCalendar(turnosData);
+            fetchTurnoStatusMap(rangeStart, rangeEnd).then(statusMap => {
+                if (turnosCalendarView === 'week') {
+                    renderWeekCalendar(turnosData, statusMap);
+                } else {
+                    renderMonthCalendar(turnosData, statusMap);
+                }
+            });
         } catch (error) {
             console.error('Erro ao renderizar calendário de turnos:', error);
             if (turnosCalendarGrid) {

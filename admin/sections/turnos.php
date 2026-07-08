@@ -2,6 +2,43 @@
 // Secção "Turnos" — incluída a partir de admin/dashboard.php (depende de $pdo, $employees, $loggedInClientId, $csrfToken, etc. já definidos lá).
 ?>
         <section id="turnos-section" class="content-section">
+            <style>
+                @keyframes turnoLivePulse {
+                    0% { box-shadow: 0 0 0 0 rgba(59,130,246,.55); }
+                    70% { box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+                    100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+                }
+                .turno-status-chip {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: .35rem;
+                    margin-top: .3rem;
+                    padding: .18rem .5rem;
+                    border-radius: 999px;
+                    font-size: .7rem;
+                    font-weight: 700;
+                    width: fit-content;
+                }
+                .turno-status-chip--andamento {
+                    background: rgba(59,130,246,.16);
+                    color: #93c5fd;
+                }
+                .turno-status-chip--concluido {
+                    background: rgba(34,197,94,.16);
+                    color: #86efac;
+                }
+                .turno-status-chip--falta {
+                    background: rgba(239,68,68,.16);
+                    color: #fca5a5;
+                }
+                .turno-status-dot {
+                    width: 7px;
+                    height: 7px;
+                    border-radius: 50%;
+                    background: #3b82f6;
+                    animation: turnoLivePulse 1.6s infinite;
+                }
+            </style>
             <?php $swapFeedback = (string)($_GET['swap'] ?? ''); ?>
             <?php if ($swapFeedback === 'created'): ?>
             <div class="alert-success"

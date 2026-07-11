@@ -2361,30 +2361,55 @@ try {
 // **** CARREGAR PRESENÇAS ****
 $presencas = [];
 try {
-    // Check if registros_ponto has client_id for a safe JOIN
-    $rpHasClientId = false;
-    try { $rpHasClientId = (bool)$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'client_id'")->fetch(); } catch (Exception $_e) {}
-    $rpJoinExtra = $rpHasClientId ? ' AND rp.client_id = p.client_id' : '';
-
+    // A tabela `presencas` só é escrita pelo script noturno de persistência (que corre uma vez
+    // por dia e, na prática, quase nunca corre — ver `tools/atualizar_status_presencas.php`).
+    // As marcações de ponto reais dos funcionários ficam em `registros_ponto`, não em
+    // `presencas` — por isso esta lista tem de ter `registros_ponto` como fonte principal,
+    // com `presencas` só como complemento para dias que só lá tenham registo (ex.: faltas já
+    // persistidas por esse script, quando corre).
     $stmt = $pdo->prepare("
-        SELECT p.*, e.name, COALESCE(e.profile_picture,'') AS profile_picture,
-               GROUP_CONCAT(
-                   CONCAT_WS('|',
-                       COALESCE(rp.hora_entrada,''),
-                       COALESCE(rp.hora_saida,''),
-                       COALESCE(rp.observacao, rp.obs, '')
-                   ) ORDER BY rp.id SEPARATOR ';;'
-               ) AS ponto_timeline
-        FROM presencas p
-        INNER JOIN employees e ON e.id = p.funcionario_id
-        LEFT JOIN registros_ponto rp ON rp.funcionario_id = p.funcionario_id
-            AND rp.data_registro = p.data_registro$rpJoinExtra
-        WHERE p.client_id = ?
-        GROUP BY p.id
-        ORDER BY p.data_registro DESC
+        SELECT unified.id, unified.funcionario_id, unified.client_id, unified.data_registro,
+               unified.status, unified.ponto_timeline,
+               e.name, COALESCE(e.profile_picture,'') AS profile_picture
+        FROM (
+            SELECT
+                MIN(rp.id) AS id,
+                rp.funcionario_id,
+                rp.client_id,
+                DATE(rp.data_registro) AS data_registro,
+                CASE
+                    WHEN SUM(CASE WHEN rp.hora_saida IS NULL OR rp.hora_saida = '' THEN 1 ELSE 0 END) > 0
+                        THEN 'em_andamento'
+                    ELSE 'presente'
+                END AS status,
+                GROUP_CONCAT(
+                    CONCAT_WS('|',
+                        COALESCE(rp.hora_entrada,''),
+                        COALESCE(rp.hora_saida,''),
+                        COALESCE(rp.observacao, rp.obs, '')
+                    ) ORDER BY rp.id SEPARATOR ';;'
+                ) AS ponto_timeline
+            FROM registros_ponto rp
+            WHERE rp.client_id = ?
+            GROUP BY rp.funcionario_id, DATE(rp.data_registro)
+
+            UNION ALL
+
+            SELECT p.id, p.funcionario_id, p.client_id, DATE(p.data_registro) AS data_registro,
+                   p.status, NULL AS ponto_timeline
+            FROM presencas p
+            WHERE p.client_id = ?
+              AND NOT EXISTS (
+                  SELECT 1 FROM registros_ponto rp2
+                  WHERE rp2.funcionario_id = p.funcionario_id
+                    AND DATE(rp2.data_registro) = DATE(p.data_registro)
+              )
+        ) unified
+        INNER JOIN employees e ON e.id = unified.funcionario_id
+        ORDER BY unified.data_registro DESC
         LIMIT 100
     ");
-    $stmt->execute([$loggedInClientId]);
+    $stmt->execute([$loggedInClientId, $loggedInClientId]);
     $presencas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (PDOException $e) {
     $presencas = [];

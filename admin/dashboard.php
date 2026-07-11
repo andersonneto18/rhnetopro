@@ -2569,111 +2569,174 @@ try {
     $faltasPorFuncionario = [];
 }
 
-// Falta de HOJE ainda não persistida (o script noturno só grava às 23:55): se o relatório
-// é do mês atual, soma já a falta do dia corrente assim que o turno termina sem entrada,
-// em vez de o funcionário ficar com uma falta "invisível" no Relatório até à meia-noite.
-if ((int)$reportYear === (int)date('Y') && (int)$reportMonth === (int)date('n')) {
-    try {
-        $_hojeReal = date('Y-m-d');
-        $_agoraTs = time();
-        $_weekdayMapRel = [0 => 'dom', 1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => 'sab'];
-        $_weekdayTokenRel = $_weekdayMapRel[(int)date('w')];
+// Faltas ao vivo para todo o período do relatório ainda não persistidas (o script noturno
+// só corre uma vez por dia, às 23:55 — se a tarefa não tiver corrido nalguma noite, esse dia
+// fica sem falta persistida na tabela `presencas`). Em vez de depender só do script, recalcula
+// ao vivo, dia a dia, dentro do período do relatório (até hoje), quais os dias com turno
+// previsto que terminaram sem entrada e sem justificativa aprovada.
+try {
+    $_hojeReal = date('Y-m-d');
+    $_agoraTs = time();
+    $_weekdayMapRel = [0 => 'dom', 1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => 'sab'];
 
-        $stmtTurnosHoje = $pdo->prepare("
+    $_periodoInicio = sprintf('%04d-%02d-01', $reportYear, $reportMonth);
+    $_periodoFimMes = date('Y-m-t', strtotime($_periodoInicio));
+    $_periodoFim = ($_periodoFimMes < $_hojeReal) ? $_periodoFimMes : $_hojeReal;
+
+    if ($_periodoInicio <= $_periodoFim) {
+        $stmtTurnosPeriodo = $pdo->prepare("
             SELECT t.funcionario_id, t.horario_inicio, t.horario_fim, t.dias_semana, t.data_inicio, t.data_fim
             FROM turnos t
             INNER JOIN employees e ON e.id = t.funcionario_id
             WHERE e.client_id = ? AND LOWER(COALESCE(t.status, '')) IN ('ativo', 'active')
         ");
-        $stmtTurnosHoje->execute([$loggedInClientId]);
+        $stmtTurnosPeriodo->execute([$loggedInClientId]);
+        $turnosPeriodo = $stmtTurnosPeriodo->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-        foreach (($stmtTurnosHoje->fetchAll(PDO::FETCH_ASSOC) ?: []) as $tHoje) {
-            $empIdHoje = (int)($tHoje['funcionario_id'] ?? 0);
-            if ($empIdHoje <= 0) {
+        $empIdsPeriodo = [];
+        foreach ($turnosPeriodo as $tP0) {
+            $eid = (int)($tP0['funcionario_id'] ?? 0);
+            if ($eid > 0) $empIdsPeriodo[$eid] = true;
+        }
+        $empIdsPeriodo = array_keys($empIdsPeriodo);
+
+        // Pré-carrega, para todo o período, os dias já cobertos (ponto batido, presença já
+        // gravada ou justificativa aprovada) — evita uma query por dia por funcionário.
+        $diasComPonto = [];
+        $diasComPresenca = [];
+        $diasComJustificativa = [];
+        $diasComRegistroFalta = [];
+
+        if (!empty($empIdsPeriodo)) {
+            $inPlaceholders = implode(',', array_fill(0, count($empIdsPeriodo), '?'));
+
+            $stmtPontoPeriodo = $pdo->prepare("
+                SELECT funcionario_id, DATE(data_registro) AS dia
+                FROM registros_ponto
+                WHERE funcionario_id IN ($inPlaceholders)
+                  AND DATE(data_registro) BETWEEN ? AND ?
+                  AND hora_entrada IS NOT NULL AND hora_entrada <> ''
+                  AND LOWER(COALESCE(status, '')) <> 'invalidado'
+            ");
+            $stmtPontoPeriodo->execute(array_merge($empIdsPeriodo, [$_periodoInicio, $_periodoFim]));
+            foreach ($stmtPontoPeriodo->fetchAll(PDO::FETCH_ASSOC) ?: [] as $rP) {
+                $diasComPonto[$rP['funcionario_id'] . '_' . $rP['dia']] = true;
+            }
+
+            // Dias já contados pela query de faltas persistidas via registros_ponto
+            // (status/tipo_dia/falta_tipo) — para não somar novamente ao vivo.
+            $stmtRegFaltaPeriodo = $pdo->prepare("
+                SELECT funcionario_id, DATE(data_registro) AS dia
+                FROM registros_ponto
+                WHERE funcionario_id IN ($inPlaceholders)
+                  AND DATE(data_registro) BETWEEN ? AND ?
+                  AND (
+                        LOWER(COALESCE(status, '')) IN ('falta', 'ausente')
+                     OR LOWER(COALESCE(tipo_dia, '')) IN ('falta', 'ausente')
+                     OR COALESCE(TRIM(falta_tipo), '') <> ''
+                  )
+            ");
+            $stmtRegFaltaPeriodo->execute(array_merge($empIdsPeriodo, [$_periodoInicio, $_periodoFim]));
+            foreach ($stmtRegFaltaPeriodo->fetchAll(PDO::FETCH_ASSOC) ?: [] as $rP) {
+                $diasComRegistroFalta[$rP['funcionario_id'] . '_' . $rP['dia']] = true;
+            }
+
+            $stmtPresencaPeriodo = $pdo->prepare("
+                SELECT funcionario_id, DATE(data_registro) AS dia
+                FROM presencas
+                WHERE funcionario_id IN ($inPlaceholders)
+                  AND DATE(data_registro) BETWEEN ? AND ?
+            ");
+            $stmtPresencaPeriodo->execute(array_merge($empIdsPeriodo, [$_periodoInicio, $_periodoFim]));
+            foreach ($stmtPresencaPeriodo->fetchAll(PDO::FETCH_ASSOC) ?: [] as $rP) {
+                $diasComPresenca[$rP['funcionario_id'] . '_' . $rP['dia']] = true;
+            }
+
+            $stmtJustPeriodo = $pdo->prepare("
+                SELECT funcionario_id, data AS dia
+                FROM justificativas_presenca
+                WHERE funcionario_id IN ($inPlaceholders)
+                  AND client_id = ?
+                  AND data BETWEEN ? AND ?
+                  AND LOWER(status) = 'aprovada'
+            ");
+            $stmtJustPeriodo->execute(array_merge($empIdsPeriodo, [$loggedInClientId, $_periodoInicio, $_periodoFim]));
+            foreach ($stmtJustPeriodo->fetchAll(PDO::FETCH_ASSOC) ?: [] as $rP) {
+                $diasComJustificativa[$rP['funcionario_id'] . '_' . $rP['dia']] = true;
+            }
+        }
+
+        foreach ($turnosPeriodo as $tP) {
+            $empIdP = (int)($tP['funcionario_id'] ?? 0);
+            if ($empIdP <= 0) {
                 continue;
             }
 
-            $diasRawHoje = trim((string)($tHoje['dias_semana'] ?? ''));
-            $diasHoje = [];
-            if ($diasRawHoje !== '') {
-                $mapHoje = [
+            $diasRawP = trim((string)($tP['dias_semana'] ?? ''));
+            $diasP = [];
+            if ($diasRawP !== '') {
+                $mapP = [
                     'domingo' => 'dom', 'dom' => 'dom', 'segunda' => 'seg', 'seg' => 'seg',
                     'terca' => 'ter', 'terça' => 'ter', 'ter' => 'ter', 'quarta' => 'qua', 'qua' => 'qua',
                     'quinta' => 'qui', 'qui' => 'qui', 'sexta' => 'sex', 'sex' => 'sex',
                     'sabado' => 'sab', 'sábado' => 'sab', 'sab' => 'sab',
                 ];
-                foreach (preg_split('/\s*,\s*/', mb_strtolower($diasRawHoje)) as $pHoje) {
-                    if (isset($mapHoje[$pHoje])) $diasHoje[] = $mapHoje[$pHoje];
+                foreach (preg_split('/\s*,\s*/', mb_strtolower($diasRawP)) as $pP) {
+                    if (isset($mapP[$pP])) $diasP[] = $mapP[$pP];
                 }
             }
-            $diaCorretoHoje = empty($diasHoje) || in_array($_weekdayTokenRel, $diasHoje, true);
 
-            $inicioVigHoje = trim((string)($tHoje['data_inicio'] ?? ''));
-            $fimVigHoje = trim((string)($tHoje['data_fim'] ?? ''));
-            $dentroVigHoje = ($inicioVigHoje === '' || $inicioVigHoje === '0000-00-00' || $inicioVigHoje <= $_hojeReal)
-                && ($fimVigHoje === '' || $fimVigHoje === '0000-00-00' || $fimVigHoje >= $_hojeReal);
-
-            if (!$diaCorretoHoje || !$dentroVigHoje) {
+            $horaInicioP = substr((string)($tP['horario_inicio'] ?? ''), 0, 5);
+            $horaFimP = substr((string)($tP['horario_fim'] ?? ''), 0, 5);
+            if ($horaInicioP === '' || $horaFimP === '') {
                 continue;
             }
 
-            $horaInicioHoje = substr((string)($tHoje['horario_inicio'] ?? ''), 0, 5);
-            $horaFimHoje = substr((string)($tHoje['horario_fim'] ?? ''), 0, 5);
-            if ($horaInicioHoje === '' || $horaFimHoje === '') {
-                continue;
-            }
-            $inicioTsHoje = strtotime($_hojeReal . ' ' . $horaInicioHoje);
-            $fimTsHoje = strtotime($_hojeReal . ' ' . $horaFimHoje);
-            if ($inicioTsHoje !== false && $fimTsHoje !== false && $fimTsHoje <= $inicioTsHoje) {
-                $fimTsHoje += 24 * 60 * 60; // turno noturno
-            }
-            if ($fimTsHoje === false || $_agoraTs <= $fimTsHoje) {
-                continue; // turno ainda em curso: ainda não é falta definitiva
-            }
+            $inicioVigP = trim((string)($tP['data_inicio'] ?? ''));
+            $fimVigP = trim((string)($tP['data_fim'] ?? ''));
 
-            // Já entrou hoje (registo válido, não invalidado)? Não é falta.
-            $stmtEntradaHoje = $pdo->prepare("
-                SELECT id FROM registros_ponto
-                WHERE funcionario_id = ? AND data_registro = ?
-                  AND hora_entrada IS NOT NULL AND hora_entrada <> ''
-                  AND LOWER(COALESCE(status, '')) <> 'invalidado'
-                LIMIT 1
-            ");
-            $stmtEntradaHoje->execute([$empIdHoje, $_hojeReal]);
-            if ($stmtEntradaHoje->fetch(PDO::FETCH_ASSOC)) {
+            // Restringe o intervalo a percorrer à vigência do turno, dentro do período do relatório.
+            $rangeInicioP = ($inicioVigP !== '' && $inicioVigP !== '0000-00-00' && $inicioVigP > $_periodoInicio)
+                ? $inicioVigP : $_periodoInicio;
+            $rangeFimP = ($fimVigP !== '' && $fimVigP !== '0000-00-00' && $fimVigP < $_periodoFim)
+                ? $fimVigP : $_periodoFim;
+
+            if ($rangeInicioP > $rangeFimP) {
                 continue;
             }
 
-            // Já existe justificativa aprovada para hoje? Não conta como falta.
-            $stmtJustHoje = $pdo->prepare("
-                SELECT id FROM justificativas_presenca
-                WHERE funcionario_id = ? AND client_id = ? AND data = ?
-                  AND LOWER(status) = 'aprovada'
-                LIMIT 1
-            ");
-            $stmtJustHoje->execute([$empIdHoje, $loggedInClientId, $_hojeReal]);
-            if ($stmtJustHoje->fetch(PDO::FETCH_ASSOC)) {
-                continue;
-            }
+            $cursorP = new DateTime($rangeInicioP);
+            $fimDtP = new DateTime($rangeFimP);
+            while ($cursorP <= $fimDtP) {
+                $diaStrP = $cursorP->format('Y-m-d');
+                $weekdayTokenP = $_weekdayMapRel[(int)$cursorP->format('w')];
+                $cursorP->modify('+1 day');
 
-            // Já foi persistida (script noturno já correu, ou alguém já gravou manualmente)?
-            // Nesse caso já está contada pela query acima — não somar de novo.
-            $stmtJaPersistidoHoje = $pdo->prepare("
-                SELECT id FROM presencas
-                WHERE funcionario_id = ? AND DATE(data_registro) = ?
-                  AND LOWER(COALESCE(status, '')) IN ('falta', 'ausente')
-                LIMIT 1
-            ");
-            $stmtJaPersistidoHoje->execute([$empIdHoje, $_hojeReal]);
-            if ($stmtJaPersistidoHoje->fetch(PDO::FETCH_ASSOC)) {
-                continue;
-            }
+                $diaCorretoP = empty($diasP) || in_array($weekdayTokenP, $diasP, true);
+                if (!$diaCorretoP) {
+                    continue;
+                }
 
-            $faltasPorFuncionario[$empIdHoje] = (int)($faltasPorFuncionario[$empIdHoje] ?? 0) + 1;
+                $inicioTsP = strtotime($diaStrP . ' ' . $horaInicioP);
+                $fimTsP = strtotime($diaStrP . ' ' . $horaFimP);
+                if ($inicioTsP !== false && $fimTsP !== false && $fimTsP <= $inicioTsP) {
+                    $fimTsP += 24 * 60 * 60; // turno noturno
+                }
+                if ($fimTsP === false || $_agoraTs <= $fimTsP) {
+                    continue; // turno ainda em curso ou ainda por vir: não é falta definitiva
+                }
+
+                $keyP = $empIdP . '_' . $diaStrP;
+                if (isset($diasComPonto[$keyP]) || isset($diasComPresenca[$keyP]) || isset($diasComJustificativa[$keyP]) || isset($diasComRegistroFalta[$keyP])) {
+                    continue;
+                }
+
+                $faltasPorFuncionario[$empIdP] = (int)($faltasPorFuncionario[$empIdP] ?? 0) + 1;
+            }
         }
-    } catch (Throwable $e) {
-        error_log('Erro ao somar falta de hoje ao vivo nos relatórios: ' . $e->getMessage());
     }
+} catch (Throwable $e) {
+    error_log('Erro ao somar faltas ao vivo (período) nos relatórios: ' . $e->getMessage());
 }
 
 try {

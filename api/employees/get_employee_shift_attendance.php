@@ -37,12 +37,14 @@ try {
     // Busca o turno mais recente para o funcionário, sem filtrar o status
     // (caso a coluna contenha valores diferentes como 'Ativo' ou 'active').
     $stmtTurno = $pdo->prepare("
-        SELECT 
+        SELECT
             t.id,
             t.turno_tipo,
             t.horario_inicio,
             t.horario_fim,
             t.dias_semana,
+            t.data_inicio,
+            t.data_fim,
             t.status
         FROM turnos t
         WHERE t.funcionario_id = ?
@@ -67,32 +69,42 @@ try {
         // Se der erro, mantém data_registro
     }
 
-    // identificar colunas de entrada/saída (alguns esquemas diferentes)
-    $entryColumn = 'hora_entrada';
-    $exitColumn = 'hora_saida';
+    // identificar colunas de entrada/saída (alguns esquemas diferentes; a tabela `presencas`
+    // deste esquema nem sequer tem entrada/saída — usa NULL nesse caso em vez de assumir
+    // 'hora_entrada'/'hora_saida', o que fazia esta query falhar sempre com "Column not found").
+    $entryColumn = null;
+    $exitColumn = null;
     try {
         $cols = $pdo->query("SHOW COLUMNS FROM presencas")->fetchAll(PDO::FETCH_COLUMN);
-        if (!in_array('hora_entrada', $cols) && in_array('entrada', $cols)) {
+        if (in_array('hora_entrada', $cols, true)) {
+            $entryColumn = 'hora_entrada';
+        } elseif (in_array('entrada', $cols, true)) {
             $entryColumn = 'entrada';
         }
-        if (!in_array('hora_saida', $cols) && in_array('saida', $cols)) {
+        if (in_array('hora_saida', $cols, true)) {
+            $exitColumn = 'hora_saida';
+        } elseif (in_array('saida', $cols, true)) {
             $exitColumn = 'saida';
         }
     } catch (Exception $e) {
         // ignore
     }
 
+    $entrySelect = $entryColumn ? "p.{$entryColumn}" : 'NULL';
+    $exitSelect = $exitColumn ? "p.{$exitColumn}" : 'NULL';
+    $entryOrderBy = $entryColumn ? "p.{$entryColumn} DESC" : 'p.id DESC';
+
     $sqlPonto = "
-        SELECT 
+        SELECT
             p.id,
             p.{$dateColumn} as data_marcacao,
-            p.{$entryColumn} as hora_entrada,
-            p.{$exitColumn} as hora_saida,
+            {$entrySelect} as hora_entrada,
+            {$exitSelect} as hora_saida,
             p.status as tipo_registro,
             p.status
         FROM presencas p
         WHERE p.funcionario_id = ?
-        ORDER BY p.{$dateColumn} DESC, p.{$entryColumn} DESC
+        ORDER BY p.{$dateColumn} DESC, {$entryOrderBy}
         LIMIT 1
     ";
     $stmtPonto = $pdo->prepare($sqlPonto);
@@ -204,6 +216,96 @@ try {
                 $overtimeMinutes += $delta;
             }
         }
+    }
+
+    // Faltas ainda não persistidas: o script noturno que grava 'falta' em `presencas` só corre
+    // uma vez por dia — se não tiver corrido nessa noite, o dia fica sem qualquer registo (nem
+    // em registros_ponto nem em presencas) e o loop acima não o conta. Recalcula ao vivo, dia a
+    // dia dentro do mês do resumo (até hoje), os dias com turno previsto já terminado sem
+    // entrada e sem justificativa aprovada.
+    try {
+        $turnoStatusNorm = mb_strtolower(trim((string)($turno['status'] ?? '')));
+        if ($turno && in_array($turnoStatusNorm, ['ativo', 'active'], true)
+            && !empty($turno['horario_inicio']) && !empty($turno['horario_fim'])) {
+            $diasRawResumo = trim((string)($turno['dias_semana'] ?? ''));
+            $diasResumo = [];
+            if ($diasRawResumo !== '') {
+                $mapResumo = [
+                    'domingo' => 'dom', 'dom' => 'dom', 'segunda' => 'seg', 'seg' => 'seg',
+                    'terca' => 'ter', 'terça' => 'ter', 'ter' => 'ter', 'quarta' => 'qua', 'qua' => 'qua',
+                    'quinta' => 'qui', 'qui' => 'qui', 'sexta' => 'sex', 'sex' => 'sex',
+                    'sabado' => 'sab', 'sábado' => 'sab', 'sab' => 'sab',
+                ];
+                foreach (preg_split('/\s*,\s*/', mb_strtolower($diasRawResumo)) as $pResumo) {
+                    if (isset($mapResumo[$pResumo])) $diasResumo[] = $mapResumo[$pResumo];
+                }
+            }
+
+            $horaInicioResumo = substr((string)$turno['horario_inicio'], 0, 5);
+            $horaFimResumo = substr((string)$turno['horario_fim'], 0, 5);
+
+            $periodoInicioResumo = sprintf('%04d-%02d-01', $summaryYear, $summaryMonth);
+            $periodoFimMesResumo = date('Y-m-t', strtotime($periodoInicioResumo));
+            $hojeResumo = date('Y-m-d');
+            $periodoFimResumo = ($periodoFimMesResumo < $hojeResumo) ? $periodoFimMesResumo : $hojeResumo;
+
+            $inicioVigResumo = trim((string)($turno['data_inicio'] ?? ''));
+            $fimVigResumo = trim((string)($turno['data_fim'] ?? ''));
+            $rangeInicioResumo = ($inicioVigResumo !== '' && $inicioVigResumo !== '0000-00-00' && $inicioVigResumo > $periodoInicioResumo)
+                ? $inicioVigResumo : $periodoInicioResumo;
+            $rangeFimResumo = ($fimVigResumo !== '' && $fimVigResumo !== '0000-00-00' && $fimVigResumo < $periodoFimResumo)
+                ? $fimVigResumo : $periodoFimResumo;
+
+            if ($horaInicioResumo !== '' && $horaFimResumo !== '' && $rangeInicioResumo <= $rangeFimResumo) {
+                // Dias com justificativa aprovada no mês — não contam como falta.
+                $diasJustificadosResumo = [];
+                $stmtJustResumo = $pdo->prepare("
+                    SELECT data FROM justificativas_presenca
+                    WHERE funcionario_id = ? AND client_id = ?
+                      AND data BETWEEN ? AND ?
+                      AND LOWER(status) = 'aprovada'
+                ");
+                $stmtJustResumo->execute([$employee_id, (int)$_SESSION['client_id'], $rangeInicioResumo, $rangeFimResumo]);
+                foreach ($stmtJustResumo->fetchAll(PDO::FETCH_ASSOC) ?: [] as $rowJustResumo) {
+                    $diasJustificadosResumo[(string)$rowJustResumo['data']] = true;
+                }
+
+                $agoraTsResumo = time();
+                $cursorResumo = new DateTime($rangeInicioResumo);
+                $fimDtResumo = new DateTime($rangeFimResumo);
+                $weekdayMapResumo = [0 => 'dom', 1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => 'sab'];
+
+                while ($cursorResumo <= $fimDtResumo) {
+                    $diaStrResumo = $cursorResumo->format('Y-m-d');
+                    $weekdayTokenResumo = $weekdayMapResumo[(int)$cursorResumo->format('w')];
+                    $cursorResumo->modify('+1 day');
+
+                    // Já contabilizado (trabalhado ou falta) pelo loop de registros_ponto acima.
+                    if (isset($seenDays[$diaStrResumo])) {
+                        continue;
+                    }
+
+                    $diaCorretoResumo = empty($diasResumo) || in_array($weekdayTokenResumo, $diasResumo, true);
+                    if (!$diaCorretoResumo || isset($diasJustificadosResumo[$diaStrResumo])) {
+                        continue;
+                    }
+
+                    $inicioTsResumo = strtotime($diaStrResumo . ' ' . $horaInicioResumo);
+                    $fimTsResumo = strtotime($diaStrResumo . ' ' . $horaFimResumo);
+                    if ($inicioTsResumo !== false && $fimTsResumo !== false && $fimTsResumo <= $inicioTsResumo) {
+                        $fimTsResumo += 24 * 60 * 60; // turno noturno
+                    }
+                    if ($fimTsResumo === false || $agoraTsResumo <= $fimTsResumo) {
+                        continue; // turno ainda em curso ou ainda por vir
+                    }
+
+                    $seenDays[$diaStrResumo] = true;
+                    $absences++;
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        error_log('Erro ao somar faltas ao vivo em get_employee_shift_attendance.php: ' . $e->getMessage());
     }
 
     $overtimeHours = floor($overtimeMinutes / 60);

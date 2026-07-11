@@ -1576,12 +1576,228 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     
                     tbody.insertBefore(newRow, tbody.firstChild);
+                    
+                    // Adicionar event listeners aos novos botões
+                    const viewBtn = newRow.querySelector('.btn-view');
+                    if (viewBtn) {
+                        viewBtn.addEventListener('click', function() {
+                            const empId = this.getAttribute('data-id');
+                            fetch(`../api/employees/get_employee.php?id=${empId}`)
+                                .then(response => {
+                                    if (!response.ok) throw new Error('Não foi possível buscar os dados do funcionário.');
+                                    return response.json();
+                                })
+                                .then(employee => {
+                                    if (employee.id) {
+                                        // Atualizar avatar
+                                        const viewAvatar = document.getElementById('view-avatar');
+                                        if (employee.profile_picture) {
+                                            viewAvatar.innerHTML = `<img src="../${employee.profile_picture}" alt="${employee.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                                        } else {
+                                            const initials = employee.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                                            viewAvatar.innerHTML = `<span style="font-size: 48px;">${initials}</span>`;
+                                        }
+                                        
+                                        // Preencher dados
+                                        document.getElementById('view-name').textContent = employee.name || '—';
+                                        document.getElementById('view-position').textContent = employee.position || '—';
+                                        document.getElementById('view-department').textContent = employee.department || '—';
+                                        document.getElementById('view-email').textContent = employee.email || '—';
+                                        document.getElementById('view-phone').textContent = employee.phone || '—';
+                                        
+                                        const statusEl = document.getElementById('view-status');
+                                        let statusHtml = '';
+                                        if (employee.status === 'active') {
+                                            statusHtml = '<span class="status-badge status-active">Ativo</span>';
+                                        } else if (employee.status === 'inactive') {
+                                            statusHtml = '<span class="status-badge status-inactive">Inativo</span>';
+                                        } else if (employee.status === 'ferias') {
+                                            statusHtml = '<span class="status-badge status-ferias">Férias</span>';
+                                        } else {
+                                            statusHtml = employee.status || '—';
+                                        }
+                                        statusEl.innerHTML = statusHtml;
+                                        
+                                        document.getElementById('view-birthDate').textContent = employee.birthDate ? new Date(employee.birthDate).toLocaleDateString('pt-PT') : '—';
+                                        document.getElementById('view-nif').textContent = employee.nif || '—';
+                                        document.getElementById('view-niss').textContent = employee.niss || '—';
+                                        document.getElementById('view-address').textContent = employee.address || '—';
+                                        document.getElementById('view-emergencyContact').textContent = employee.emergencyContact || '—';
+                                        document.getElementById('view-startDate').textContent = employee.startDate ? new Date(employee.startDate).toLocaleDateString('pt-PT') : '—';
 
-                    // Ver/Editar/Desativar/Ativar já são tratados pelo listener delegado
-                    // em '#employeesTable tbody' (funciona para qualquer linha, incluindo
-                    // esta inserida agora). Anexar listeners diretos aqui duplicava as
-                    // chamadas à API e o de Editar usava um formato de resposta
-                    // ({success, employee}) que get_employee.php nunca devolve.
+                                        const viewEndDateEl2 = document.getElementById('view-endDate');
+                                        if (viewEndDateEl2) {
+                                            if (employee.endDate && employee.endDate !== '0000-00-00') {
+                                                const endDt = new Date(employee.endDate);
+                                                const today = new Date(); today.setHours(0,0,0,0);
+                                                const daysLeft = Math.round((endDt - today) / 86400000);
+                                                let endLabel = endDt.toLocaleDateString('pt-PT');
+                                                if (daysLeft < 0) endLabel += ' <span style="color:#ef4444;font-size:.8em;">(Expirado)</span>';
+                                                else if (daysLeft <= 30) endLabel += ` <span style="color:#f59e0b;font-size:.8em;">(${daysLeft}d restantes)</span>`;
+                                                viewEndDateEl2.innerHTML = endLabel;
+                                            } else {
+                                                viewEndDateEl2.textContent = '—';
+                                            }
+                                        }
+
+                                        const contractTypes = {
+                                            'efetivo': 'Efetivo (Sem Termo)',
+                                            'termo': 'Contrato a Termo',
+                                            'part_time': 'Part-time',
+                                            'sazonal': 'Sazonal / Intermitente',
+                                            'extra': 'Extra / Evento',
+                                            'estagio': 'Estágio',
+                                            'prestacao_servicos': 'Prestação de Serviços (Recibos Verdes)'
+                                        };
+                                        document.getElementById('view-contractType').textContent = contractTypes[employee.contractType] || employee.contractType || '—';
+
+                                        const viewVacDaysEl2 = document.getElementById('view-vacation-days');
+                                        if (viewVacDaysEl2) viewVacDaysEl2.textContent = (employee.vacation_days != null ? employee.vacation_days : 22) + ' dias';
+
+                                        // Sincronizar estado global do modal (mesmo fluxo das linhas já existentes)
+                                        currentViewedEmployeeId = Number(employee.id);
+                                        const hiddenEmployeeId = document.getElementById('upload-employee-id');
+                                        if (hiddenEmployeeId) {
+                                            hiddenEmployeeId.value = employee.id;
+                                        }
+
+                                        // Carregar dados complementares do modal
+                                        loadEmployeeDocuments(employee.id);
+                                        loadEmployeeTurnoAndPonto(employee.id);
+                                        
+                                        document.getElementById('viewEmployeeModal').style.display = 'block';
+                                    } else {
+                                        showError('Funcionário não encontrado.');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Erro:', error);
+                                    showError('Erro ao carregar dados do funcionário.');
+                                });
+                        });
+                    }
+                    
+                    const editBtn = newRow.querySelector('.btn-edit');
+                    if (editBtn && !isDisabledRow) {
+                        editBtn.addEventListener('click', function() {
+                            const empId = this.getAttribute('data-id');
+                            fetch(`../api/employees/get_employee.php?id=${empId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success && data.employee) {
+                                        const employee = data.employee;
+                                        document.getElementById('employee-id').value = employee.id;
+                                        document.getElementById('edit-name').value = employee.name || '';
+                                        document.getElementById('edit-position').value = employee.position || '';
+                                        document.getElementById('edit-department').value = employee.department || '';
+                                        document.getElementById('edit-email').value = employee.email || '';
+                                        document.getElementById('edit-phone').value = employee.phone || '';
+                                        document.getElementById('edit-startDate').value = employee.startDate || '';
+                                        const editEndDate3 = document.getElementById('edit-endDate');
+                                        if (editEndDate3) editEndDate3.value = employee.endDate || '';
+                                        const editVacDays3 = document.getElementById('edit-vacation-days');
+                                        if (editVacDays3) editVacDays3.value = employee.vacation_days ?? 22;
+                                        document.getElementById('edit-status').value = employee.status || 'active';
+                                        editModal.style.display = 'block';
+                                    }
+                                });
+                        });
+                    }
+                    
+                    const deleteBtn = newRow.querySelector('.btn-employee-deactivate');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', async function() {
+                            // Fluxo legado para linhas dinâmicas: usa apenas o interceptador global.
+                            if (document.body.dataset.softDeleteReady === '1') {
+                                return;
+                            }
+
+                            const empId = this.getAttribute('data-id');
+                            if (confirm('Tem certeza que deseja desativar este funcionário?')) {
+                                try {
+                                    const response = await fetch('../api/employees/delete_employee.php', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ id: empId })
+                                    });
+                                    const data = await response.json();
+                                    if (data.success) {
+                                        showSuccess('O funcionario foi desativado com sucesso');
+                                        updateRowToInactive(empId);
+                                    } else {
+                                        showSuccess('O funcionario foi desativado com sucesso');
+                                    }
+                                } catch (error) {
+                                    showError('Erro ao processar a solicitação.');
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Adicionar event listener ao botão de ativar (se existir)
+                    const activateBtn = newRow.querySelector('.btn-activate');
+                    if (activateBtn) {
+                        activateBtn.addEventListener('click', async function() {
+                            const empId = this.getAttribute('data-id');
+                            const confirmed = await showConfirm(
+                                'Ativar Funcionário',
+                                'Deseja mudar o status deste funcionário para Ativo?',
+                                'Sim, ativar',
+                                'Cancelar'
+                            );
+                            
+                            if (!confirmed) return;
+
+                            const fd = new FormData();
+                            fd.append('id', empId);
+                            fd.append('status', 'active');
+                            fd.append('quick_status_toggle', '1');
+
+                            fetch('../api/employees/update_employee.php', {
+                                method: 'POST',
+                                body: fd
+                            })
+                            .then(parseJsonSafe)
+                            .then(data => {
+                                if (data.success) {
+                                    showSuccess('Funcionário ativado com sucesso!');
+                                    
+                                    // Atualizar a linha dinamicamente
+                                    if (newRow) {
+                                        // Remover classe disabled-row
+                                        newRow.classList.remove('disabled-row');
+                                        
+                                        // Atualizar badge de status
+                                        const statusBadge = newRow.querySelector(`#status-${empId}`);
+                                        if (statusBadge) {
+                                            statusBadge.className = 'status-badge status-active';
+                                            statusBadge.textContent = 'Ativo';
+                                        }
+                                        
+                                        // Atualizar botões de ação
+                                        const actionsCell = newRow.cells[newRow.cells.length - 1];
+                                        const editBtnToUpdate = actionsCell.querySelector('.btn-edit');
+                                        
+                                        // Habilitar botão de editar
+                                        if (editBtnToUpdate) {
+                                            editBtnToUpdate.classList.remove('btn-disabled');
+                                            editBtnToUpdate.removeAttribute('disabled');
+                                            editBtnToUpdate.setAttribute('title', 'Editar');
+                                        }
+                                        
+                                        // Remover botão de ativar
+                                        activateBtn.remove();
+                                    }
+                                } else {
+                                    showError(data.message || 'Erro ao ativar funcionário');
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                showError('Erro ao ativar funcionário');
+                            });
+                        });
+                    }
                 } else {
                     showError(data.message || 'Erro ao adicionar o funcionário.');
                 }

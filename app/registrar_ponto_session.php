@@ -81,6 +81,11 @@ try {
         }
     }
 
+    // Sem turno agendado para o dia da semana de hoje, não pode marcar entrada.
+    if ($tipo === 'entrada' && !$turnoDeHoje) {
+        throw new Exception('Não tem turno agendado para hoje.');
+    }
+
     // Se marcar entrada, o turno de hoje precisa de ainda estar em curso — não deixa
     // marcar entrada antes do turno começar nem depois de já ter terminado (esse fica
     // só para o próximo turno agendado).

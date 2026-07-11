@@ -665,11 +665,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
 
                             const contractTypes = {
-                                'efetivo': 'Efetivo',
-                                'temporario': 'Temporário',
-                                'part-time': 'Part-time',
+                                'efetivo': 'Efetivo (Sem Termo)',
+                                'termo': 'Contrato a Termo',
+                                'part_time': 'Part-time',
+                                'sazonal': 'Sazonal / Intermitente',
+                                'extra': 'Extra / Evento',
                                 'estagio': 'Estágio',
-                                'freelancer': 'Freelancer'
+                                'prestacao_servicos': 'Prestação de Serviços (Recibos Verdes)'
                             };
                             document.getElementById('view-contractType').textContent = contractTypes[employee.contractType] || employee.contractType || '—';
 
@@ -1639,11 +1641,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                         }
 
                                         const contractTypes = {
-                                            'efetivo': 'Efetivo',
-                                            'temporario': 'Temporário',
-                                            'part-time': 'Part-time',
+                                            'efetivo': 'Efetivo (Sem Termo)',
+                                            'termo': 'Contrato a Termo',
+                                            'part_time': 'Part-time',
+                                            'sazonal': 'Sazonal / Intermitente',
+                                            'extra': 'Extra / Evento',
                                             'estagio': 'Estágio',
-                                            'freelancer': 'Freelancer'
+                                            'prestacao_servicos': 'Prestação de Serviços (Recibos Verdes)'
                                         };
                                         document.getElementById('view-contractType').textContent = contractTypes[employee.contractType] || employee.contractType || '—';
 

@@ -128,7 +128,7 @@ if (!in_array($status, ['active', 'inactive', 'ferias'], true)) {
     exit();
 }
 
-if ($contractType !== '' && !in_array($contractType, ['efetivo', 'temporario', 'part-time', 'estagio', 'freelancer'], true)) {
+if ($contractType !== '' && !in_array($contractType, ['efetivo', 'termo', 'part_time', 'sazonal', 'extra', 'estagio', 'prestacao_servicos'], true)) {
     echo json_encode(['success' => false, 'message' => 'Tipo de contrato inválido.']);
     exit();
 }

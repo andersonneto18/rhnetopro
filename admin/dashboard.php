@@ -1954,7 +1954,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         }
 
                         if ($col === 'contractType' && $val !== null && $val !== '') {
-                            if (!in_array((string)$val, ['efetivo', 'temporario', 'part-time', 'estagio', 'freelancer'], true)) {
+                            if (!in_array((string)$val, ['efetivo', 'termo', 'part_time', 'sazonal', 'extra', 'estagio', 'prestacao_servicos'], true)) {
                                 continue;
                             }
                         }

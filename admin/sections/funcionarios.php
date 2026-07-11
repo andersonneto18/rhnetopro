@@ -138,18 +138,15 @@
                         </select>
                         <select id="employeeTableContractType" class="fr-select">
                             <option value="">Tipo de contrato</option>
-                            <option value="efetivo">Efetivo</option>
-                            <option value="temporario">Temporário</option>
-                            <option value="part-time">Part-time</option>
+                            <option value="efetivo">Efetivo (Sem Termo)</option>
+                            <option value="termo">Contrato a Termo</option>
+                            <option value="part_time">Part-time</option>
+                            <option value="sazonal">Sazonal / Intermitente</option>
+                            <option value="extra">Extra / Evento</option>
                             <option value="estagio">Estágio</option>
-                            <option value="freelancer">Freelancer</option>
+                            <option value="prestacao_servicos">Prestação de Serviços (Recibos Verdes)</option>
                         </select>
-                        <select id="employeeTableExpiry" class="fr-select">
-                            <option value="">Vigência</option>
-                            <option value="expiring">Expira em 30d</option>
-                            <option value="expired">Expirado</option>
-                            <option value="active">Sem data de fim</option>
-                        </select>
+                       
                         <button type="button" class="fr-clear-btn" onclick="clearAllFilters()">
                             <i class="fas fa-times"></i> Limpar
                         </button>
@@ -777,9 +774,7 @@
                                     $daysLeft = (int)((strtotime(date('Y-m-d')) - $endTs) / -86400);
                                     if ($daysLeft < 0) {
                                         $expiryBadge = '<span class="fr-contract-badge fr-contract-expired"><i class="fas fa-exclamation-triangle"></i> Expirado</span>';
-                                    } elseif ($daysLeft <= 30) {
-                                        $expiryBadge = '<span class="fr-contract-badge fr-contract-expiring"><i class="fas fa-clock"></i> Expira em ' . $daysLeft . 'd</span>';
-                                    }
+                                    } 
                                 }
                             }
 
@@ -791,9 +786,8 @@
                                 $presencePill = '<span class="fr-presence fr-p-late"><span class="fr-pdot"></span>Atrasado</span>';
                             } elseif (in_array($pStatus, ['falta', 'falta_justificada'], true)) {
                                 $presencePill = '<span class="fr-presence fr-p-absent"><span class="fr-pdot"></span>Falta</span>';
-                            } elseif ($statusRaw === 'active') {
-                                $presencePill = '<span class="fr-presence fr-p-unknown"><span class="fr-pdot"></span>Não registado</span>';
-                            } else {
+                            } 
+                             else {
                                 $presencePill = '';
                             }
                         ?>
@@ -1098,14 +1092,16 @@
                                     <input class="am-inp" type="date" id="edit-endDate" name="endDate">
                                 </div>
                                 <div class="am-f">
-                                    <label class="am-lbl" for="edit-contractType">Tipo</label>
-                                    <select class="am-inp am-sel" id="edit-contractType" name="contractType">
+                                    <label class="am-lbl" for="edit-contractType">Tipo de Contrato</label>
+                                    <select class="am-inp am-sel" id="edit-contractType" name="contractType" required>
                                         <option value="">Selecione...</option>
-                                        <option value="efetivo">Efetivo</option>
-                                        <option value="temporario">Temporário</option>
-                                        <option value="part-time">Part-time</option>
+                                        <option value="efetivo">Efetivo (Sem Termo)</option>
+                                        <option value="termo">Contrato a Termo</option>
+                                        <option value="part_time">Part-time</option>
+                                        <option value="sazonal">Sazonal / Intermitente</option>
+                                        <option value="extra">Extra / Evento</option>
                                         <option value="estagio">Estágio</option>
-                                        <option value="freelancer">Freelancer</option>
+                                        <option value="prestacao_servicos">Prestação de Serviços (Recibos Verdes)</option>
                                     </select>
                                 </div>
                                 <div class="am-f">
@@ -1275,7 +1271,7 @@
                         <!-- Contrato -->
                         <div class="am-section">
                             <div class="am-sec-lbl"><i class="fas fa-file-contract"></i> Contrato</div>
-                            <div class="am-g2">
+                             <div class="am-g2">
                                 <div class="am-f">
                                     <label class="am-lbl" for="add-startDate">Início *</label>
                                     <input class="am-inp" type="date" id="add-startDate" name="startDate" required>
@@ -1285,14 +1281,16 @@
                                     <input class="am-inp" type="date" id="add-endDate" name="endDate">
                                 </div>
                                 <div class="am-f">
-                                    <label class="am-lbl" for="add-contractType">Tipo</label>
-                                    <select class="am-inp am-sel" id="add-contractType" name="contractType">
+                                    <label class="am-lbl" for="add-contractType">Tipo de Contrato</label>
+                                    <select class="am-inp am-sel" id="add-contractType" name="contractType" required>
                                         <option value="">Selecione...</option>
-                                        <option value="efetivo">Efetivo</option>
-                                        <option value="temporario">Temporário</option>
-                                        <option value="part-time">Part-time</option>
+                                        <option value="efetivo">Efetivo (Sem Termo)</option>
+                                        <option value="termo">Contrato a Termo</option>
+                                        <option value="part_time">Part-time</option>
+                                        <option value="sazonal">Sazonal / Intermitente</option>
+                                        <option value="extra">Extra / Evento</option>
                                         <option value="estagio">Estágio</option>
-                                        <option value="freelancer">Freelancer</option>
+                                        <option value="prestacao_servicos">Prestação de Serviços (Recibos Verdes)</option>
                                     </select>
                                 </div>
                                 <div class="am-f">

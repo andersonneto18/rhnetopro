@@ -214,7 +214,7 @@ try {
         }
     }
 
-    if (isset($data['contractType']) && $data['contractType'] !== '' && !in_array($data['contractType'], ['efetivo', 'temporario', 'part-time', 'estagio', 'freelancer'], true)) {
+    if (isset($data['contractType']) && $data['contractType'] !== '' && !in_array($data['contractType'], ['efetivo', 'termo', 'part_time', 'sazonal', 'extra', 'estagio', 'prestacao_servicos'], true)) {
         echo json_encode(['success' => false, 'message' => 'Tipo de contrato inválido']);
         exit;
     }

@@ -2417,18 +2417,22 @@ try {
     $presencas = [];
 }
 
-// **** CARREGAR TURNOS ****
-$turnos = [];
+// **** CARREGAR TURNOS (para Relatórios) ****
+// Nome próprio ($turnosRelatorio, não $turnos) de propósito: admin/sections/turnos.php
+// reatribui a variável global $turnos com a sua própria query (colunas com nomes diferentes,
+// ex. funcionario_nome em vez de name) e, como todas as secções correm no mesmo escopo PHP
+// deste dashboard.php, isso sobrescrevia silenciosamente o array que os Relatórios precisam.
+$turnosRelatorio = [];
 try {
-    $stmt = $pdo->prepare("SELECT t.*, e.name FROM turnos t 
-        INNER JOIN employees e ON e.id = t.funcionario_id 
-        WHERE e.client_id = ? 
-        ORDER BY t.created_at DESC 
+    $stmt = $pdo->prepare("SELECT t.*, e.name FROM turnos t
+        INNER JOIN employees e ON e.id = t.funcionario_id
+        WHERE e.client_id = ?
+        ORDER BY t.created_at DESC
         LIMIT 100");
     $stmt->execute([$loggedInClientId]);
-    $turnos = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $turnosRelatorio = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (PDOException $e) {
-    $turnos = [];
+    $turnosRelatorio = [];
 }
 
 // **** CARREGAR GORJETAS ****

@@ -1,5 +1,5 @@
 <?php
-// Secção "Relatórios" — incluída a partir de admin/dashboard.php (depende de $pdo, $employees, $turnos, $folhaPagamento, etc. já definidos lá). Inclui, no final, o bloco de montagem de dados dos gráficos que ficava solto depois desta secção.
+// Secção "Relatórios" — incluída a partir de admin/dashboard.php (depende de $pdo, $employees, $turnosRelatorio, $folhaPagamento, etc. já definidos lá). Inclui, no final, o bloco de montagem de dados dos gráficos que ficava solto depois desta secção.
 ?>
         <section id="relatorios-section" class="content-section">
 
@@ -120,7 +120,7 @@
                 <button type="button" class="rp-nav-card rp-nav-turnos relatorio-tab" data-relatorio="turnos" onclick="switchRelatorio('turnos',this)">
                     <div class="rp-nav-icon" style="background:rgba(167,139,250,.15);color:#a78bfa;"><i class="fas fa-clock"></i></div>
                     <div class="rp-nav-body">
-                        <span class="rp-nav-val"><?php echo count($turnos); ?></span>
+                        <span class="rp-nav-val"><?php echo count($turnosRelatorio); ?></span>
                         <span class="rp-nav-lbl">Turnos</span>
                     </div>
                 </button>
@@ -467,7 +467,7 @@
                             if ($pPrimeiraEnt !== null && $pDataIso !== '') {
                                 $pWeekdayToken = $_presWeekdayMap[(int) date('w', strtotime($pDataIso))];
                                 $pTurnoMatch = null;
-                                foreach ($turnos as $tCand) {
+                                foreach ($turnosRelatorio as $tCand) {
                                     if ((int) ($tCand['funcionario_id'] ?? 0) !== $pEmpId) {
                                         continue;
                                     }
@@ -556,9 +556,9 @@
             <div class="relatorio-content" id="content-turnos" style="display:none;">
             <div class="data-table fr-table-wrap" id="relatorio-turnos-table">
                 <?php
-                    $rTurnosTotal  = count($turnos);
-                    $rTurnosAtivos = count(array_filter($turnos, fn($t) => strtolower($t['status'] ?? 'ativo') === 'ativo'));
-                    $rTurnosTipos  = count(array_unique(array_filter(array_map(fn($t) => $t['turno_tipo'] ?? '', $turnos))));
+                    $rTurnosTotal  = count($turnosRelatorio);
+                    $rTurnosAtivos = count(array_filter($turnosRelatorio, fn($t) => strtolower($t['status'] ?? 'ativo') === 'ativo'));
+                    $rTurnosTipos  = count(array_unique(array_filter(array_map(fn($t) => $t['turno_tipo'] ?? '', $turnosRelatorio))));
                 ?>
                 <div class="fr-kpi-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem;">
                     <div class="fr-kpi">
@@ -629,7 +629,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($turnos as $t):
+                        <?php foreach ($turnosRelatorio as $t):
                             $tNome = htmlspecialchars($t['name'] ?? 'N/D');
                             $tTipo = htmlspecialchars($t['turno_tipo'] ?? 'N/D');
                             $tHorario = date('H:i', strtotime($t['horario_inicio'])) . ' - ' . date('H:i', strtotime($t['horario_fim']));
@@ -1106,8 +1106,8 @@
             // 4. TURNOS - Distribution
             const turnosDistribuicao = <?php
                 $turnoCount = [];
-                foreach ($turnos as $t) {
-                    $turno = $t['nome_turno'] ?? 'Sem Turno';
+                foreach ($turnosRelatorio as $t) {
+                    $turno = $t['turno_tipo'] ?? 'Sem Turno';
                     $turnoCount[$turno] = ($turnoCount[$turno] ?? 0) + 1;
                 }
                 echo json_encode($turnoCount);

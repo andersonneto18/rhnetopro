@@ -1341,15 +1341,21 @@ function editarPresenca(employeeId) {
         targetDateEl.value = row.dataset.presencaDate || getTodayIsoDate();
     }
 
+    const statusBadge = row.querySelector(`#attendance-status-${employeeId}`);
+    // Dia sem turno hoje (Folga/Sem Turno): não existe nenhum registo por trás, então não faz
+    // sentido herdar o "Normal" armazenado por omissão nem cair em "Invalidado" (que sugere um
+    // registo real que foi invalidado). Nestes dias, o motivo mais provável de abrir esta edição
+    // é registar que a pessoa trabalhou mesmo assim.
+    const isDiaSemTurno = !!(statusBadge && ['folga', 'sem-turno'].includes(statusBadge.dataset.statusKey || ''));
+
     const tipoDiaSelect = document.getElementById('edit-presenca-tipo-dia');
     if (tipoDiaSelect) {
-        tipoDiaSelect.value = normalizeTipoDiaFromCell(row.dataset.tipoDia || 'Normal');
+        tipoDiaSelect.value = isDiaSemTurno ? 'folga' : normalizeTipoDiaFromCell(row.dataset.tipoDia || 'Normal');
     }
 
-    const statusBadge = row.querySelector(`#attendance-status-${employeeId}`);
     const isPresente = !!(statusBadge && statusBadge.classList.contains('status-presente'));
     const isFalta = !!(statusBadge && statusBadge.classList.contains('status-falta'));
-    document.getElementById('edit-presenca-status').value = isPresente ? 'presente' : (isFalta ? 'falta' : 'invalidado');
+    document.getElementById('edit-presenca-status').value = isPresente ? 'presente' : (isFalta ? 'falta' : (isDiaSemTurno ? 'presente' : 'invalidado'));
 
     const faltaTipo = document.getElementById('edit-presenca-falta-tipo');
     if (faltaTipo) faltaTipo.value = row.dataset.faltaTipo === 'justificada' ? 'justificada' : 'injustificada';

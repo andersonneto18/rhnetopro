@@ -2369,7 +2369,7 @@ try {
     // persistidas por esse script, quando corre).
     $stmt = $pdo->prepare("
         SELECT unified.id, unified.funcionario_id, unified.client_id, unified.data_registro,
-               unified.status, unified.ponto_timeline,
+               unified.status, unified.ponto_timeline, unified.pendentes_count, unified.periodos_count,
                e.name, COALESCE(e.profile_picture,'') AS profile_picture
         FROM (
             SELECT
@@ -2388,7 +2388,9 @@ try {
                         COALESCE(rp.hora_saida,''),
                         COALESCE(rp.observacao, rp.obs, '')
                     ) ORDER BY rp.id SEPARATOR ';;'
-                ) AS ponto_timeline
+                ) AS ponto_timeline,
+                SUM(CASE WHEN LOWER(COALESCE(rp.status_confirmacao,'')) = 'confirmado' THEN 0 ELSE 1 END) AS pendentes_count,
+                COUNT(*) AS periodos_count
             FROM registros_ponto rp
             WHERE rp.client_id = ?
             GROUP BY rp.funcionario_id, DATE(rp.data_registro)
@@ -2396,7 +2398,7 @@ try {
             UNION ALL
 
             SELECT p.id, p.funcionario_id, p.client_id, DATE(p.data_registro) AS data_registro,
-                   p.status, NULL AS ponto_timeline
+                   p.status, NULL AS ponto_timeline, 0 AS pendentes_count, 0 AS periodos_count
             FROM presencas p
             WHERE p.client_id = ?
               AND NOT EXISTS (

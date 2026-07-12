@@ -397,15 +397,6 @@
                     </div>
                 </div>
                 <style>
-                    .prc-tl { display:flex; flex-wrap:wrap; align-items:center; gap:4px; }
-                    .prc-event { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:.73rem; font-weight:600; white-space:nowrap; letter-spacing:.01em; }
-                    .prc-event-entrada  { background:rgba(16,185,129,.15); color:#10b981; border:1px solid rgba(16,185,129,.28); }
-                    .prc-event-regresso { background:rgba(59,130,246,.12); color:#60a5fa; border:1px solid rgba(59,130,246,.22); }
-                    .prc-event-pausa    { background:rgba(245,158,11,.14); color:#f59e0b; border:1px solid rgba(245,158,11,.25); }
-                    .prc-event-saida    { background:rgba(239,68,68,.12);  color:#f87171; border:1px solid rgba(239,68,68,.22); }
-                    .prc-event-ativo    { background:rgba(52,211,153,.11); color:#34d399; border:1px solid rgba(52,211,153,.22); }
-                    .prc-arr            { color:rgba(148,163,184,.4); font-size:.72rem; margin:0 1px; }
-                    .prc-no-events      { font-size:.78rem; color:rgba(148,163,184,.42); font-style:italic; }
                     .prc-date-badge     { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; background:rgba(99,102,241,.1); color:#818cf8; border:1px solid rgba(99,102,241,.22); border-radius:20px; font-size:.75rem; font-weight:600; white-space:nowrap; }
                 </style>
                 <table class="table fr-table" id="presencaTable">
@@ -413,11 +404,16 @@
                         <tr class="fr-thead-row">
                             <th class="fr-th-emp">Funcionário</th>
                             <th style="white-space:nowrap;">Data</th>
-                            <th style="min-width:240px;">Roteiro do Dia</th>
+                            <th style="white-space:nowrap;">Horas</th>
+                            <th style="white-space:nowrap;">Atraso</th>
+                            <th style="white-space:nowrap;">Confirmação</th>
                             <th>Estado</th>
                         </tr>
                     </thead>
                     <tbody id="presencaTableBody">
+                        <?php
+                            $_presWeekdayMap = [0=>'dom',1=>'seg',2=>'ter',3=>'qua',4=>'qui',5=>'sex',6=>'sab'];
+                        ?>
                         <?php foreach ($presencas as $p):
                             $pNome     = htmlspecialchars($p['name'] ?? 'N/D');
                             $pData     = ($p['data_registro'] ?? '') ? date('d/m/Y', strtotime((string)$p['data_registro'])) : 'N/D';
@@ -426,6 +422,7 @@
                             $pStatus   = strtolower(trim($p['status'] ?? 'presente'));
                             $pPhoto    = trim((string)($p['profile_picture'] ?? ''));
                             $pInitials = strtoupper(mb_substr($pNome, 0, 2));
+                            $pEmpId    = (int)($p['funcionario_id'] ?? 0);
 
                             $statusClass = match($pStatus) {
                                 'presente' => 'status-presente',
@@ -435,35 +432,73 @@
                             };
                             $statusLabel = ucfirst($pStatus);
 
-                            // Build day timeline from GROUP_CONCAT ponto_timeline
-                            $tlEvents = [];
-                            $tlRaw    = trim((string)($p['ponto_timeline'] ?? ''));
+                            // Parse day periods from GROUP_CONCAT ponto_timeline: primeira entrada
+                            // (para Atraso) e soma de horas trabalhadas no dia.
+                            $tlRaw          = trim((string)($p['ponto_timeline'] ?? ''));
+                            $pPrimeiraEnt   = null;
+                            $pHorasMin      = 0;
                             if ($tlRaw !== '') {
-                                $periods = explode(';;', $tlRaw);
-                                $lastIdx = count($periods) - 1;
-                                foreach ($periods as $ti => $period) {
-                                    [$hEnt, $hSai, $obs] = array_pad(explode('|', $period, 3), 3, '');
-                                    $hEnt   = trim($hEnt);
-                                    $hSai   = trim($hSai);
-                                    $obsLow = mb_strtolower(trim($obs));
-                                    if ($hEnt !== '') {
-                                        $tlEvents[] = $ti === 0
-                                            ? ['hora' => substr($hEnt,0,5), 'tipo' => 'entrada',  'label' => 'Entrada',  'icon' => 'fa-sign-in-alt']
-                                            : ['hora' => substr($hEnt,0,5), 'tipo' => 'regresso', 'label' => 'Regresso', 'icon' => 'fa-undo-alt'];
+                                foreach (explode(';;', $tlRaw) as $ti => $period) {
+                                    [$hEnt, $hSai, ] = array_pad(explode('|', $period, 3), 3, '');
+                                    $hEnt = trim($hEnt);
+                                    $hSai = trim($hSai);
+                                    if ($ti === 0 && $hEnt !== '') {
+                                        $pPrimeiraEnt = substr($hEnt, 0, 5);
                                     }
-                                    if ($hSai !== '') {
-                                        if (str_contains($obsLow, 'pausa')) {
-                                            $pLbl = str_contains($obsLow,'almo') ? 'P. Almoço' : (str_contains($obsLow,'cigar') ? 'P. Cigarro' : 'Pausa');
-                                            $pIco = str_contains($obsLow,'almo') ? 'fa-utensils' : (str_contains($obsLow,'cigar') ? 'fa-smoking' : 'fa-pause-circle');
-                                            $tlEvents[] = ['hora' => substr($hSai,0,5), 'tipo' => 'pausa', 'label' => $pLbl, 'icon' => $pIco];
-                                        } else {
-                                            $tlEvents[] = ['hora' => substr($hSai,0,5), 'tipo' => 'saida', 'label' => 'Saída', 'icon' => 'fa-sign-out-alt'];
+                                    if ($hEnt !== '' && $hSai !== '' && $pDataIso !== '') {
+                                        $ts1 = strtotime($pDataIso . ' ' . $hEnt);
+                                        $ts2 = strtotime($pDataIso . ' ' . $hSai);
+                                        if ($ts1 !== false && $ts2 !== false) {
+                                            if ($ts2 <= $ts1) {
+                                                $ts2 += 24 * 60 * 60; // turno noturno
+                                            }
+                                            $pHorasMin += (int) round(($ts2 - $ts1) / 60);
                                         }
-                                    } elseif ($ti === $lastIdx && !empty($tlEvents) && end($tlEvents)['tipo'] !== 'saida') {
-                                        $tlEvents[] = ['hora' => null, 'tipo' => 'ativo', 'label' => 'Em serviço', 'icon' => 'fa-circle'];
                                     }
                                 }
                             }
+                            $pHorasLabel = $pHorasMin > 0
+                                ? sprintf('%dh%02d', intdiv($pHorasMin, 60), $pHorasMin % 60)
+                                : '--:--';
+
+                            // Encontra o turno esperado desse dia (dia da semana + vigência) para
+                            // calcular o atraso da primeira entrada, tal como em Assiduidade.
+                            $pAtraso = '—';
+                            if ($pPrimeiraEnt !== null && $pDataIso !== '') {
+                                $pWeekdayToken = $_presWeekdayMap[(int) date('w', strtotime($pDataIso))];
+                                $pTurnoMatch = null;
+                                foreach ($turnos as $tCand) {
+                                    if ((int) ($tCand['funcionario_id'] ?? 0) !== $pEmpId) {
+                                        continue;
+                                    }
+                                    if (!in_array(mb_strtolower(trim((string) ($tCand['status'] ?? ''))), ['ativo', 'active'], true)) {
+                                        continue;
+                                    }
+                                    $tDias = parseTurnoDays((string) ($tCand['dias_semana'] ?? ''));
+                                    $diaOk = empty($tDias) || in_array($pWeekdayToken, $tDias, true);
+                                    $tIni = trim((string) ($tCand['data_inicio'] ?? ''));
+                                    $tFim = trim((string) ($tCand['data_fim'] ?? ''));
+                                    $vigOk = ($tIni === '' || $tIni === '0000-00-00' || $tIni <= $pDataIso)
+                                        && ($tFim === '' || $tFim === '0000-00-00' || $tFim >= $pDataIso);
+                                    if ($diaOk && $vigOk) {
+                                        $pTurnoMatch = $tCand;
+                                        break;
+                                    }
+                                }
+                                if ($pTurnoMatch) {
+                                    $horaInicioTurno = substr((string) ($pTurnoMatch['horario_inicio'] ?? ''), 0, 5);
+                                    $entradaTs = strtotime($pDataIso . ' ' . $pPrimeiraEnt);
+                                    $inicioTs = strtotime($pDataIso . ' ' . $horaInicioTurno);
+                                    if ($entradaTs !== false && $inicioTs !== false) {
+                                        $diffMin = (int) floor(($entradaTs - $inicioTs) / 60) - max(0, (int) ($estHorario['tolerancia_atraso_min'] ?? 0));
+                                        $pAtraso = $diffMin > 0 ? ('Atrasado (+' . $diffMin . ' min)') : 'Pontual';
+                                    }
+                                }
+                            }
+
+                            $pPendentes = (int) ($p['pendentes_count'] ?? 0);
+                            $pPeriodos  = (int) ($p['periodos_count'] ?? 0);
+                            $pConfirmacao = $pPeriodos === 0 ? '-' : ($pPendentes > 0 ? 'Pendente' : 'Confirmado');
                         ?>
                         <tr class="fr-row"
                             data-presenca-nome="<?php echo mb_strtolower($pNome); ?>"
@@ -493,21 +528,13 @@
                                 </span>
                             </td>
 
-                            <td>
-                                <?php if (!empty($tlEvents)): ?>
-                                <div class="prc-tl">
-                                    <?php foreach ($tlEvents as $eIdx => $ev): ?>
-                                    <?php if ($eIdx > 0): ?><span class="prc-arr">›</span><?php endif; ?>
-                                    <span class="prc-event prc-event-<?php echo $ev['tipo']; ?>">
-                                        <i class="fas <?php echo $ev['icon']; ?>"></i>
-                                        <?php if ($ev['hora'] !== null): echo $ev['hora'] . '&thinsp;'; endif; ?><?php echo htmlspecialchars($ev['label']); ?>
-                                    </span>
-                                    <?php endforeach; ?>
-                                </div>
-                                <?php else: ?>
-                                <span class="prc-no-events"><i class="fas fa-minus-circle" style="margin-right:4px;opacity:.5;"></i>Sem registos de ponto</span>
-                                <?php endif; ?>
+                            <td><?php echo htmlspecialchars($pHorasLabel); ?></td>
+
+                            <td style="<?php echo str_starts_with($pAtraso, 'Atrasado') ? 'color:#f87171;' : ($pAtraso === 'Pontual' ? 'color:#4ade80;' : ''); ?>">
+                                <?php echo htmlspecialchars($pAtraso); ?>
                             </td>
+
+                            <td><?php echo htmlspecialchars($pConfirmacao); ?></td>
 
                             <td>
                                 <span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusLabel; ?></span>

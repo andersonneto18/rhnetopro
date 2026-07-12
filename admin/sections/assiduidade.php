@@ -1226,10 +1226,6 @@
                                 <div class="vm-field-value" id="view-presenca-atraso">-</div>
                             </div>
                             <div>
-                                <div class="vm-field-label">Atraso (min)</div>
-                                <div class="vm-field-value" id="view-presenca-atraso-minutos">—</div>
-                            </div>
-                            <div>
                                 <div class="vm-field-label">Horas Extras</div>
                                 <div class="vm-field-value" id="view-presenca-horas-extras">00:00</div>
                             </div>
@@ -1288,39 +1284,41 @@
                     <!-- Justificativa -->
                     <div id="view-presenca-just-section" class="vm-section" style="display:none; border:1px solid rgba(139,92,246,.35); border-radius:10px; padding:.75rem;">
                         <div class="vm-sec-lbl" style="color:#a78bfa;"><i class="fas fa-file-alt"></i> Justificativa</div>
-                        <div class="vm-g3">
-                            <div>
-                                <div class="vm-field-label">Estado</div>
-                                <div class="vm-field-value" id="view-presenca-just-status">-</div>
-                            </div>
-                            <div>
-                                <div class="vm-field-label">Tipo</div>
-                                <div class="vm-field-value" id="view-presenca-just-tipo">-</div>
-                            </div>
-                            <div>
-                                <div class="vm-field-label">Data Ocorrência</div>
-                                <div class="vm-field-value" id="view-presenca-just-data">-</div>
-                            </div>
-                            <div>
-                                <div class="vm-field-label">Decidido Em</div>
-                                <div class="vm-field-value" id="view-presenca-just-decidido-em">-</div>
-                            </div>
-                            <div>
-                                <div class="vm-field-label">Decidido Por</div>
-                                <div class="vm-field-value" id="view-presenca-just-decidido-por">-</div>
-                            </div>
+                        <div>
+                            <div class="vm-field-label">Estado</div>
+                            <div class="vm-field-value" id="view-presenca-just-status">-</div>
                         </div>
-                        <div style="margin-top:.65rem;">
-                            <div class="vm-field-label">Motivo</div>
-                            <div class="vm-field-value" id="view-presenca-just-motivo" style="word-break:break-word;">-</div>
-                        </div>
-                        <div style="margin-top:.5rem;">
-                            <div class="vm-field-label">Observação do Admin</div>
-                            <div class="vm-field-value" id="view-presenca-just-admin-obs" style="word-break:break-word;">-</div>
-                        </div>
-                        <div id="view-presenca-just-anexo-wrap" style="display:none; margin-top:.5rem;">
-                            <div class="vm-field-label">Anexo</div>
-                            <a id="view-presenca-just-anexo" href="#" target="_blank" rel="noopener noreferrer" style="color:#93c5fd; font-size:.875rem;">Ver anexo</a>
+                        <div id="view-presenca-just-details" style="display:none;">
+                            <div class="vm-g3" style="margin-top:.65rem;">
+                                <div>
+                                    <div class="vm-field-label">Tipo</div>
+                                    <div class="vm-field-value" id="view-presenca-just-tipo">-</div>
+                                </div>
+                                <div>
+                                    <div class="vm-field-label">Data Ocorrência</div>
+                                    <div class="vm-field-value" id="view-presenca-just-data">-</div>
+                                </div>
+                                <div>
+                                    <div class="vm-field-label">Decidido Em</div>
+                                    <div class="vm-field-value" id="view-presenca-just-decidido-em">-</div>
+                                </div>
+                                <div>
+                                    <div class="vm-field-label">Decidido Por</div>
+                                    <div class="vm-field-value" id="view-presenca-just-decidido-por">-</div>
+                                </div>
+                            </div>
+                            <div style="margin-top:.65rem;">
+                                <div class="vm-field-label">Motivo</div>
+                                <div class="vm-field-value" id="view-presenca-just-motivo" style="word-break:break-word;">-</div>
+                            </div>
+                            <div style="margin-top:.5rem;">
+                                <div class="vm-field-label">Observação do Admin</div>
+                                <div class="vm-field-value" id="view-presenca-just-admin-obs" style="word-break:break-word;">-</div>
+                            </div>
+                            <div id="view-presenca-just-anexo-wrap" style="display:none; margin-top:.5rem;">
+                                <div class="vm-field-label">Anexo</div>
+                                <a id="view-presenca-just-anexo" href="#" target="_blank" rel="noopener noreferrer" style="color:#93c5fd; font-size:.875rem;">Ver anexo</a>
+                            </div>
                         </div>
                     </div>
 

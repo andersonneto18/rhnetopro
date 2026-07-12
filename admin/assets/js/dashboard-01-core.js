@@ -349,29 +349,6 @@ function closePresencaViewModal() {
     clearPresencaModalUrl();
 }
 
-function parseHHMMToMinutes(value) {
-    const text = String(value || '').trim();
-    if (!/^\d{2}:\d{2}$/.test(text)) return null;
-    const [h, m] = text.split(':').map(Number);
-    if (Number.isNaN(h) || Number.isNaN(m)) return null;
-    return (h * 60) + m;
-}
-
-function formatDurationFromMinutes(totalMinutes) {
-    if (typeof totalMinutes !== 'number' || Number.isNaN(totalMinutes)) return '--:--';
-    const absVal = Math.abs(totalMinutes);
-    const h = String(Math.floor(absVal / 60)).padStart(2, '0');
-    const m = String(absVal % 60).padStart(2, '0');
-    return `${h}:${m}`;
-}
-
-function formatSignedMinutes(totalMinutes) {
-    if (typeof totalMinutes !== 'number' || Number.isNaN(totalMinutes)) return '—';
-    if (totalMinutes === 0) return '0 min';
-    const sign = totalMinutes > 0 ? '+' : '-';
-    return `${sign}${Math.abs(totalMinutes)} min`;
-}
-
 function renderMiniHistoryPresenca(employeeId, anchorDateIso = '') {
     const body = document.getElementById('view-presenca-mini-history-body');
     if (!body) return;
@@ -423,32 +400,13 @@ function renderMiniHistoryPresenca(employeeId, anchorDateIso = '') {
 }
 
 function renderPresencaComparativeIndicators(row, employeeId) {
-    const atrasoMinEl = document.getElementById('view-presenca-atraso-minutos');
     const overtimeEl = document.getElementById('view-presenca-horas-extras');
     const workedDaysEl = document.getElementById('view-presenca-dias-trabalhados');
     const absencesEl = document.getElementById('view-presenca-numero-faltas');
-    if (!atrasoMinEl) return;
 
-    atrasoMinEl.textContent = '—';
-    atrasoMinEl.style.color = 'var(--text-secondary, #94a3b8)';
     if (overtimeEl) overtimeEl.textContent = '00:00';
     if (workedDaysEl) workedDaysEl.textContent = '0';
     if (absencesEl) absencesEl.textContent = '0';
-
-    const entradaMin = parseHHMMToMinutes(row?.dataset?.horaEntrada);
-    const previstoMin = parseHHMMToMinutes(row?.dataset?.expectedStart);
-    const tolerancia = Math.max(0, parseInt(row?.dataset?.toleranciaMin || '0', 10) || 0);
-
-    if (entradaMin != null && previstoMin != null) {
-        const atrasoMin = entradaMin - previstoMin - tolerancia;
-        if (atrasoMin > 0) {
-            atrasoMinEl.textContent = `+${atrasoMin} min`;
-            atrasoMinEl.style.color = '#dc2626';
-        } else {
-            atrasoMinEl.textContent = 'Pontual';
-            atrasoMinEl.style.color = '#16a34a';
-        }
-    }
 
     const anchorDateIso = String(row?.dataset?.presencaDate || '').trim();
     const summaryParam = /^\d{4}-\d{2}-\d{2}$/.test(anchorDateIso)
@@ -589,7 +547,13 @@ function renderPresencaModalFromRow(row, employeeId) {
         roteiroFullEl.innerHTML = buildRoteiroVerticalHtml(roteiroEventos);
     }
     document.getElementById('view-presenca-horas').textContent = horas;
-    document.getElementById('view-presenca-atraso').textContent = atraso;
+    const atrasoEl = document.getElementById('view-presenca-atraso');
+    if (atrasoEl) {
+        atrasoEl.textContent = atraso;
+        atrasoEl.style.color = atraso.startsWith('Atrasado')
+            ? '#dc2626'
+            : (atraso === 'Pontual' ? '#16a34a' : '');
+    }
     document.getElementById('view-presenca-confirmacao').textContent = confirmacao;
     document.getElementById('view-presenca-obs').textContent = observacao;
     document.getElementById('view-presenca-turno-previsto').textContent = turnoPrevisto !== '' ? turnoPrevisto : '-';
@@ -605,8 +569,7 @@ function renderPresencaModalFromRow(row, employeeId) {
     const justDecididoEm = d.justDecididoEm || '-';
     const justAnexo = (d.justAnexo || '').trim();
 
-    const hasJustificativaData = [
-        justStatus,
+    const hasJustificativaRecord = [
         justTipo,
         justData,
         justMotivo,
@@ -620,8 +583,14 @@ function renderPresencaModalFromRow(row, employeeId) {
     });
 
     if (justSection) {
-        if (hasJustificativaData) {
-            document.getElementById('view-presenca-just-status').textContent = justStatus;
+        document.getElementById('view-presenca-just-status').textContent = justStatus;
+
+        const justDetailsEl = document.getElementById('view-presenca-just-details');
+        if (justDetailsEl) {
+            justDetailsEl.style.display = hasJustificativaRecord ? '' : 'none';
+        }
+
+        if (hasJustificativaRecord) {
             document.getElementById('view-presenca-just-tipo').textContent = justTipo ? justTipo.charAt(0).toUpperCase() + justTipo.slice(1) : '-';
             document.getElementById('view-presenca-just-data').textContent = justData;
             document.getElementById('view-presenca-just-motivo').textContent = justMotivo || '-';
@@ -654,11 +623,9 @@ function renderPresencaModalFromRow(row, employeeId) {
                     anexoWrap.style.display = 'none';
                 }
             }
-
-            justSection.style.display = '';
-        } else {
-            justSection.style.display = 'none';
         }
+
+        justSection.style.display = '';
     }
 
     renderMiniHistoryPresenca(employeeId, d.presencaDate || '');
@@ -779,7 +746,6 @@ function getPresencaDetailSnapshot() {
         saida: getText('view-presenca-saida'),
         horas: getText('view-presenca-horas'),
         atraso: getText('view-presenca-atraso'),
-        atrasoMin: getText('view-presenca-atraso-minutos'),
         horasExtras: getText('view-presenca-horas-extras'),
         diasTrabalhados: getText('view-presenca-dias-trabalhados'),
         numeroFaltas: getText('view-presenca-numero-faltas'),
@@ -813,7 +779,6 @@ function exportPresencaDetailPDF() {
         ['Saída', snapshot.saida],
         ['Horas Trabalhadas', snapshot.horas],
         ['Atraso', snapshot.atraso],
-        ['Atraso (min)', snapshot.atrasoMin],
         ['Turno Previsto', snapshot.turnoPrevisto],
         ['Confirmação', snapshot.confirmacao],
         ['Tipo de Falta', snapshot.faltaTipo],
@@ -855,7 +820,6 @@ function printPresencaDetail() {
         ['Saída', snapshot.saida],
         ['Horas Trabalhadas', snapshot.horas],
         ['Atraso', snapshot.atraso],
-        ['Atraso (min)', snapshot.atrasoMin],
         ['Turno Previsto', snapshot.turnoPrevisto],
         ['Confirmação', snapshot.confirmacao],
         ['Tipo de Falta', snapshot.faltaTipo],

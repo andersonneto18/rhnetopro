@@ -1002,6 +1002,7 @@
                         ?>
                         <tr class="fr-row" data-employee-id="<?php echo (int)$employee['id']; ?>"
                             data-funcionario-nome="<?php echo htmlspecialchars((string)$employee['name']); ?>"
+                            data-employee-photo="<?php echo htmlspecialchars((string)($employee['profile_picture'] ?? '')); ?>"
                             data-presenca-date="<?php echo htmlspecialchars($dateIso); ?>"
                             data-presenca-year="<?php echo $dateIso ? htmlspecialchars(substr($dateIso, 0, 4)) : ''; ?>"
                             data-presenca-month="<?php echo $dateIso ? htmlspecialchars(substr($dateIso, 0, 7)) : ''; ?>"

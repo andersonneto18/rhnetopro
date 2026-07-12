@@ -550,8 +550,13 @@ function renderPresencaModalFromRow(row, employeeId) {
     document.getElementById('view-presenca-funcionario').textContent = funcionario;
     const _presAvEl = document.getElementById('view-presenca-av');
     if (_presAvEl) {
-        const _np = String(funcionario).trim().split(/\s+/);
-        _presAvEl.textContent = ((_np[0]?.[0] || '') + (_np[1]?.[0] || '')).toUpperCase() || '--';
+        const _photo = String(d.employeePhoto || '').trim();
+        if (_photo !== '') {
+            _presAvEl.innerHTML = `<img src="../${_photo}" alt="${funcionario}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+        } else {
+            const _np = String(funcionario).trim().split(/\s+/);
+            _presAvEl.textContent = ((_np[0]?.[0] || '') + (_np[1]?.[0] || '')).toUpperCase() || '--';
+        }
     }
     const _presStatusMap = {
         'Presente': 'status-presente', 'presente': 'status-presente',

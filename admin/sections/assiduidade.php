@@ -1372,7 +1372,7 @@
                         </div>
                         <div>
                             <h2 class="am-title">Editar Registo</h2>
-                            <p class="am-subtitle">Alterar dados de presença</p>
+                            <p class="am-subtitle" id="edit-presenca-subtitle">Alterar dados de presença</p>
                         </div>
                     </div>
                     <form id="formEditarPresenca">
@@ -1382,7 +1382,7 @@
                         <div class="am-section">
                             <div class="am-sec-lbl"><i class="fas fa-tag"></i> Classificação</div>
                             <div class="am-g2">
-                                <div class="am-f am-f-full">
+                                <div class="am-f">
                                     <label class="am-lbl">Tipo de Dia</label>
                                     <select id="edit-presenca-tipo-dia" name="tipo_dia" class="am-inp am-sel" required>
                                         <option value="normal">Normal</option>
@@ -1391,7 +1391,7 @@
                                         <option value="falta">Falta</option>
                                     </select>
                                 </div>
-                                <div class="am-f am-f-full">
+                                <div class="am-f">
                                     <label class="am-lbl">Status</label>
                                     <select id="edit-presenca-status" name="status" class="am-inp am-sel" required>
                                         <option value="presente">Presente</option>

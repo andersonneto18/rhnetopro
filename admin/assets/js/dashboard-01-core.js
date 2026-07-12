@@ -1328,6 +1328,13 @@ function editarPresenca(employeeId) {
     const row = findPresencaRowByEmployeeId(employeeId);
     if (!row) return showError('Linha não encontrada.');
 
+    const subtitleEl = document.getElementById('edit-presenca-subtitle');
+    if (subtitleEl) {
+        const nome = row.dataset.funcionarioNome || '';
+        const dataDisplay = row.dataset.dateDisplay || row.dataset.presencaDate || '';
+        subtitleEl.textContent = nome ? `${nome} — ${dataDisplay}` : 'Alterar dados de presença';
+    }
+
     document.getElementById('edit-presenca-employee-id').value = employeeId;
     const targetDateEl = document.getElementById('edit-presenca-target-date');
     if (targetDateEl) {

@@ -524,6 +524,7 @@
                             <option value="em-aberto">Em aberto</option>
                             <option value="nao-registrado">Não registado</option>
                             <option value="sem-turno">Sem turno</option>
+                            <option value="folga">Folga</option>
                             <option value="ferias">Férias</option>
                             <option value="inativo">Inativo</option>
                         </select>
@@ -592,6 +593,10 @@
                         $_expectedWeekdayToken = $_expectedWeekdayTs !== false ? $_expectedWeekdayMap[(int)date('w', $_expectedWeekdayTs)] : '';
 
                         $expectedStartByEmployee = [];
+                        // Funcionários com pelo menos um turno ativo, independentemente de bater ou não
+                        // no dia da semana de hoje — distingue "Folga" (tem turno, mas não hoje) de
+                        // "Sem Turno" (não tem turno nenhum configurado).
+                        $hasAnyActiveTurnoByEmployee = [];
                         try {
                             $stmtExpectedStart = $pdo->prepare(
                                 "SELECT t.funcionario_id, t.horario_inicio, t.horario_fim, t.dias_semana, t.data_inicio, t.data_fim
@@ -604,7 +609,11 @@
                             $rowsExpectedStart = $stmtExpectedStart->fetchAll(PDO::FETCH_ASSOC) ?: [];
                             foreach ($rowsExpectedStart as $rowExpected) {
                                 $empIdExp = (int)($rowExpected['funcionario_id'] ?? 0);
-                                if ($empIdExp <= 0 || isset($expectedStartByEmployee[$empIdExp])) {
+                                if ($empIdExp <= 0) {
+                                    continue;
+                                }
+                                $hasAnyActiveTurnoByEmployee[$empIdExp] = true;
+                                if (isset($expectedStartByEmployee[$empIdExp])) {
                                     continue;
                                 }
 
@@ -885,7 +894,11 @@
                             //   Falta só é atribuída quando o turno termina sem qualquer entrada registada —
                             //   nunca antes disso, mesmo que a tolerância já tenha passado há horas.
                             if (!$temTurno) {
-                                $status_texto = 'SEM TURNO';
+                                if (isset($hasAnyActiveTurnoByEmployee[(int)$employee['id']])) {
+                                    $status_texto = 'FOLGA';
+                                } else {
+                                    $status_texto = 'SEM TURNO';
+                                }
                                 $status_classe = 'status-nao-marcado';
                             } elseif ($presencaStatus === 'falta') {
                                 $status_texto = $faltaTipoRaw === 'justificada' ? 'FALTA JUSTIFICADA' : 'FALTA INJUSTIFICADA';
@@ -1071,6 +1084,8 @@
 
                                     if (mb_stripos($normalizedStatusTexto, 'sem turno') !== false) {
                                         $statusKey = 'sem-turno';
+                                    } elseif (mb_stripos($normalizedStatusTexto, 'folga') !== false) {
+                                        $statusKey = 'folga';
                                     } elseif (mb_stripos($normalizedStatusTexto, 'agendado') !== false) {
                                         $statusKey = 'agendado';
                                     } elseif (mb_stripos($normalizedStatusTexto, 'falta') !== false) {

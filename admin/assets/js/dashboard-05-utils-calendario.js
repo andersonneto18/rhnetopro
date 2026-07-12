@@ -575,6 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const statusText = normalizePresencaValue(statusBadge?.textContent);
         if (statusText.includes('sem turno')) return 'sem-turno';
+        if (statusText.includes('folga')) return 'folga';
         if (statusText.includes('falta')) return 'falta';
         if (statusText.includes('em aberto')) return 'em-aberto';
         if (statusText.includes('atras')) return 'atrasado';

@@ -598,8 +598,8 @@
                         </div>
                         <div class="fr-toolbar-right">
                             <span id="turnosResultCount" style="font-size:.78rem;color:#64748b;white-space:nowrap;"></span>
-                            <button type="button" class="fr-filter-toggle" id="turnosFilterToggle"
-                                onclick="document.getElementById('turnosAdvFilters').classList.toggle('fr-adv-open');this.classList.toggle('pa-filter-open')">
+                            <button type="button" class="fr-filter-toggle" id="relTurnosFilterToggle"
+                                onclick="document.getElementById('relTurnosAdvFilters').classList.toggle('fr-adv-open');this.classList.toggle('pa-filter-open')">
                                 <i class="fas fa-sliders-h"></i> Filtros
                             </button>
                             <button id="btnExportarTurnos" type="button" class="fr-export-btn">
@@ -607,7 +607,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="fr-adv-filters" id="turnosAdvFilters">
+                    <div class="fr-adv-filters" id="relTurnosAdvFilters">
                         <input type="date" id="turnosStartDate" class="fr-select" title="Data inicial">
                         <input type="date" id="turnosEndDate" class="fr-select" title="Data final">
                         <select id="turnosStatusFilter" class="fr-select">
@@ -732,8 +732,8 @@
                         </div>
                         <div class="fr-toolbar-right">
                             <span id="gorjetasResultCount" style="font-size:.78rem;color:#64748b;white-space:nowrap;"></span>
-                            <button type="button" class="fr-filter-toggle" id="gorjetasFilterToggle"
-                                onclick="document.getElementById('gorjetasAdvFilters').classList.toggle('fr-adv-open');this.classList.toggle('pa-filter-open')">
+                            <button type="button" class="fr-filter-toggle" id="relGorjetasFilterToggle"
+                                onclick="document.getElementById('relGorjetasAdvFilters').classList.toggle('fr-adv-open');this.classList.toggle('pa-filter-open')">
                                 <i class="fas fa-sliders-h"></i> Filtros
                             </button>
                             <button id="btnExportarGorjetas" type="button" class="fr-export-btn">
@@ -741,7 +741,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="fr-adv-filters" id="gorjetasAdvFilters">
+                    <div class="fr-adv-filters" id="relGorjetasAdvFilters">
                         <input type="date" id="gorjetasStartDate" class="fr-select" title="Data inicial">
                         <input type="date" id="gorjetasEndDate" class="fr-select" title="Data final">
                         <select id="gorjetasStatusFilter" class="fr-select">
@@ -858,8 +858,8 @@
                         </div>
                         <div class="fr-toolbar-right">
                             <span id="folhaResultCount" style="font-size:.78rem;color:#64748b;white-space:nowrap;"></span>
-                            <button type="button" class="fr-filter-toggle" id="folhaFilterToggle"
-                                onclick="document.getElementById('folhaAdvFilters').classList.toggle('fr-adv-open');this.classList.toggle('pa-filter-open')">
+                            <button type="button" class="fr-filter-toggle" id="relFolhaFilterToggle"
+                                onclick="document.getElementById('relFolhaAdvFilters').classList.toggle('fr-adv-open');this.classList.toggle('pa-filter-open')">
                                 <i class="fas fa-sliders-h"></i> Filtros
                             </button>
                             <button id="btnExportarFolha" type="button" class="fr-export-btn">
@@ -867,7 +867,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="fr-adv-filters" id="folhaAdvFilters">
+                    <div class="fr-adv-filters" id="relFolhaAdvFilters">
                         <input type="date" id="folhaStartDate" class="fr-select" title="Data inicial">
                         <input type="date" id="folhaEndDate" class="fr-select" title="Data final">
                         <button type="button" class="fr-clear-btn" onclick="document.getElementById('folhaStartDate').value='';document.getElementById('folhaEndDate').value='';document.getElementById('folhaSearchInput').value='';document.getElementById('folhaSearchInput').dispatchEvent(new Event('input'));">Limpar</button>

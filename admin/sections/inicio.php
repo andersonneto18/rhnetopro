@@ -1,5 +1,116 @@
 <?php
-// Secção "Início" — incluída a partir de admin/dashboard.php (depende de $ADMIN_DIR, $pdo, $loggedInClientId, $username, etc. já definidos lá).
+// Secção "Início" — incluída a partir de admin/dashboard.php (depende de $ADMIN_DIR, $pdo, $loggedInClientId,
+// $username, $turnosRelatorio, $estHorario, parseTurnoDays(), etc. já definidos lá).
+
+// Pendências: contagens leves de coisas que precisam de ação do admin, para dar ao Início uma
+// função de "o que precisa da minha atenção hoje" além dos KPIs estáticos.
+$pendJustificativas = 0;
+try {
+    $stmtPendJust = $pdo->prepare("SELECT COUNT(*) FROM justificativas_presenca WHERE client_id = ? AND LOWER(status) = 'pendente'");
+    $stmtPendJust->execute([$loggedInClientId]);
+    $pendJustificativas = (int) $stmtPendJust->fetchColumn();
+} catch (Throwable $e) {
+    $pendJustificativas = 0;
+}
+
+$pendAlteracoes = 0;
+try {
+    $stmtPendAlt = $pdo->prepare("SELECT COUNT(*) FROM employee_change_requests WHERE client_id = ? AND status = 'pendente'");
+    $stmtPendAlt->execute([$loggedInClientId]);
+    $pendAlteracoes = (int) $stmtPendAlt->fetchColumn();
+} catch (Throwable $e) {
+    $pendAlteracoes = 0;
+}
+
+$pendConfirmacoes = 0;
+try {
+    $stmtPendConf = $pdo->prepare("SELECT COUNT(*) FROM registros_ponto WHERE client_id = ? AND LOWER(COALESCE(status_confirmacao, '')) <> 'confirmado'");
+    $stmtPendConf->execute([$loggedInClientId]);
+    $pendConfirmacoes = (int) $stmtPendConf->fetchColumn();
+} catch (Throwable $e) {
+    $pendConfirmacoes = 0;
+}
+
+// Tendência de 7 dias: Presentes (com entrada real) vs Faltas (turno já terminado sem entrada,
+// mesma lógica de correspondência dia da semana + vigência usada no resto da app).
+$tendInicio = date('Y-m-d', strtotime('-6 days'));
+$tendFim = date('Y-m-d');
+$tendLabels = [];
+$tendPresentes = array_fill(0, 7, 0);
+$tendFaltas = array_fill(0, 7, 0);
+
+try {
+    $diasComEntradaTend = [];
+    $stmtTendPres = $pdo->prepare("
+        SELECT funcionario_id, DATE(data_registro) AS dia
+        FROM registros_ponto
+        WHERE client_id = ? AND DATE(data_registro) BETWEEN ? AND ?
+          AND hora_entrada IS NOT NULL AND hora_entrada <> ''
+    ");
+    $stmtTendPres->execute([$loggedInClientId, $tendInicio, $tendFim]);
+    foreach ($stmtTendPres->fetchAll(PDO::FETCH_ASSOC) ?: [] as $rowTend) {
+        $diasComEntradaTend[$rowTend['funcionario_id'] . '_' . $rowTend['dia']] = true;
+    }
+
+    $weekdayMapTend = [0 => 'dom', 1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => 'sab'];
+    $agoraTend = time();
+
+    for ($i = 0; $i < 7; $i++) {
+        $diaTs = strtotime($tendInicio . " +{$i} days");
+        $diaIso = date('Y-m-d', $diaTs);
+        $tendLabels[$i] = date('d/m', $diaTs);
+        $weekdayTokTend = $weekdayMapTend[(int) date('w', $diaTs)];
+
+        $presentesDia = 0;
+        $faltasDia = 0;
+
+        foreach ($turnosRelatorio as $tCand) {
+            if (!in_array(mb_strtolower(trim((string) ($tCand['status'] ?? ''))), ['ativo', 'active'], true)) {
+                continue;
+            }
+            $tDiasTend = parseTurnoDays((string) ($tCand['dias_semana'] ?? ''));
+            if (!empty($tDiasTend) && !in_array($weekdayTokTend, $tDiasTend, true)) {
+                continue;
+            }
+            $tIniTend = trim((string) ($tCand['data_inicio'] ?? ''));
+            $tFimTend = trim((string) ($tCand['data_fim'] ?? ''));
+            if ($tIniTend !== '' && $tIniTend !== '0000-00-00' && $tIniTend > $diaIso) {
+                continue;
+            }
+            if ($tFimTend !== '' && $tFimTend !== '0000-00-00' && $tFimTend < $diaIso) {
+                continue;
+            }
+
+            $empIdTend = (int) ($tCand['funcionario_id'] ?? 0);
+            $keyTend = $empIdTend . '_' . $diaIso;
+
+            if (isset($diasComEntradaTend[$keyTend])) {
+                $presentesDia++;
+                continue;
+            }
+
+            $horaFimTend = substr((string) ($tCand['horario_fim'] ?? ''), 0, 5);
+            $horaIniTend = substr((string) ($tCand['horario_inicio'] ?? ''), 0, 5);
+            if ($horaFimTend === '' || $horaIniTend === '') {
+                continue;
+            }
+            $fimTsTend = strtotime($diaIso . ' ' . $horaFimTend);
+            $iniTsTend = strtotime($diaIso . ' ' . $horaIniTend);
+            if ($fimTsTend !== false && $iniTsTend !== false && $fimTsTend <= $iniTsTend) {
+                $fimTsTend += 24 * 60 * 60;
+            }
+            if ($fimTsTend === false || $agoraTend <= $fimTsTend) {
+                continue; // turno ainda em curso ou por vir: ainda não é falta definitiva
+            }
+            $faltasDia++;
+        }
+
+        $tendPresentes[$i] = $presentesDia;
+        $tendFaltas[$i] = $faltasDia;
+    }
+} catch (Throwable $e) {
+    error_log('Erro ao montar tendência de 7 dias no Início: ' . $e->getMessage());
+}
 ?>
         <section id="inicio-section" class="content-section active">
 
@@ -53,6 +164,45 @@
                         <span class="fr-kpi-pct">este mês</span>
                     </div>
                 </div>
+            </div>
+
+            <?php if ($pendJustificativas > 0 || $pendAlteracoes > 0 || $pendConfirmacoes > 0): ?>
+            <div class="fr-kpi-strip" style="grid-template-columns:repeat(<?php echo (int)($pendJustificativas > 0) + (int)($pendAlteracoes > 0) + (int)($pendConfirmacoes > 0); ?>,1fr);margin-top:1rem;">
+                <?php if ($pendJustificativas > 0): ?>
+                <div class="fr-kpi" style="cursor:pointer;border-color:rgba(251,191,36,.3);" onclick="showSection('solicitacoes')">
+                    <div class="fr-kpi-icon" style="background:rgba(251,191,36,.14);color:#fbbf24;"><i class="fas fa-file-signature"></i></div>
+                    <div class="fr-kpi-body">
+                        <span class="fr-kpi-val"><?php echo $pendJustificativas; ?></span>
+                        <span class="fr-kpi-lbl">Justificativa<?php echo $pendJustificativas !== 1 ? 's' : ''; ?> por Aprovar</span>
+                        <span class="fr-kpi-pct">clique para rever</span>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <?php if ($pendAlteracoes > 0): ?>
+                <div class="fr-kpi" style="cursor:pointer;border-color:rgba(251,191,36,.3);" onclick="showSection('funcionarios')">
+                    <div class="fr-kpi-icon" style="background:rgba(251,191,36,.14);color:#fbbf24;"><i class="fas fa-user-edit"></i></div>
+                    <div class="fr-kpi-body">
+                        <span class="fr-kpi-val"><?php echo $pendAlteracoes; ?></span>
+                        <span class="fr-kpi-lbl">Alteraç<?php echo $pendAlteracoes !== 1 ? 'ões' : 'ão'; ?> de Dados por Aprovar</span>
+                        <span class="fr-kpi-pct">clique para rever</span>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <?php if ($pendConfirmacoes > 0): ?>
+                <div class="fr-kpi" style="cursor:pointer;border-color:rgba(251,191,36,.3);" onclick="showSection('assiduidade')">
+                    <div class="fr-kpi-icon" style="background:rgba(251,191,36,.14);color:#fbbf24;"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="fr-kpi-body">
+                        <span class="fr-kpi-val"><?php echo $pendConfirmacoes; ?></span>
+                        <span class="fr-kpi-lbl">Registo<?php echo $pendConfirmacoes !== 1 ? 's' : ''; ?> de Ponto por Confirmar</span>
+                        <span class="fr-kpi-pct">clique para rever</span>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1rem;margin-top:1rem;height:260px;">
+                <canvas id="chartInicioTendencia" style="max-height:230px;"></canvas>
             </div>
 
             <div class="data-table fr-table-wrap" style="margin-top:.25rem;">
@@ -270,3 +420,50 @@
             </div>
 
         </section>
+
+        <script>
+            (function() {
+                if (typeof Chart === 'undefined') return;
+                var canvas = document.getElementById('chartInicioTendencia');
+                if (!canvas) return;
+                var labels = <?php echo json_encode($tendLabels); ?>;
+                var presentesData = <?php echo json_encode($tendPresentes); ?>;
+                var faltasData = <?php echo json_encode($tendFaltas); ?>;
+                new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Presentes',
+                                data: presentesData,
+                                borderColor: '#43e97b',
+                                backgroundColor: 'rgba(67,233,123,.15)',
+                                tension: .3,
+                                fill: true
+                            },
+                            {
+                                label: 'Faltas',
+                                data: faltasData,
+                                borderColor: '#fa709a',
+                                backgroundColor: 'rgba(250,112,154,.15)',
+                                tension: .3,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#e2e8f0' } },
+                            title: { display: true, text: 'Presenças vs Faltas (últimos 7 dias)', color: '#e2e8f0' }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                            y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+                        }
+                    }
+                });
+            })();
+        </script>

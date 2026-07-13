@@ -894,6 +894,7 @@
             </div>
             <form method="post" action="dashboard.php?section=definicoes">
                 <input type="hidden" name="action" value="save_admin_profile">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <div class="am-section">
                     <div class="am-f am-f-full">
                         <label class="am-lbl">Nome</label>

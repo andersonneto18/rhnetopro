@@ -2198,6 +2198,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// ===== Perfil do Administrador (Definições) =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_admin_profile') {
+    $csrfTokenPost = (string)($_POST['csrf_token'] ?? '');
+    if (empty($_SESSION['csrf_token']) || !hash_equals((string)$_SESSION['csrf_token'], $csrfTokenPost)) {
+        header('Location: dashboard.php?section=definicoes&perfil_saved=0&perfil_reason=csrf');
+        exit;
+    }
+
+    $adminNomePost = trim((string)($_POST['admin_nome'] ?? ''));
+    $adminEmailPost = trim((string)($_POST['admin_email'] ?? ''));
+    $adminTelefonePost = trim((string)($_POST['admin_telefone'] ?? ''));
+    $adminNovaSenha = (string)($_POST['admin_nova_senha'] ?? '');
+    $adminConfirmarSenha = (string)($_POST['admin_confirmar_senha'] ?? '');
+
+    if ($adminNomePost === '' || !filter_var($adminEmailPost, FILTER_VALIDATE_EMAIL)) {
+        header('Location: dashboard.php?section=definicoes&perfil_saved=0&perfil_reason=invalido');
+        exit;
+    }
+    if ($adminNovaSenha !== '' && $adminNovaSenha !== $adminConfirmarSenha) {
+        header('Location: dashboard.php?section=definicoes&perfil_saved=0&perfil_reason=senha_diferente');
+        exit;
+    }
+    if ($adminNovaSenha !== '' && mb_strlen($adminNovaSenha) < 6) {
+        header('Location: dashboard.php?section=definicoes&perfil_saved=0&perfil_reason=senha_curta');
+        exit;
+    }
+
+    try {
+        if ($adminNovaSenha !== '') {
+            $stmtSaveProfile = $pdo->prepare(
+                'UPDATE usuarios SET nome_completo = ?, email = ?, telefone = ?, senha = ? WHERE id = ?'
+            );
+            $stmtSaveProfile->execute([
+                $adminNomePost,
+                $adminEmailPost,
+                $adminTelefonePost,
+                password_hash($adminNovaSenha, PASSWORD_DEFAULT),
+                $user_id,
+            ]);
+        } else {
+            $stmtSaveProfile = $pdo->prepare(
+                'UPDATE usuarios SET nome_completo = ?, email = ?, telefone = ? WHERE id = ?'
+            );
+            $stmtSaveProfile->execute([$adminNomePost, $adminEmailPost, $adminTelefonePost, $user_id]);
+        }
+
+        $_SESSION['fullname'] = $adminNomePost;
+        $_SESSION['username'] = $adminNomePost;
+
+        header('Location: dashboard.php?section=definicoes&perfil_saved=1');
+        exit;
+    } catch (Throwable $eSaveProfile) {
+        error_log('Erro ao salvar perfil do administrador: ' . $eSaveProfile->getMessage());
+        header('Location: dashboard.php?section=definicoes&perfil_saved=0&perfil_reason=erro');
+        exit;
+    }
+}
+
+$adminUser = ['name' => '', 'email' => '', 'phone' => ''];
+try {
+    $stmtAdminUser = $pdo->prepare('SELECT nome_completo, email, telefone FROM usuarios WHERE id = ? LIMIT 1');
+    $stmtAdminUser->execute([$user_id]);
+    $adminUserRow = $stmtAdminUser->fetch(PDO::FETCH_ASSOC);
+    if ($adminUserRow) {
+        $adminUser = [
+            'name' => (string)($adminUserRow['nome_completo'] ?? ''),
+            'email' => (string)($adminUserRow['email'] ?? ''),
+            'phone' => (string)($adminUserRow['telefone'] ?? ''),
+        ];
+    }
+} catch (Throwable $eAdminUser) {
+    error_log('Erro ao carregar perfil do administrador: ' . $eAdminUser->getMessage());
+}
+
 $estHorario = [
     'hora_abertura' => '09:00:00',
     'hora_encerramento' => '23:00:00',

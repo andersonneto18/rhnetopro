@@ -13,15 +13,6 @@ try {
     $pendJustificativas = 0;
 }
 
-$pendAlteracoes = 0;
-try {
-    $stmtPendAlt = $pdo->prepare("SELECT COUNT(*) FROM employee_change_requests WHERE client_id = ? AND status = 'pendente'");
-    $stmtPendAlt->execute([$loggedInClientId]);
-    $pendAlteracoes = (int) $stmtPendAlt->fetchColumn();
-} catch (Throwable $e) {
-    $pendAlteracoes = 0;
-}
-
 $pendConfirmacoes = 0;
 try {
     $stmtPendConf = $pdo->prepare("SELECT COUNT(*) FROM registros_ponto WHERE client_id = ? AND LOWER(COALESCE(status_confirmacao, '')) <> 'confirmado'");
@@ -166,24 +157,14 @@ try {
                 </div>
             </div>
 
-            <?php if ($pendJustificativas > 0 || $pendAlteracoes > 0 || $pendConfirmacoes > 0): ?>
-            <div class="fr-kpi-strip" style="grid-template-columns:repeat(<?php echo (int)($pendJustificativas > 0) + (int)($pendAlteracoes > 0) + (int)($pendConfirmacoes > 0); ?>,1fr);margin-top:1rem;">
+            <?php if ($pendJustificativas > 0 || $pendConfirmacoes > 0): ?>
+            <div class="fr-kpi-strip" style="grid-template-columns:repeat(<?php echo (int)($pendJustificativas > 0) + (int)($pendConfirmacoes > 0); ?>,1fr);margin-top:1rem;">
                 <?php if ($pendJustificativas > 0): ?>
                 <div class="fr-kpi" style="cursor:pointer;border-color:rgba(251,191,36,.3);" onclick="showSection('solicitacoes')">
                     <div class="fr-kpi-icon" style="background:rgba(251,191,36,.14);color:#fbbf24;"><i class="fas fa-file-signature"></i></div>
                     <div class="fr-kpi-body">
                         <span class="fr-kpi-val"><?php echo $pendJustificativas; ?></span>
                         <span class="fr-kpi-lbl">Justificativa<?php echo $pendJustificativas !== 1 ? 's' : ''; ?> por Aprovar</span>
-                        <span class="fr-kpi-pct">clique para rever</span>
-                    </div>
-                </div>
-                <?php endif; ?>
-                <?php if ($pendAlteracoes > 0): ?>
-                <div class="fr-kpi" style="cursor:pointer;border-color:rgba(251,191,36,.3);" onclick="showSection('funcionarios')">
-                    <div class="fr-kpi-icon" style="background:rgba(251,191,36,.14);color:#fbbf24;"><i class="fas fa-user-edit"></i></div>
-                    <div class="fr-kpi-body">
-                        <span class="fr-kpi-val"><?php echo $pendAlteracoes; ?></span>
-                        <span class="fr-kpi-lbl">Alteraç<?php echo $pendAlteracoes !== 1 ? 'ões' : 'ão'; ?> de Dados por Aprovar</span>
                         <span class="fr-kpi-pct">clique para rever</span>
                     </div>
                 </div>

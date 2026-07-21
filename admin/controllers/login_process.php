@@ -54,13 +54,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 exit();
             } else {
                 // Senha incorreta
-                $_SESSION['error_message'] = "Nome de utilizador/Email ou senha incorretos.";
+                $_SESSION['error_message'] = "Nome de utilizador/Email ou palavra-passe incorretos.";
                 header("Location: ../views/login.php");
                 exit();
             }
         } else {
             // Utilizador não encontrado
-            $_SESSION['error_message'] = "Nome de utilizador/Email ou senha incorretos.";
+            $_SESSION['error_message'] = "Nome de utilizador/Email ou palavra-passe incorretos.";
             header("Location: ../views/login.php");
             exit();
         }

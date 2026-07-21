@@ -465,7 +465,15 @@
         if (rows.length === 0) return;
 
         rows.forEach((row) => {
+            const wasAlreadyInactive = row.classList.contains('disabled-row');
             row.classList.add('disabled-row');
+
+            if (!wasAlreadyInactive) {
+                const activeVal = document.querySelector('.fr-kpi-active .fr-kpi-val');
+                const inactiveVal = document.querySelector('.fr-kpi-inactive .fr-kpi-val');
+                if (activeVal) activeVal.textContent = Math.max(0, (parseInt(activeVal.textContent, 10) || 0) - 1);
+                if (inactiveVal) inactiveVal.textContent = (parseInt(inactiveVal.textContent, 10) || 0) + 1;
+            }
 
             const statusBadge = row.querySelector(`#status-${employeeId}`) || row.querySelector('.status-badge');
             if (statusBadge) {
@@ -495,11 +503,14 @@
                 activateBtn.className = 'fr-btn fr-btn-activate btn-activate';
                 activateBtn.setAttribute('data-id', String(employeeId));
                 activateBtn.title = 'Ativar';
-                activateBtn.innerHTML = '<i class="fas fa-user-check"></i>';
+                activateBtn.innerHTML = '<i class="fas fa-check"></i>';
                 actions.appendChild(activateBtn);
             }
         });
     }
+    // Exposta globalmente: dashboard-02-funcionarios.js chama isto para atualizar a linha
+    // sem recarregar a pagina, mas esta funcao vive dentro desta IIFE privada.
+    window.updateRowToInactive = updateRowToInactive;
 
     async function bulkDeleteSelectedEmployees(event) {
         const trigger = (event && event.currentTarget) ? event.currentTarget : document.activeElement;
@@ -852,12 +863,10 @@
                     )
                     : Promise.resolve(
                         window.confirm('Esta folha já foi marcada como paga. Deseja reverter o pagamento para pendente e editar?')
-                            ? { isConfirmed: true }
-                            : { isConfirmed: false }
                     );
 
-                Promise.resolve(confirmPromise).then(function (result) {
-                    if (!result || !result.isConfirmed) return;
+                Promise.resolve(confirmPromise).then(function (confirmed) {
+                    if (!confirmed) return;
 
                     editBtn.dataset.unpaying = '1';
                     var empId  = editBtn.getAttribute('data-id');

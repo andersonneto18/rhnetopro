@@ -80,6 +80,113 @@
     }, true);
 })();
 
+// Fallback global para "Ativar": cobre tambem botoes criados dinamicamente (ex.: apos
+// desativar alguem), que nao tinham nenhum listener associado por serem criados depois
+// do carregamento inicial da pagina (o listener antigo so cobria botoes ja existentes).
+(function installEmergencyEmployeeActivateHandler() {
+    if (window.__employeeActivateEmergencyReady) return;
+    window.__employeeActivateEmergencyReady = true;
+
+    function updateRowToActiveGlobal(employeeId) {
+        const rows = Array.from(document.querySelectorAll(`.btn-activate[data-id="${employeeId}"]`))
+            .map((btn) => btn.closest('tr'))
+            .filter(Boolean);
+
+        rows.forEach((row) => {
+            const wasInactive = row.classList.contains('disabled-row');
+            row.classList.remove('disabled-row');
+
+            const statusBadge = row.querySelector(`#status-${employeeId}`) || row.querySelector('.status-badge');
+            if (statusBadge) {
+                statusBadge.classList.remove('status-inactive', 'status-ferias', 'status-pendente', 'status-rejeitado');
+                statusBadge.classList.add('status-active');
+                statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Ativo';
+            }
+
+            const editBtn = row.querySelector('.btn-edit');
+            if (editBtn) {
+                editBtn.classList.remove('btn-disabled');
+                editBtn.removeAttribute('disabled');
+                editBtn.setAttribute('title', 'Editar');
+            }
+
+            const activateBtn = row.querySelector('.btn-activate');
+            if (activateBtn) activateBtn.remove();
+
+            const actions = row.querySelector('td:last-child div');
+            if (actions && !row.querySelector('.btn-employee-deactivate')) {
+                const deactivateBtn = document.createElement('button');
+                deactivateBtn.className = 'fr-btn fr-btn-deact btn-employee-deactivate';
+                deactivateBtn.setAttribute('data-id', String(employeeId));
+                deactivateBtn.title = 'Desativar';
+                deactivateBtn.innerHTML = '<i class="fas fa-times"></i>';
+                actions.appendChild(deactivateBtn);
+            }
+
+            if (wasInactive) {
+                const activeVal = document.querySelector('.fr-kpi-active .fr-kpi-val');
+                const inactiveVal = document.querySelector('.fr-kpi-inactive .fr-kpi-val');
+                if (activeVal) activeVal.textContent = (parseInt(activeVal.textContent, 10) || 0) + 1;
+                if (inactiveVal) inactiveVal.textContent = Math.max(0, (parseInt(inactiveVal.textContent, 10) || 0) - 1);
+            }
+        });
+    }
+
+    document.addEventListener('click', async (event) => {
+        const button = event.target.closest('.btn-activate[data-id]');
+        if (!button) return;
+        if (button.disabled) return;
+        if (button.dataset.handlingActivate === '1') return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const employeeId = button.getAttribute('data-id');
+        if (!employeeId) return;
+
+        button.dataset.handlingActivate = '1';
+        try {
+            const confirmed = (typeof showConfirm === 'function')
+                ? await showConfirm(
+                    'Ativar Funcionário',
+                    'Deseja mudar o status deste funcionário para Ativo?',
+                    'Sim, ativar',
+                    'Cancelar'
+                )
+                : window.confirm('Deseja mudar o status deste funcionário para Ativo?');
+
+            if (!confirmed) return;
+
+            const fd = new FormData();
+            fd.append('id', employeeId);
+            fd.append('status', 'active');
+            fd.append('quick_status_toggle', '1');
+
+            let success = false;
+            try {
+                const res = await fetch('../api/employees/update_employee.php', {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'same-origin'
+                });
+                const data = await parseJsonResponseSafe(res);
+                success = !!(data && data.success);
+            } catch (err) {
+                console.error('Emergency handler: activate falhou.', err);
+            }
+
+            if (success) {
+                updateRowToActiveGlobal(employeeId);
+                if (typeof showSuccess === 'function') showSuccess('Funcionário ativado com sucesso!');
+            } else if (typeof showError === 'function') {
+                showError('Erro ao ativar funcionário.');
+            }
+        } finally {
+            button.dataset.handlingActivate = '0';
+        }
+    }, true);
+})();
+
 // Função para baixar PDF do funcionário
 function downloadEmployeePDF() {
     const { jsPDF } = window.jspdf;
@@ -250,7 +357,7 @@ let currentViewedEmployeeId = null;
 
 const documentsListMessages = {
     default: '<p style="color:#95a5a6;font-style:italic;text-align:center;padding:20px;">Selecione um funcionário para ver os documentos.</p>',
-    loading: '<p style="color:#95a5a6;font-style:italic;text-align:center;padding:20px;">Carregando documentos...</p>',
+    loading: '<p style="color:#95a5a6;font-style:italic;text-align:center;padding:20px;">A carregar documentos...</p>',
     empty: '<p style="color:#95a5a6;font-style:italic;text-align:center;padding:20px;">Ainda não existem documentos anexados.</p>',
     error: '<p style="color:#e74c3c;text-align:center;padding:20px;">Não foi possível carregar os documentos agora.</p>'
 };
@@ -453,7 +560,7 @@ async function loadEmployeeTurnoAndPonto(employeeId) {
                 document.getElementById('view-ponto-entrada').textContent = data.ultimo_ponto.hora_entrada || '—';
                 document.getElementById('view-ponto-saida').textContent = data.ultimo_ponto.hora_saida || '—';
             } else {
-                document.getElementById('view-ponto-data').textContent = 'Sem registros';
+                document.getElementById('view-ponto-data').textContent = 'Sem registos';
                 document.getElementById('view-ponto-entrada').textContent = '—';
                 document.getElementById('view-ponto-saida').textContent = '—';
             }
@@ -934,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 if (!path) {
-                    showWarning('Arquivo não disponível.');
+                    showWarning('Ficheiro não disponível.');
                     return;
                 }
                 const normalizedPath = path.replace(/^\/+/, '');
@@ -1017,7 +1124,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const fileInput = document.getElementById('upload-document-file');
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-                showWarning('Selecione um arquivo para anexar.');
+                showWarning('Selecione um ficheiro para anexar.');
                 return;
             }
 
@@ -1025,7 +1132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalButtonHtml = submitButton ? submitButton.innerHTML : '';
             if (submitButton) {
                 submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A enviar...';
             }
 
             const formData = new FormData(uploadDocumentForm);
@@ -1210,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             activateBtn.className = 'fr-btn fr-btn-activate btn-activate';
                             activateBtn.setAttribute('data-id', employeeId);
                             activateBtn.title = 'Ativar';
-                            activateBtn.innerHTML = '<i class="fas fa-user-check"></i>';
+                            activateBtn.innerHTML = '<i class="fas fa-check"></i>';
                             btnDiv.appendChild(activateBtn);
                             
                             // Adicionar event listener ao novo botão
@@ -1569,8 +1676,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <button class="fr-btn fr-btn-view btn-view" data-id="${employeeId}" title="Ver"><i class="fas fa-eye"></i></button>
                                 <button class="fr-btn fr-btn-edit btn-edit" data-id="${employeeId}" title="Editar"${isDisabledRow ? ' disabled' : ''}><i class="fas fa-pen"></i></button>
                                 ${status === 'inactive'
-                                    ? `<button class="fr-btn fr-btn-activate btn-activate" data-id="${employeeId}" title="Ativar"><i class="fas fa-user-check"></i></button>`
-                                    : `<button class="fr-btn fr-btn-deact btn-employee-deactivate" data-id="${employeeId}" title="Desativar"><i class="fas fa-ban"></i></button>`}
+                                    ? `<button class="fr-btn fr-btn-activate btn-activate" data-id="${employeeId}" title="Ativar"><i class="fas fa-check"></i></button>`
+                                    : `<button class="fr-btn fr-btn-deact btn-employee-deactivate" data-id="${employeeId}" title="Desativar"><i class="fas fa-times"></i></button>`}
                             </div>
                         </td>
                     `;
@@ -1841,7 +1948,7 @@ function registrarPonto(tipo, funcionarioId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showSuccess('Ponto registrado com sucesso!');
+            showSuccess('Ponto registado com sucesso!');
             
             // Atualizar a tabela de presença dinamicamente SEM recarregar
             const row = document.querySelector(`#assiduidade-section button[onclick*="${funcionarioId}"]`)?.closest('tr');
@@ -1909,12 +2016,12 @@ function registrarPonto(tipo, funcionarioId) {
                 }
             }
         } else {
-            showError(data.message || 'Erro ao registrar ponto');
+            showError(data.message || 'Erro ao registar ponto');
         }
     })
     .catch(error => {
         console.error('Erro:', error);
-        showError('Erro ao registrar ponto');
+        showError('Erro ao registar ponto');
     });
 }
 

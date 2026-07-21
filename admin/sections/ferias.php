@@ -22,13 +22,15 @@
         $hasMotivoRejeicao = in_array('motivo_rejeicao', $feriasSectionCols, true);
         $motRejeicaoSel = $hasMotivoRejeicao ? ', f.motivo_rejeicao' : '';
 
+        // Pedidos ainda pendentes (por aprovar/rejeitar) só aparecem em Solicitações — aqui
+        // só mostramos o que já foi decidido (agendada/em curso/concluída/rejeitada/cancelada).
         $stmtFeriasSection = $pdo->prepare("SELECT f.id, f.{$feriasSectionEmployeeCol} AS employee_id,
                     f.data_inicio, f.data_fim, f.status, f.motivo{$motRejeicaoSel},
                     e.name AS employee_name, e.profile_picture AS employee_profile_picture, e.position AS employee_position
              FROM ferias f
              INNER JOIN employees e ON e.id = f.{$feriasSectionEmployeeCol}
-             WHERE e.client_id = ?
-             ORDER BY FIELD(f.status,'pendente','aprovada','rejeitada','cancelada'), f.data_inicio DESC, f.id DESC");
+             WHERE e.client_id = ? AND LOWER(COALESCE(f.status,'')) <> 'pendente'
+             ORDER BY FIELD(f.status,'aprovada','rejeitada','cancelada'), f.data_inicio DESC, f.id DESC");
         $stmtFeriasSection->execute([(int)$loggedInClientId]);
         $feriasAll = $stmtFeriasSection->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -109,7 +111,7 @@
             <div class="frhd-icon" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);box-shadow:0 4px 14px rgba(14,165,233,.35);"><i class="fas fa-umbrella-beach"></i></div>
             <div>
                 <h2 class="frhd-title">Férias</h2>
-                <p class="frhd-sub"><?php echo count($feriasAll); ?> registos &middot; <?php echo (int)$feriasPendentesCount; ?> pendente<?php echo $feriasPendentesCount !== 1 ? 's' : ''; ?> hoje</p>
+                <p class="frhd-sub"><?php echo count($feriasAll); ?> registo<?php echo count($feriasAll) !== 1 ? 's' : ''; ?></p>
             </div>
         </div>
         <button type="button" class="frhd-add-btn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);box-shadow:0 4px 12px rgba(14,165,233,.3);" onclick="openFeriasCreateModal()">
@@ -126,18 +128,7 @@
         .fv-kpi-pending { position:relative; }
         .fv-kpi-badge { position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;font-size:.65rem;font-weight:900;display:flex;align-items:center;justify-content:center;animation:solicitacaoBadgeFloat 1.5s ease-in-out infinite; }
     </style>
-    <div class="fr-kpi-strip" style="grid-template-columns:repeat(5,1fr);">
-        <div class="fr-kpi fv-kpi-pending">
-            <?php if ($feriasPendentesCount > 0): ?>
-            <span class="fv-kpi-badge"><?php echo (int)$feriasPendentesCount; ?></span>
-            <?php endif; ?>
-            <div class="fr-kpi-icon"><i class="fas fa-clock"></i></div>
-            <div class="fr-kpi-body">
-                <span class="fr-kpi-val"><?php echo (int)$feriasPendentesCount; ?></span>
-                <span class="fr-kpi-lbl">Pendentes</span>
-                <span class="fr-kpi-pct">aguardam aprovação</span>
-            </div>
-        </div>
+    <div class="fr-kpi-strip" style="grid-template-columns:repeat(4,1fr);">
         <div class="fr-kpi fv-kpi-sched">
             <div class="fr-kpi-icon"><i class="fas fa-calendar-plus"></i></div>
             <div class="fr-kpi-body">
@@ -197,12 +188,6 @@
                     <i class="fas fa-th-large"></i> Todos
                     <span class="fr-chip-count"><?php echo count($feriasAll); ?></span>
                 </button>
-                <?php if ($feriasPendentesCount > 0): ?>
-                <button class="fr-chip fv-chip-pending" data-fv-chip="pendente">
-                    <span class="fr-dot" style="background:#f59e0b;"></span> Pendentes
-                    <span class="fr-chip-count"><?php echo (int)$feriasPendentesCount; ?></span>
-                </button>
-                <?php endif; ?>
                 <button class="fr-chip fv-chip-sched" data-fv-chip="agendada">
                     <span class="fr-dot fr-dot-blue"></span> Agendadas
                     <span class="fr-chip-count"><?php echo (int)$feriasAgendadasCount; ?></span>
@@ -413,19 +398,7 @@
                                 data-ferias-motivo-rejeicao="<?php echo htmlspecialchars($motivoRejeicao); ?>"
                                 onclick="openFeriasViewModal(this)"><i class="fas fa-eye"></i></button>
 
-                            <?php if ($fStatusRaw === 'pendente'): ?>
-                            <form method="POST" style="display:contents;" class="ferias-approve-form">
-                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-                                <input type="hidden" name="action" value="approve_ferias_request">
-                                <input type="hidden" name="ferias_id" value="<?php echo $feriasIdRow; ?>">
-                                <input type="hidden" name="from_section" value="ferias">
-                                <button type="submit" class="fr-btn fr-btn-activate" title="Aprovar"><i class="fas fa-check"></i></button>
-                            </form>
-                            <button type="button" class="fr-btn fr-btn-deact" title="Rejeitar"
-                                onclick="openFeriasRejectModal(<?php echo $feriasIdRow; ?>, '<?php echo htmlspecialchars(addslashes($employeeName)); ?>')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                            <?php elseif ($fStatusFilterKey === 'agendada'): ?>
+                            <?php if ($fStatusFilterKey === 'agendada'): ?>
                             <button type="button" class="fr-btn fr-btn-edit" title="Editar"
                                 data-ferias-id="<?php echo $feriasIdRow; ?>"
                                 data-ferias-funcionario="<?php echo htmlspecialchars($employeeName); ?>"
@@ -923,8 +896,8 @@
                         confirmMessage,
                         'Sim, cancelar',
                         'Cancelar'
-                    ).then(function(result) {
-                        if (result && result.isConfirmed) {
+                    ).then(function(confirmed) {
+                        if (confirmed) {
                             form.submit();
                         }
                     });

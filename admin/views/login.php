@@ -8,6 +8,7 @@ $openSignUp = isset($_SESSION['register_error_message']) || isset($_SESSION['reg
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RHNeto Pro – Acesso</title>
+    <link rel="icon" type="image/png" href="images/rh1.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
@@ -75,15 +76,15 @@ $openSignUp = isset($_SESSION['register_error_message']) || isset($_SESSION['reg
                         </div>
                     </div>
                     <div class="field">
-                        <label>Senha</label>
+                        <label>Palavra-passe</label>
                         <div class="field-wrap"><i class="fas fa-lock"></i>
-                            <input type="password" name="new-password" placeholder="Crie uma senha" required>
+                            <input type="password" name="new-password" placeholder="Crie uma palavra-passe" required>
                         </div>
                     </div>
                     <div class="field">
-                        <label>Confirmar Senha</label>
+                        <label>Confirmar Palavra-passe</label>
                         <div class="field-wrap"><i class="fas fa-lock"></i>
-                            <input type="password" name="confirm-password" placeholder="Confirme a senha" required>
+                            <input type="password" name="confirm-password" placeholder="Confirme a palavra-passe" required>
                         </div>
                     </div>
                 </div>
@@ -125,9 +126,9 @@ $openSignUp = isset($_SESSION['register_error_message']) || isset($_SESSION['reg
                     </div>
                 </div>
                 <div class="field">
-                    <label>Senha</label>
+                    <label>Palavra-passe</label>
                     <div class="field-wrap"><i class="fas fa-lock"></i>
-                        <input type="password" name="password" placeholder="A sua senha" required>
+                        <input type="password" name="password" placeholder="A sua palavra-passe" required>
                     </div>
                 </div>
 

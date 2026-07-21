@@ -62,12 +62,23 @@
             }
             ?>
             <style>
+                #definicoes-section .card-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: var(--space-6);
+                    margin-bottom: var(--space-12);
+                    align-items: stretch;
+                }
+                @media (max-width: 1200px) { #definicoes-section .card-grid { grid-template-columns: repeat(2, 1fr); } }
+                @media (max-width: 640px)  { #definicoes-section .card-grid { grid-template-columns: 1fr; } }
+                #definicoes-section .info-card { display: flex; flex-direction: column; }
+                #definicoes-section .card-content { flex: 1; display: flex; flex-direction: column; }
                 #definicoes-section .settings-plan-rows { display: grid; gap: .4rem; font-size: .85rem; margin-bottom: .85rem; }
                 #definicoes-section .settings-plan-row { display: flex; justify-content: space-between; gap: .5rem; }
                 #definicoes-section .settings-plan-row span:first-child { color: var(--text-secondary); }
-                #definicoes-section .settings-badge { display: inline-flex; align-items: center; padding: .3rem .75rem; border-radius: 999px; font-size: .8rem; font-weight: 700; }
+                #definicoes-section .settings-badge { display: inline-flex; align-items: center; align-self: flex-start; padding: .3rem .75rem; border-radius: 999px; font-size: .8rem; font-weight: 700; }
                 #definicoes-section .settings-card-note { margin-top: .6rem; }
-                #definicoes-section .settings-card-actions { margin-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+                #definicoes-section .settings-card-actions { margin-top: auto; padding-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap; }
                 #definicoes-section .settings-card-actions form { display: inline; }
                 #definicoes-section .info-card--soon { opacity: .7; }
                 #definicoes-section .settings-soon-badge { display: inline-flex; align-items: center; padding: .15rem .55rem; border-radius: 999px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: var(--neutral-100, #f3f4f6); color: var(--text-secondary, #6b7280); margin-left: .5rem; }
@@ -545,6 +556,9 @@
                 document.querySelectorAll('form[action*="section=solicitacoes"], form[action*="review_justificativa.php"]').forEach(function(form) {
                     form.addEventListener('submit', function() {
                         sessionStorage.setItem(SCROLL_KEY, String(window.scrollY || window.pageYOffset || 0));
+                        // Mantém o admin na secção de Solicitações após aprovar/rejeitar,
+                        // em vez de cair na secção padrão depois do reload da página.
+                        sessionStorage.setItem('activeSection', 'solicitacoes');
                     });
                 });
             })();
@@ -696,8 +710,8 @@
                                 confirmText,
                                 'Sim, fechar folha',
                                 'Cancelar'
-                            ).then(function(result) {
-                                if (result && result.isConfirmed) {
+                            ).then(function(confirmed) {
+                                if (confirmed) {
                                     closeFolhaForm.submit();
                                 }
                             });
@@ -731,8 +745,8 @@
                                 'Tem certeza que deseja reabrir a folha? Isto permitira correcoes e novas alteracoes nos dados.',
                                 'Sim, reabrir folha',
                                 'Cancelar'
-                            ).then(function(result) {
-                                if (result && result.isConfirmed) {
+                            ).then(function(confirmed) {
+                                if (confirmed) {
                                     reopenFolhaForm.submit();
                                 }
                             });
@@ -912,14 +926,14 @@
                             value="<?php echo htmlspecialchars($adminUser['phone'] ?? ''); ?>">
                     </div>
                     <div class="am-f am-f-full">
-                        <label class="am-lbl">Nova Senha</label>
+                        <label class="am-lbl">Nova Palavra-passe</label>
                         <input class="am-inp" type="password" name="admin_nova_senha"
                             placeholder="Deixe em branco para não alterar">
                     </div>
                     <div class="am-f am-f-full">
-                        <label class="am-lbl">Confirmar Nova Senha</label>
+                        <label class="am-lbl">Confirmar Nova Palavra-passe</label>
                         <input class="am-inp" type="password" name="admin_confirmar_senha"
-                            placeholder="Confirme a nova senha">
+                            placeholder="Confirme a nova palavra-passe">
                     </div>
                 </div>
                 <div class="am-footer">

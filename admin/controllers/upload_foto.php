@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 
 if (!isset($_FILES['profile_photo'])) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Nenhum arquivo enviado']);
+    echo json_encode(['success' => false, 'message' => 'Nenhum ficheiro enviado']);
     exit;
 }
 
@@ -35,7 +35,7 @@ if (!in_array($ext, $allowed)) {
 
 if ($file['size'] > 2 * 1024 * 1024) { // 2MB
     http_response_code(413);
-    echo json_encode(['success' => false, 'message' => 'Arquivo muito grande (máx: 2MB)']);
+    echo json_encode(['success' => false, 'message' => 'Ficheiro muito grande (máx: 2MB)']);
     exit;
 }
 
@@ -74,14 +74,14 @@ if (move_uploaded_file($file['tmp_name'], $path)) {
             ]);
         } else {
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Nenhuma linha atualizada. Verifique se o usuário existe.']);
+            echo json_encode(['success' => false, 'message' => 'Nenhuma linha atualizada. Verifique se o utilizador existe.']);
         }
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Erro ao guardar na base de dados: ' . $e->getMessage()]);
     }
 } else {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Erro ao salvar arquivo no servidor']);
+    echo json_encode(['success' => false, 'message' => 'Erro ao guardar ficheiro no servidor']);
 }
 ?>

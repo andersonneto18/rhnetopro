@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return [
             ['Relatório', reportName],
             ['Período aplicado', periodLabel],
-            ['Registros exportados', String(totalRows)],
+            ['Registos exportados', String(totalRows)],
             ['Gerado em', new Date().toLocaleString('pt-PT')],
             ['Aplicação', 'RHNeto Pro']
         ];

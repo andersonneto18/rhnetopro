@@ -119,7 +119,7 @@ try {
 
         echo json_encode([
             'success' => true,
-            'message' => 'Aceite registrado. Agora o pedido foi enviado ao administrador para aprovação final.',
+            'message' => 'Aceite registado. Agora o pedido foi enviado ao administrador para aprovação final.',
             'status' => 'pendente_admin'
         ]);
         exit;

@@ -29,40 +29,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Agora inclui 'nome_empresa' e 'nome_usuario' corretamente
     if (empty($nome_completo) || empty($email) || empty($nome_usuario) || empty($senha) || empty($confirm_senha) || empty($nome_empresa)) {
         $_SESSION['register_error_message'] = "Por favor, preencha todos os campos obrigatórios.";
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
 
     // Validação do formato de email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['register_error_message'] = "Formato de email inválido.";
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
 
     // Verifica se a senha e a confirmação de senha coincidem
     if ($senha !== $confirm_senha) {
         $_SESSION['register_error_message'] = "A senha e a confirmação de senha não coincidem.";
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
 
     // Verifica se os termos foram aceites
     if (!$termos_aceites) {
-        $_SESSION['register_error_message'] = "Você deve aceitar os Termos de Serviço e a Política de Privacidade.";
-        header("Location: ../views/signup.php");
+        $_SESSION['register_error_message'] = "É necessário aceitar os Termos de Serviço e a Política de Privacidade.";
+        header("Location: ../views/login.php");
         exit();
     }
 
     // Validação de formato para Telefone e NIF (opcional, pode ser removido se a validação do browser for suficiente)
     if (!empty($telefone) && !preg_match("/^[0-9]{9}$/", $telefone)) {
         $_SESSION['register_error_message'] = "Número de telemóvel inválido. Deve ter 9 dígitos numéricos.";
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
     if (!empty($nif) && !preg_match("/^[0-9]{9}$/", $nif)) {
         $_SESSION['register_error_message'] = "NIF inválido. Deve ter 9 dígitos numéricos.";
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
     // === FIM DA VALIDAÇÃO DOS DADOS ===
@@ -83,18 +83,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($db_email === $email) {
             $_SESSION['register_error_message'] = "O email já está em uso.";
         } else if ($db_nome_usuario === $nome_usuario) {
-            $_SESSION['register_error_message'] = "O nome de usuário já está em uso.";
+            $_SESSION['register_error_message'] = "O nome de utilizador já está em uso.";
         } else if (!empty($db_telefone) && $db_telefone === $telefone) {
             $_SESSION['register_error_message'] = "O número de telemóvel já está em uso.";
         } else if (!empty($db_nif) && $db_nif === $nif) {
             $_SESSION['register_error_message'] = "O NIF já está em uso.";
         } else {
             // Mensagem genérica se a verificação acima não capturar o erro
-            $_SESSION['register_error_message'] = "Dados de cadastro já em uso (email, usuário, telefone ou NIF).";
+            $_SESSION['register_error_message'] = "Dados de registo já em uso (email, utilizador, telefone ou NIF).";
         }
         
         $stmt->close();
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
     $stmt->close(); 
@@ -115,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!$stmt_client->execute()) {
         $_SESSION['register_error_message'] = "Erro ao criar o registo do cliente: " . $stmt_client->error;
         $stmt_client->close();
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
 
@@ -144,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['register_error_message'] = "Erro ao registar utilizador: " . $stmt_user_insert->error;
         // Se a inserção do utilizador falhar, remove o registo do cliente para manter a integridade
         $conn->query("DELETE FROM clients WHERE client_id = " . $new_client_id); 
-        header("Location: ../views/signup.php");
+        header("Location: ../views/login.php");
         exit();
     }
 
@@ -158,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 } else {
     // Redireciona para a página de registo se não for uma requisição POST
-    header("Location: ../views/signup.php");
+    header("Location: ../views/login.php");
     exit();
 }
 ?>

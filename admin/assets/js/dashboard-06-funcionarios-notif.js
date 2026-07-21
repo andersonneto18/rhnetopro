@@ -193,7 +193,7 @@ function renderNotificationsReceivedPlaceholder() {
     if (feed) {
         feed.innerHTML = `
             <div style="border: 1px dashed var(--border-primary); border-radius: 10px; padding: 0.9rem; color: var(--text-secondary); text-align: center;">
-                Carregando notificações...
+                A carregar notificações...
             </div>
         `;
     }
@@ -476,7 +476,7 @@ async function loadSentSMSOptions() {
     if (container) {
         container.innerHTML = `
             <div style="border: 1px dashed var(--border-primary); border-radius: 10px; padding: 0.9rem; color: var(--text-secondary); text-align: center;">
-                Carregando SMS enviadas...
+                A carregar SMS enviadas...
             </div>
         `;
     }
@@ -511,7 +511,7 @@ function renderNotificationsSection(notifications) {
     if (!body) return;
 
     if (totalCount) {
-        totalCount.textContent = `${Array.isArray(notifications) ? notifications.length : 0} registro(s)`;
+        totalCount.textContent = `${Array.isArray(notifications) ? notifications.length : 0} registo(s)`;
     }
 
     if (!Array.isArray(notifications) || notifications.length === 0) {
@@ -713,7 +713,7 @@ function renderSMSHistory(history) {
 async function loadSMSHistory() {
     const listEl = document.getElementById('smsHistoryList');
     if (listEl) {
-        listEl.innerHTML = '<div class="sms-history-empty">Carregando histórico...</div>';
+        listEl.innerHTML = '<div class="sms-history-empty">A carregar histórico...</div>';
     }
 
     try {
@@ -791,7 +791,7 @@ async function editAdminMessageForAll() {
     const scope = window.__lastSentSmsData.scope || (ids.length ? 'selected' : 'client');
 
     if (!newMessage) {
-        showWarning('Digite uma nova mensagem antes de editar para todos.');
+        showWarning('Introduza uma nova mensagem antes de editar para todos.');
         return;
     }
 
@@ -812,7 +812,7 @@ async function editAdminMessageForAll() {
             },
             inputValidator: (value) => {
                 const normalized = String(value || '').trim();
-                if (!normalized) return 'Digite a nova mensagem.';
+                if (!normalized) return 'Introduza a nova mensagem.';
                 if (normalized === fallbackMessage) return 'A mensagem precisa ser diferente da anterior.';
                 return null;
             }

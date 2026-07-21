@@ -435,6 +435,22 @@
             <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fef2f2;">
                 <i class="fas fa-shield-alt"></i> Sessão expirada. Recarregue a página.
             </div>
+            <?php elseif ($solReview === 'conflict'): ?>
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#78350f,#92400e);color:#fffbeb;">
+                <i class="fas fa-exclamation-triangle"></i> Não foi possível aprovar: há um conflito de horário com outro turno do funcionário.
+            </div>
+            <?php elseif ($solReview === 'notfound'): ?>
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#78350f,#92400e);color:#fffbeb;">
+                <i class="fas fa-search"></i> Registo não encontrado (pode já ter sido alterado por outra ação).
+            </div>
+            <?php elseif ($solReview === 'invalid'): ?>
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#78350f,#92400e);color:#fffbeb;">
+                <i class="fas fa-ban"></i> Dados inválidos para esta operação.
+            </div>
+            <?php elseif ($solReview === 'blocked'): ?>
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#78350f,#92400e);color:#fffbeb;">
+                <i class="fas fa-lock"></i> Operação não permitida para o estado atual desta solicitação.
+            </div>
             <?php endif; ?>
 
             <div class="frhd">
@@ -535,30 +551,36 @@
                         </div>
                     </div>
                     <div class="fr-chips">
-                        <button class="fr-chip sol-chip-all active" data-sol-chip="" onclick="applySolChip(this)">
-                            <i class="fas fa-th-large"></i> Pendentes
-                            <span class="fr-chip-count"><?php echo (int)$solTotalPendentes; ?></span>
-                        </button>
+                        <?php if (count($justificativasPendentes) > 0): ?>
                         <button class="fr-chip sol-chip-justif" data-sol-chip="justificativa" onclick="applySolChip(this)">
                             <span class="fr-dot" style="background:#fbbf24;"></span> Justificativas
                             <span class="fr-chip-count"><?php echo count($justificativasPendentes); ?></span>
                         </button>
+                        <?php endif; ?>
+                        <?php if (count($presencasPendentes) > 0): ?>
                         <button class="fr-chip sol-chip-pres" data-sol-chip="presenca" onclick="applySolChip(this)">
                             <span class="fr-dot fr-dot-blue"></span> Presenças
                             <span class="fr-chip-count"><?php echo count($presencasPendentes); ?></span>
                         </button>
+                        <?php endif; ?>
+                        <?php if (count($gorjetasPendentes) > 0): ?>
                         <button class="fr-chip sol-chip-gorj" data-sol-chip="gorjeta" onclick="applySolChip(this)">
                             <span class="fr-dot fr-dot-green"></span> Gorjetas
                             <span class="fr-chip-count"><?php echo count($gorjetasPendentes); ?></span>
                         </button>
+                        <?php endif; ?>
+                        <?php if (count($feriasPendentes) > 0): ?>
                         <button class="fr-chip sol-chip-fer" data-sol-chip="ferias" onclick="applySolChip(this)">
                             <span class="fr-dot" style="background:#38bdf8;"></span> Férias
                             <span class="fr-chip-count"><?php echo count($feriasPendentes); ?></span>
                         </button>
+                        <?php endif; ?>
+                        <?php if (count($trocasTurnoPendentes) > 0): ?>
                         <button class="fr-chip sol-chip-troca" data-sol-chip="troca" onclick="applySolChip(this)">
                             <span class="fr-dot" style="background:#a3e635;"></span> Trocas
                             <span class="fr-chip-count"><?php echo count($trocasTurnoPendentes); ?></span>
                         </button>
+                        <?php endif; ?>
                         <button class="fr-chip sol-chip-hist" data-sol-chip="historico" onclick="applySolChip(this)">
                             <span class="fr-dot" style="background:#64748b;"></span> Histórico
                             <span class="fr-chip-count"><?php echo (int)$solTotalHistorico; ?></span>
@@ -666,7 +688,7 @@
                                 <span style="font-size:.8rem;color:var(--text-secondary);"><?php echo htmlspecialchars(mb_substr($pendMotivo,0,60)).(mb_strlen($pendMotivo)>60?'…':''); ?></span>
                                 <?php else: ?><span style="color:#475569;">—</span><?php endif; ?>
                                 <?php if ($pendAnexo !== ''): ?>
-                                <a href="../<?php echo htmlspecialchars($pendAnexo); ?>" target="_blank" rel="noopener noreferrer"
+                                <a href="../app/uploads/justificativas/<?php echo htmlspecialchars($pendAnexo); ?>" target="_blank" rel="noopener noreferrer"
                                     class="fr-btn" style="margin-left:4px;font-size:.65rem;padding:1px 6px;" title="Ver anexo"><i class="fas fa-paperclip"></i></a>
                                 <?php endif; ?>
                             </td>

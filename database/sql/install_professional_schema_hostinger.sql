@@ -1,15 +1,10 @@
 -- RH Neto ProWeb
 -- Instalacao profissional: schema apenas (sem dados)
--- Compatível com MySQL 8+ / MariaDB 10.4+
+-- Versao para hospedagem partilhada (Hostinger): SEM CREATE DATABASE / USE.
+-- Selecione a base "u673069353_rh" no phpMyAdmin ANTES de rodar este script.
 
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';
-
-CREATE DATABASE IF NOT EXISTS sistema_cadastro
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE sistema_cadastro;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -266,28 +261,25 @@ CREATE TABLE historico_alteracoes_ponto (
     ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Estrutura alinhada com o auto-provisionamento em admin/sections/assiduidade.php
+-- e app/justificar_ausencia.php (ambos usam employee_id/data_ocorrencia/tipo/anexo_path).
 CREATE TABLE justificativas_presenca (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  funcionario_id INT UNSIGNED NOT NULL,
-  client_id INT UNSIGNED NOT NULL,
-  data DATE NOT NULL,
-  motivo VARCHAR(100) NOT NULL,
-  justificativa TEXT DEFAULT NULL,
-  documento VARCHAR(255) DEFAULT NULL,
-  status VARCHAR(20) DEFAULT 'pendente',
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  client_id INT NOT NULL,
+  employee_id INT NOT NULL,
+  data_ocorrencia DATE NOT NULL,
+  tipo VARCHAR(60) NOT NULL DEFAULT 'falta',
+  motivo TEXT NOT NULL,
+  anexo_path VARCHAR(255) DEFAULT NULL,
+  status ENUM('pendente','aprovada','rejeitada') NOT NULL DEFAULT 'pendente',
   admin_observacao TEXT DEFAULT NULL,
-  decidido_por INT UNSIGNED DEFAULT NULL,
+  decidido_por INT DEFAULT NULL,
   decidido_em DATETIME DEFAULT NULL,
-  data_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  KEY idx_just_presenca_func_data (funcionario_id, data),
-  KEY idx_just_presenca_client_status (client_id, status),
-  CONSTRAINT fk_just_presenca_employee
-    FOREIGN KEY (funcionario_id) REFERENCES employees(id)
-    ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT fk_just_presenca_client
-    FOREIGN KEY (client_id) REFERENCES clients(id)
-    ON UPDATE CASCADE ON DELETE CASCADE
+  KEY idx_justificativas_client_status (client_id, status),
+  KEY idx_justificativas_employee_data (employee_id, data_ocorrencia)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE justificativas_falta (

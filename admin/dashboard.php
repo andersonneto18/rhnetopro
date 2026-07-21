@@ -1413,6 +1413,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     // onde registros_ponto pode ter client_id nulo/0.
                     $stmt = $pdo->prepare("UPDATE registros_ponto rp INNER JOIN employees e ON e.id = rp.funcionario_id SET rp.status_confirmacao = 'confirmado' WHERE rp.funcionario_id = ? AND e.client_id = ? AND DATE(rp.{$dateColumn}) = ?");
                     $stmt->execute([$employeeId, $clientId, $targetDate]);
+
+                    // Reflete a confirmação também em `presencas`, para que o Histórico de
+                    // Presença (que lê de `presencas`, não de registros_ponto) não fique vazio
+                    // para dias em que o funcionário só usou o ponto (Entrada/Saída).
+                    $presDateColumn = 'data_registro';
+                    try {
+                        $presCols = $pdo->query('SHOW COLUMNS FROM presencas')->fetchAll(PDO::FETCH_COLUMN) ?: [];
+                        if (!in_array('data_registro', $presCols, true) && in_array('data', $presCols, true)) {
+                            $presDateColumn = 'data';
+                        }
+                    } catch (Throwable $e) {
+                    }
+
+                    $stmtPresExists = $pdo->prepare("SELECT id FROM presencas WHERE funcionario_id = ? AND client_id = ? AND DATE({$presDateColumn}) = ? LIMIT 1");
+                    $stmtPresExists->execute([$employeeId, $clientId, $targetDate]);
+                    $presExistente = $stmtPresExists->fetch(PDO::FETCH_ASSOC);
+
+                    if ($presExistente) {
+                        $stmtPresUpdate = $pdo->prepare("UPDATE presencas SET status = 'presente' WHERE id = ?");
+                        $stmtPresUpdate->execute([$presExistente['id']]);
+                    } else {
+                        $stmtPresInsert = $pdo->prepare("INSERT INTO presencas (funcionario_id, client_id, {$presDateColumn}, status) VALUES (?, ?, ?, 'presente')");
+                        $stmtPresInsert->execute([$employeeId, $clientId, $targetDate]);
+                    }
                 } else {
                     $stmt = $pdo->prepare("UPDATE registros_ponto rp INNER JOIN employees e ON e.id = rp.funcionario_id SET rp.status = 'invalidado', rp.status_confirmacao = 'pendente' WHERE rp.funcionario_id = ? AND e.client_id = ? AND DATE(rp.{$dateColumn}) = ?");
                     $stmt->execute([$employeeId, $clientId, $targetDate]);
@@ -1585,7 +1609,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         (string)($swapRow['requester_dias'] ?? ''),
                         (string)($swapRow['requester_horario_inicio'] ?? ''),
                         (string)($swapRow['requester_horario_fim'] ?? ''),
-                        $targetTurnoId
+                        ignoreTurnoId: $targetTurnoId
                     );
                     if ($conflictForTarget) {
                         header('Location: ' . $solicitacoesRedirect . '&review=conflict');
@@ -1599,7 +1623,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         (string)($swapRow['target_dias'] ?? ''),
                         (string)($swapRow['target_horario_inicio'] ?? ''),
                         (string)($swapRow['target_horario_fim'] ?? ''),
-                        $requesterTurnoId
+                        ignoreTurnoId: $requesterTurnoId
                     );
                     if ($conflictForRequester) {
                         header('Location: ' . $solicitacoesRedirect . '&review=conflict');
@@ -4272,6 +4296,51 @@ try {
     $feriasHistoricoSolic = [];
 }
 
+// Total de solicitações pendentes (usado no badge da nav, que é desenhado
+// antes de admin/sections/solicitacoes.php ser incluído mais abaixo — por
+// isso o total precisa de ser calculado aqui, cedo, com contagens simples).
+$solicitacoesPendentesTotal = count($feriasPendentes);
+try {
+    $stmtPendJust = $pdo->prepare("SELECT COUNT(*) FROM justificativas_presenca WHERE client_id = ? AND LOWER(COALESCE(status,'pendente')) = 'pendente'");
+    $stmtPendJust->execute([$loggedInClientId]);
+    $solicitacoesPendentesTotal += (int)$stmtPendJust->fetchColumn();
+} catch (Throwable $e) {
+}
+
+try {
+    $stmtPendGorj = $pdo->prepare("SELECT COUNT(*) FROM gorjetas WHERE client_id = ? AND LOWER(COALESCE(status,'pendente')) NOT IN ('pago','paid','confirmado','aprovado','rejeitado','rejeitada','cancelado','cancelada')");
+    $stmtPendGorj->execute([$loggedInClientId]);
+    $solicitacoesPendentesTotal += (int)$stmtPendGorj->fetchColumn();
+} catch (Throwable $e) {
+}
+
+try {
+    $stmtPendSwap = $pdo->prepare("SELECT COUNT(*) FROM turno_swap_requests WHERE client_id = ? AND LOWER(COALESCE(status,'')) IN ('pendente_admin','pendente')");
+    $stmtPendSwap->execute([$loggedInClientId]);
+    $solicitacoesPendentesTotal += (int)$stmtPendSwap->fetchColumn();
+} catch (Throwable $e) {
+}
+
+try {
+    $pontoDateColumnEarly = 'data_registro';
+    $pontoColsEarly = $pdo->query('SHOW COLUMNS FROM registros_ponto')->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    if (!in_array('data_registro', $pontoColsEarly, true) && in_array('data', $pontoColsEarly, true)) {
+        $pontoDateColumnEarly = 'data';
+    }
+    $stmtPendPres = $pdo->prepare(
+        "SELECT COUNT(DISTINCT rp.funcionario_id, DATE(rp.{$pontoDateColumnEarly}))
+         FROM registros_ponto rp
+         INNER JOIN employees e ON e.id = rp.funcionario_id
+         WHERE e.client_id = ?
+           AND LOWER(COALESCE(rp.status, '')) <> 'invalidado'
+           AND LOWER(COALESCE(rp.status_confirmacao, 'pendente')) <> 'confirmado'
+           AND (COALESCE(rp.hora_entrada, '') <> '' OR COALESCE(rp.hora_saida, '') <> '')"
+    );
+    $stmtPendPres->execute([$loggedInClientId]);
+    $solicitacoesPendentesTotal += (int)$stmtPendPres->fetchColumn();
+} catch (Throwable $e) {
+}
+
 
 
 
@@ -4297,6 +4366,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken); ?>">
     <title>Painel RH - RHNeto Pro - <?php echo htmlspecialchars($fullname); ?></title>
+    <link rel="icon" type="image/png" href="views/images/rh1.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
         rel="stylesheet">

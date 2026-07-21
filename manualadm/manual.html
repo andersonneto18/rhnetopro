@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do Administrador — RH Neto Pro</title>
+<link rel="icon" type="image/png" href="../admin/views/images/rh1.png">
+<style>
+    :root {
+        --brand: #2563eb;
+        --brand-dark: #1d4ed8;
+        --ink-950: #0f172a;
+        --ink-700: #334155;
+        --ink-500: #64748b;
+        --line: #e2e8f0;
+        --bg: #f8fafc;
+        --card: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--ink-950);
+        line-height: 1.6;
+    }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+        width: 270px;
+        flex-shrink: 0;
+        background: var(--ink-950);
+        color: #e2e8f0;
+        padding: 1.5rem 1rem;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+    }
+    .sidebar-logo {
+        display: flex; align-items: center; gap: 10px;
+        padding: 0 .5rem 1.25rem; margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar-logo img { width: 36px; height: 36px; border-radius: 10px; }
+    .sidebar-logo span { font-weight: 700; font-size: 1.05rem; }
+    .sidebar nav a {
+        display: flex; align-items: center; gap: 10px;
+        padding: .6rem .75rem; border-radius: 8px;
+        color: #cbd5e1; text-decoration: none; font-size: .87rem;
+        margin-bottom: .15rem; transition: background .15s, color .15s;
+    }
+    .sidebar nav a:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .sidebar nav a .num {
+        width: 22px; height: 22px; border-radius: 50%;
+        background: rgba(37,99,235,.25); color: #93c5fd;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .7rem; font-weight: 700; flex-shrink: 0;
+    }
+    .content { flex: 1; max-width: 900px; padding: 2.5rem 3rem 5rem; }
+    .content-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--line); }
+    .content-header h1 { margin: 0 0 .4rem; font-size: 1.9rem; }
+    .content-header p { margin: 0; color: var(--ink-500); font-size: 1rem; }
+    section.manual-step { margin-bottom: 3.5rem; scroll-margin-top: 1.5rem; }
+    .step-badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(37,99,235,.1); color: var(--brand-dark);
+        font-weight: 700; font-size: .75rem; text-transform: uppercase;
+        letter-spacing: .05em; padding: .3rem .8rem; border-radius: 999px;
+        margin-bottom: .75rem;
+    }
+    section.manual-step h2 { margin: 0 0 .5rem; font-size: 1.4rem; }
+    section.manual-step > p.intro { color: var(--ink-700); font-size: .98rem; margin-bottom: 1.25rem; max-width: 660px; }
+    ol.steps { margin: 0 0 1.5rem; padding-left: 1.3rem; }
+    ol.steps li { margin-bottom: .6rem; color: var(--ink-700); font-size: .95rem; }
+    ol.steps li strong { color: var(--ink-950); }
+    .tip {
+        background: rgba(37,99,235,.06); border-left: 3px solid var(--brand);
+        border-radius: 0 8px 8px 0; padding: .75rem 1rem; font-size: .88rem;
+        color: var(--ink-700); margin-bottom: 1.25rem;
+    }
+    .tip.warn { background: rgba(239,68,68,.06); border-left-color: #ef4444; }
+    .tip strong { color: var(--brand-dark); }
+    .tip.warn strong { color: #dc2626; }
+    .shot-wrap {
+        border: 2px solid var(--line); border-radius: 18px; padding: 10px;
+        box-shadow: 0 6px 20px rgba(15,23,42,.1); background: var(--card);
+    }
+    .shot-wrap img { display: block; width: 100%; height: auto; border-radius: 12px; }
+    .shot-missing {
+        display: none; align-items: center; justify-content: center; flex-direction: column;
+        gap: .5rem; padding: 3rem 1.5rem; color: var(--ink-500); font-size: .88rem;
+        text-align: center; background: #f1f5f9; border-radius: 12px;
+    }
+    .shot-missing .icon { font-size: 1.8rem; opacity: .4; }
+    hr.sep { border: none; border-top: 1px solid var(--line); margin: 3rem 0; }
+    @media (max-width: 860px) {
+        .layout { flex-direction: column; }
+        .sidebar { width: 100%; height: auto; position: relative; }
+        .content { padding: 1.5rem; }
+    }
+    @media print {
+        .sidebar { display: none; }
+        .content { max-width: 100%; padding: 0; }
+        section.manual-step { page-break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../admin/views/images/rh1.png" alt="RHNeto Pro">
+            <span>RHNeto Pro</span>
+        </div>
+        <nav>
+            <a href="#entrar"><span class="num">1</span> Como entrar</a>
+            <a href="#inicio"><span class="num">2</span> Início</a>
+            <a href="#funcionarios"><span class="num">3</span> Funcionários</a>
+            <a href="#assiduidade"><span class="num">4</span> Presença</a>
+            <a href="#turnos"><span class="num">5</span> Turnos</a>
+            <a href="#folha"><span class="num">6</span> Folha de Pagamento</a>
+            <a href="#gorjetas"><span class="num">7</span> Gorjetas</a>
+            <a href="#relatorios"><span class="num">8</span> Relatórios</a>
+            <a href="#ferias"><span class="num">9</span> Férias</a>
+            <a href="#solicitacoes"><span class="num">10</span> Solicitações</a>
+            <a href="#definicoes"><span class="num">11</span> Definições</a>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <div class="content-header">
+            <h1>Manual do Administrador</h1>
+            <p>Guia completo para gerir a equipa, presenças, turnos, pagamentos e pedidos na RHNeto Pro.</p>
+        </div>
+
+        <section class="manual-step" id="entrar">
+            <span class="step-badge">Passo 1</span>
+            <h2>Como entrar</h2>
+            <p class="intro">Acede ao painel de administração com o teu nome de utilizador (ou email) e palavra-passe.</p>
+            <ol class="steps">
+                <li>Abre o link do painel de administração no navegador.</li>
+                <li>Introduz o teu <strong>nome de utilizador ou email</strong>.</li>
+                <li>Introduz a tua <strong>palavra-passe</strong>.</li>
+                <li>Clica em <strong>"Entrar"</strong>.</li>
+            </ol>
+            <div class="tip"><strong>Esqueceste a palavra-passe?</strong> Usa a opção "Esqueci-me da palavra-passe" no ecrã de entrada para receberes um link de recuperação por email.</div>
+            <div class="shot-wrap">
+                <img src="login.png" alt="Ecrã de entrada do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>login.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="inicio">
+            <span class="step-badge">Passo 2</span>
+            <h2>Início</h2>
+            <p class="intro">O painel principal dá-te uma visão geral instantânea da equipa: quem está presente, quem falta, custos e o que precisa da tua atenção hoje.</p>
+            <ol class="steps">
+                <li>Os cartões no topo mostram: <strong>total de funcionários</strong>, <strong>presentes hoje</strong>, <strong>faltas hoje</strong> e <strong>custos salariais</strong> do mês.</li>
+                <li>O bloco de <strong>Pendências</strong> (quando existir) avisa-te de justificativas por aprovar ou registos de ponto por confirmar — clica para ires diretamente rever.</li>
+                <li>O gráfico mostra a <strong>tendência de presenças vs. faltas</strong> dos últimos 7 dias.</li>
+                <li>Em baixo, a <strong>Atividade Recente</strong> lista os últimos eventos da equipa (entradas, faltas, novos funcionários, etc.), com paginação.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="inicio.png" alt="Ecrã Início do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>inicio.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="funcionarios">
+            <span class="step-badge">Passo 3</span>
+            <h2>Funcionários</h2>
+            <p class="intro">Gere toda a tua equipa: adicionar, editar, consultar e ativar/desativar funcionários.</p>
+            <ol class="steps">
+                <li>Usa os filtros rápidos (<strong>Todos / Ativos / Inativos / Férias</strong>) ou a barra de pesquisa para encontrar um funcionário.</li>
+                <li>Clica em <strong>"Novo Funcionário"</strong> para adicionar alguém à equipa (nome, cargo, departamento, contrato, PIN de acesso ao portal, etc.).</li>
+                <li>Em cada linha, usa os botões de ação: <strong>Ver detalhes</strong> (👁), <strong>Editar</strong> (✏️) e <strong>Ativar/Desativar</strong> (✓/✕).</li>
+                <li>Seleciona várias linhas com as caixas de verificação para usar as <strong>ações em massa</strong>: mudar estado, mudar departamento, exportar ou notificar por SMS.</li>
+                <li>Desativar um funcionário preserva todo o histórico — não apaga dados, só bloqueia o acesso e marca como inativo.</li>
+            </ol>
+            <div class="tip"><strong>Nota:</strong> um funcionário inativo ou em férias não pode ser editado nem marcar ponto até ser reativado.</div>
+            <div class="shot-wrap">
+                <img src="funcionarios.png" alt="Ecrã Funcionários do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>funcionarios.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="assiduidade">
+            <span class="step-badge">Passo 4</span>
+            <h2>Presença</h2>
+            <p class="intro">Consulta e confirma o histórico de presenças de toda a equipa, dia a dia.</p>
+            <ol class="steps">
+                <li>Pesquisa por nome de funcionário ou filtra por período de datas.</li>
+                <li>Cada linha mostra a <strong>entrada</strong>, <strong>saída</strong> e o <strong>estado</strong> do dia: presente, atrasado, falta justificada ou falta injustificada.</li>
+                <li>Clica em <strong>"Ver detalhes"</strong> para veres o roteiro completo do dia (entrada, pausas, saída).</li>
+                <li>Usa <strong>"Editar registo"</strong> para corrigir um ponto (por exemplo, se o funcionário se esqueceu de marcar a saída).</li>
+                <li>Confirma os registos de ponto pendentes para que fiquem validados no histórico oficial.</li>
+                <li>Exporta o histórico para CSV/Excel sempre que precisares de um relatório externo.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="assiduidade.png" alt="Ecrã Presença do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>assiduidade.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="turnos">
+            <span class="step-badge">Passo 5</span>
+            <h2>Turnos</h2>
+            <p class="intro">Cria e organiza os horários de trabalho da equipa, em vista de tabela, semana ou mês.</p>
+            <ol class="steps">
+                <li>Clica em <strong>"Novo Turno"</strong> para atribuir um horário a um funcionário (dias da semana, hora de início/fim, vigência).</li>
+                <li>Usa <strong>"Turnos em Grupo"</strong> para criar o mesmo turno para vários funcionários de uma vez.</li>
+                <li>Alterna entre as vistas de <strong>Tabela</strong>, <strong>Semana</strong> e <strong>Mês</strong> com os botões no canto superior direito.</li>
+                <li>Aprova ou rejeita pedidos de <strong>troca de turno</strong> entre funcionários.</li>
+                <li>Usa <strong>"Publicar"</strong> para oficializar os turnos de um período, ou <strong>"Fechar"</strong>/<strong>"Reabrir"</strong> para bloquear/desbloquear edições nesse intervalo.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="turnos.png" alt="Ecrã Turnos do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>turnos.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="folha">
+            <span class="step-badge">Passo 6</span>
+            <h2>Folha de Pagamento</h2>
+            <p class="intro">Consulta e processa o pagamento mensal de cada funcionário.</p>
+            <ol class="steps">
+                <li>Seleciona o <strong>mês/ano</strong> que queres consultar.</li>
+                <li>Clica em <strong>"Ver Recibo"</strong> (👁) para veres o detalhe do vencimento de um funcionário.</li>
+                <li>Usa <strong>"Editar"</strong> (✏️) para ajustar variáveis do mês (horas extra, bónus, subsídios).</li>
+                <li>Marca um pagamento como <strong>"Pago"</strong> (✓) quando for efetuado, individualmente ou em massa com <strong>"Marcar Pagos"</strong>.</li>
+                <li>No final do mês, usa <strong>"Fechar"</strong> para guardar um snapshot imutável dos valores — só é possível <strong>"Reabrir"</strong> depois se precisares de corrigir algo.</li>
+                <li>Exporta a folha em CSV sempre que precisares.</li>
+            </ol>
+            <div class="tip warn"><strong>Atenção:</strong> fechar a folha bloqueia edições nesse mês. Só reabre se tiveres a certeza de que precisas de corrigir algo.</div>
+            <div class="shot-wrap">
+                <img src="folha.png" alt="Ecrã Folha de Pagamento do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>folha.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="gorjetas">
+            <span class="step-badge">Passo 7</span>
+            <h2>Gorjetas</h2>
+            <p class="intro">Consulta e valida as gorjetas registadas pelos funcionários.</p>
+            <ol class="steps">
+                <li>Vê todas as gorjetas registadas, por funcionário, data e valor.</li>
+                <li>Clica em <strong>"Ver"</strong> para consultar o detalhe de uma gorjeta.</li>
+                <li>Usa <strong>"Editar"</strong> para corrigir o valor ou a forma de pagamento, se necessário.</li>
+                <li>Gorjetas pendentes de validação também aparecem na secção <strong>Solicitações</strong>, prontas a aprovar ou rejeitar.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="gorjetas.png" alt="Ecrã Gorjetas do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>gorjetas.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="relatorios">
+            <span class="step-badge">Passo 8</span>
+            <h2>Relatórios</h2>
+            <p class="intro">Consulta relatórios detalhados de desempenho e custos por funcionário.</p>
+            <ol class="steps">
+                <li>Vê a tabela geral com horas trabalhadas, dias trabalhados, faltas, salário base, gorjetas e total líquido de cada funcionário.</li>
+                <li>Clica em <strong>"Ver"</strong> (👁) num funcionário para abrir o relatório detalhado: KPIs de presença, resumo financeiro, saldo de férias e últimos registos.</li>
+                <li>A partir do relatório detalhado, usa <strong>"Baixar PDF"</strong> para exportares um documento pronto a imprimir ou partilhar.</li>
+                <li>Usa <strong>"Exportar"</strong> na tabela geral para retirares os dados de todos os funcionários de uma vez.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="relatorios.png" alt="Ecrã Relatórios do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>relatorios.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="ferias">
+            <span class="step-badge">Passo 9</span>
+            <h2>Férias</h2>
+            <p class="intro">Consulta e gere os períodos de férias já aprovados da equipa (agendados, em curso, concluídos, rejeitados ou cancelados).</p>
+            <ol class="steps">
+                <li>Usa os separadores (<strong>Agendadas / Em curso / Concluídas / Rejeitadas</strong>) para filtrar a lista.</li>
+                <li>Clica em <strong>"Nova Marcação"</strong> para criares férias diretamente para um funcionário.</li>
+                <li>Uma férias <strong>agendada</strong> (ainda não começou) pode ser <strong>editada</strong> ou <strong>cancelada</strong> livremente.</li>
+                <li>Uma férias <strong>em curso</strong> pode ser cancelada: se for o primeiro dia, cancela por completo; se já tiver começado há mais tempo, os dias já gozados ficam registados e o resto volta ao saldo do funcionário.</li>
+                <li>Pedidos de férias ainda <strong>pendentes</strong> (por aprovar) não aparecem aqui — são geridos na secção <strong>Solicitações</strong>.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="ferias.png" alt="Ecrã Férias do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>ferias.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="solicitacoes">
+            <span class="step-badge">Passo 10</span>
+            <h2>Solicitações</h2>
+            <p class="intro">A central única de tudo o que precisa da tua aprovação: justificativas, presenças, gorjetas, férias e trocas de turno.</p>
+            <ol class="steps">
+                <li>Os separadores mostram só as categorias que têm pedidos pendentes, com a contagem de cada uma.</li>
+                <li>Para cada pedido, usa os botões <strong>✓ Aprovar</strong> ou <strong>✕ Rejeitar</strong> — ao rejeitar, podes indicar o motivo.</li>
+                <li>O separador <strong>Histórico</strong> mostra tudo o que já foi decidido (aprovado ou rejeitado), com filtro por tipo.</li>
+                <li>Depois de decidires um pedido, ficas na mesma secção — não precisas de voltar a navegar até aqui.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="solicitacoes.png" alt="Ecrã Solicitações do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>solicitacoes.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="definicoes">
+            <span class="step-badge">Passo 11</span>
+            <h2>Definições</h2>
+            <p class="intro">Gere o teu perfil de administrador e as configurações gerais do estabelecimento.</p>
+            <ol class="steps">
+                <li>Edita o teu <strong>perfil</strong> (nome, foto, palavra-passe) a partir do menu no canto superior direito ou desta secção.</li>
+                <li>Configura os <strong>horários do estabelecimento</strong> (usados para calcular turnos e presenças).</li>
+                <li>Ajusta as <strong>configurações da folha de pagamento</strong> (valores base, regras de cálculo).</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="definicoes.png" alt="Ecrã Definições do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>definicoes.png</code> a esta pasta.</span></div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+</body>
+</html>

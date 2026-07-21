@@ -752,6 +752,12 @@ while ($cur <= $fimDt && $cur <= $hojeDt) {
     ];
 }
 $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
+
+// Faltas do mês corrente sem justificativa enviada (justificar reduz a contagem,
+// mesmo enquanto pendente — mesma regra já usada na tabela/badges do histórico).
+$totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
+    return $day['status'] === 'falta' && $day['just_status'] === '';
+}));
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -759,6 +765,7 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal do Funcionário - RH Neto</title>
+    <link rel="icon" type="image/png" href="../admin/views/images/rh1.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -924,7 +931,7 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
             </button>
             <button type="button" class="nav-btn" data-section="recibos-section">
                 <i class="fas fa-file-invoice-dollar"></i>
-                Recibos
+                Extrato
             </button>
             <button type="button" class="nav-btn" data-section="turnos-section">
                 <i class="fas fa-business-time"></i>
@@ -1043,22 +1050,60 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                 </div>
             </div>
 
-            <!-- Turno activo -->
-            <?php if (!empty($turnos)): $turnoAtivo = $turnos[0]; ?>
+            <!-- Turno de hoje / próximo turno -->
+            <?php
+                $turnoHojeCard = null;
+                $turnoProximoCard = null;
+                $turnoProximoDiasAte = null;
+                $hojeWeekday = (int)date('w');
+
+                foreach ($turnos as $tCard) {
+                    $diasCard = _parseDiasSemana((string)($tCard['dias_semana'] ?? ''));
+                    if (in_array($hojeWeekday, $diasCard, true)) {
+                        $turnoHojeCard = $tCard;
+                        break;
+                    }
+                }
+
+                if ($turnoHojeCard === null) {
+                    for ($offsetCard = 1; $offsetCard <= 7; $offsetCard++) {
+                        $checkWeekday = ($hojeWeekday + $offsetCard) % 7;
+                        foreach ($turnos as $tCard) {
+                            $diasCard = _parseDiasSemana((string)($tCard['dias_semana'] ?? ''));
+                            if (in_array($checkWeekday, $diasCard, true)) {
+                                $turnoProximoCard = $tCard;
+                                $turnoProximoDiasAte = $offsetCard;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+
+                $turnoCardExibir = $turnoHojeCard ?? $turnoProximoCard ?? ($turnos[0] ?? null);
+                $diasSemanaLabelsCard = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+                if ($turnoHojeCard !== null) {
+                    $turnoCardTitulo = 'Turno de Hoje';
+                } elseif ($turnoProximoCard !== null) {
+                    $turnoCardTitulo = 'Próximo Turno — ' . ($turnoProximoDiasAte === 1 ? 'Amanhã' : $diasSemanaLabelsCard[($hojeWeekday + $turnoProximoDiasAte) % 7]);
+                } else {
+                    $turnoCardTitulo = 'Turno Activo';
+                }
+            ?>
+            <?php if ($turnoCardExibir !== null): ?>
             <div class="card dashboard-turno">
                 <div class="card-header">
                     <i class="fas fa-business-time"></i>
-                    <h3>Turno Activo</h3>
+                    <h3><?php echo htmlspecialchars($turnoCardTitulo); ?></h3>
                 </div>
                 <div class="dashboard-turno-row">
-                    <span class="dashboard-turno-tipo"><?php echo htmlspecialchars($turnoAtivo['turno_tipo']); ?></span>
+                    <span class="dashboard-turno-tipo"><?php echo htmlspecialchars($turnoCardExibir['turno_tipo']); ?></span>
                     <span class="dashboard-turno-horario">
                         <i class="fas fa-clock"></i>
-                        <?php echo htmlspecialchars(substr($turnoAtivo['horario_inicio'], 0, 5) . ' — ' . substr($turnoAtivo['horario_fim'], 0, 5)); ?>
+                        <?php echo htmlspecialchars(substr($turnoCardExibir['horario_inicio'], 0, 5) . ' — ' . substr($turnoCardExibir['horario_fim'], 0, 5)); ?>
                     </span>
                     <span class="dashboard-turno-dias">
                         <i class="fas fa-calendar"></i>
-                        <?php echo htmlspecialchars($turnoAtivo['dias_semana']); ?>
+                        <?php echo htmlspecialchars($turnoCardExibir['dias_semana']); ?>
                     </span>
                 </div>
             </div>
@@ -1085,7 +1130,7 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                
                 <button class="shortcut-card" data-section="recibos-section">
                     <i class="fas fa-file-invoice-dollar shortcut-icon sc-indigo"></i>
-                    <span class="shortcut-label">Recibos</span>
+                    <span class="shortcut-label">Extrato</span>
                 </button>
                 <button class="shortcut-card" data-section="definicoes-section">
                     <i class="fas fa-cog shortcut-icon sc-gray"></i>
@@ -1120,10 +1165,11 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
                     <span class="stat-pill-value"><?= $totalDiasTrabalhados ?></span>
                     <span class="stat-pill-label">Dias trabalhados</span>
                 </div>
-                <div class="stat-pill <?= $totalAtrasos > 0 ? 'stat-pill--alert' : '' ?>">
-                    <span class="stat-pill-value"><?= $totalAtrasos ?></span>
-                    <span class="stat-pill-label">Atrasos</span>
+                <div class="stat-pill <?= $totalFaltasMes > 0 ? 'stat-pill--alert' : '' ?>">
+                    <span class="stat-pill-value" id="stat-faltas-value"><?= $totalFaltasMes ?></span>
+                    <span class="stat-pill-label">Faltas mês</span>
                 </div>
+                
                 <div class="stat-pill <?= $totalIncompletos > 0 ? 'stat-pill--alert' : '' ?>">
                     <span class="stat-pill-value"><?= $totalIncompletos ?></span>
                     <span class="stat-pill-label">Incompletos</span>
@@ -2025,11 +2071,11 @@ $attendanceGrid = array_reverse($attendanceGrid); // mais recente primeiro
         </section>
 
         <section id="recibos-section" class="portal-section">
-            <h3 class="section-title"><i class="fas fa-file-invoice-dollar"></i> Recibos de Vencimento</h3>
+            <h3 class="section-title"><i class="fas fa-file-invoice-dollar"></i> Extrato</h3>
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-list"></i>
-                    <h3>Histórico de Recibos</h3>
+                    <h3>Histórico de Extrato</h3>
                 </div>
                 <div id="recibos-list">
                     <div class="empty-state" id="recibos-loading">

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do Funcionário — RH Neto Pro</title>
+<link rel="icon" type="image/png" href="../admin/views/images/rh1.png">
+<style>
+    :root {
+        --brand: #2563eb;
+        --brand-dark: #1d4ed8;
+        --ink-950: #0f172a;
+        --ink-700: #334155;
+        --ink-500: #64748b;
+        --line: #e2e8f0;
+        --bg: #f8fafc;
+        --card: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--ink-950);
+        line-height: 1.6;
+    }
+    .layout {
+        display: flex;
+        min-height: 100vh;
+    }
+    /* Sidebar */
+    .sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        background: var(--ink-950);
+        color: #e2e8f0;
+        padding: 1.5rem 1rem;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+    }
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 .5rem 1.25rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar-logo img { width: 36px; height: 36px; border-radius: 10px; }
+    .sidebar-logo span { font-weight: 700; font-size: 1.05rem; }
+    .sidebar nav a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: .65rem .75rem;
+        border-radius: 8px;
+        color: #cbd5e1;
+        text-decoration: none;
+        font-size: .9rem;
+        margin-bottom: .2rem;
+        transition: background .15s, color .15s;
+    }
+    .sidebar nav a:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .sidebar nav a .num {
+        width: 22px; height: 22px; border-radius: 50%;
+        background: rgba(37,99,235,.25); color: #93c5fd;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .72rem; font-weight: 700; flex-shrink: 0;
+    }
+    /* Main content */
+    .content {
+        flex: 1;
+        max-width: 900px;
+        padding: 2.5rem 3rem 5rem;
+    }
+    .content-header {
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--line);
+    }
+    .content-header h1 {
+        margin: 0 0 .4rem;
+        font-size: 1.9rem;
+        color: var(--ink-950);
+    }
+    .content-header p {
+        margin: 0;
+        color: var(--ink-500);
+        font-size: 1rem;
+    }
+    section.manual-step {
+        margin-bottom: 3.5rem;
+        scroll-margin-top: 1.5rem;
+    }
+    .step-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(37,99,235,.1);
+        color: var(--brand-dark);
+        font-weight: 700;
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        padding: .3rem .8rem;
+        border-radius: 999px;
+        margin-bottom: .75rem;
+    }
+    section.manual-step h2 {
+        margin: 0 0 .5rem;
+        font-size: 1.4rem;
+        color: var(--ink-950);
+    }
+    section.manual-step > p.intro {
+        color: var(--ink-700);
+        font-size: .98rem;
+        margin-bottom: 1.25rem;
+        max-width: 640px;
+    }
+    ol.steps {
+        margin: 0 0 1.5rem;
+        padding-left: 1.3rem;
+    }
+    ol.steps li {
+        margin-bottom: .6rem;
+        color: var(--ink-700);
+        font-size: .95rem;
+    }
+    ol.steps li strong { color: var(--ink-950); }
+    .tip {
+        background: rgba(37,99,235,.06);
+        border-left: 3px solid var(--brand);
+        border-radius: 0 8px 8px 0;
+        padding: .75rem 1rem;
+        font-size: .88rem;
+        color: var(--ink-700);
+        margin-bottom: 1.25rem;
+    }
+    .tip strong { color: var(--brand-dark); }
+    .shot-wrap {
+        border: 2px solid var(--line);
+        border-radius: 18px;
+        padding: 10px;
+        box-shadow: 0 6px 20px rgba(15,23,42,.1);
+        background: var(--card);
+    }
+    .shot-wrap img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+    }
+    .shot-missing {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: .5rem;
+        padding: 3rem 1.5rem;
+        color: var(--ink-500);
+        font-size: .88rem;
+        text-align: center;
+        background: #f1f5f9;
+        border-radius: 12px;
+    }
+    .shot-missing .icon { font-size: 1.8rem; opacity: .4; }
+    hr.sep {
+        border: none;
+        border-top: 1px solid var(--line);
+        margin: 3rem 0;
+    }
+    /* Mobile top bar — só visível em ecrãs estreitos (telemóvel) */
+    .mobile-topbar {
+        display: none;
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        align-items: center;
+        gap: .75rem;
+        background: var(--ink-950);
+        color: #fff;
+        padding: .85rem 1rem;
+        box-shadow: 0 2px 10px rgba(15,23,42,.15);
+    }
+    .mobile-topbar img { width: 30px; height: 30px; border-radius: 8px; }
+    .mobile-topbar span { font-weight: 700; font-size: 1rem; flex: 1; }
+    .menu-btn {
+        width: 42px; height: 42px;
+        border-radius: 10px;
+        border: none;
+        background: rgba(255,255,255,.08);
+        color: #fff;
+        font-size: 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .menu-btn:active { background: rgba(255,255,255,.18); }
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,.55);
+        z-index: 45;
+    }
+    @media (max-width: 860px) {
+        .mobile-topbar { display: flex; }
+        .layout { flex-direction: column; }
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 78vw;
+            max-width: 300px;
+            height: 100vh;
+            transform: translateX(-100%);
+            transition: transform .28s ease;
+            z-index: 50;
+            box-shadow: 4px 0 24px rgba(0,0,0,.3);
+        }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-overlay.open { display: block; }
+        .sidebar nav a { padding: .85rem .75rem; font-size: .95rem; }
+        .content { padding: 1.25rem 1.1rem 3.5rem; }
+        .content-header h1 { font-size: 1.55rem; }
+        section.manual-step > p.intro { max-width: 100%; }
+        .shot-wrap { padding: 6px; border-radius: 14px; }
+        .shot-wrap img { border-radius: 9px; }
+    }
+    @media print {
+        .sidebar, .mobile-topbar, .sidebar-overlay { display: none; }
+        .content { max-width: 100%; padding: 0; }
+        section.manual-step { page-break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+
+<div class="mobile-topbar">
+    <button type="button" class="menu-btn" id="menuToggleBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="manualSidebar">
+        <i>&#9776;</i>
+    </button>
+    <img src="../admin/views/images/rh1.png" alt="RHNeto Pro">
+    <span>Manual do Funcionário</span>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="layout">
+    <aside class="sidebar" id="manualSidebar">
+        <div class="sidebar-logo">
+            <img src="../admin/views/images/rh1.png" alt="RHNeto Pro">
+            <span>RHNeto Pro</span>
+        </div>
+        <nav>
+            <a href="#entrar"><span class="num">1</span> Como entrar</a>
+            <a href="#inicio"><span class="num">2</span> Início</a>
+            <a href="#presenca"><span class="num">3</span> Presença &amp; Ponto</a>
+            <a href="#gorjeta"><span class="num">4</span> Gorjeta &amp; Salário</a>
+            <a href="#extrato"><span class="num">5</span> Extrato</a>
+            <a href="#turnos"><span class="num">6</span> Turnos</a>
+            <a href="#ferias"><span class="num">7</span> Férias</a>
+            <a href="#definicoes"><span class="num">8</span> Definições</a>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <div class="content-header">
+            <h1>Manual do Funcionário</h1>
+            <p>Guia passo a passo para usar o portal do funcionário na RHNeto Pro.</p>
+        </div>
+
+        <section class="manual-step" id="entrar">
+            <span class="step-badge">Passo 1</span>
+            <h2>Como entrar no portal</h2>
+            <p class="intro">Para aceder ao portal precisas do teu nome completo (tal como está registado pelo administrador) e do teu PIN pessoal.</p>
+            <ol class="steps">
+                <li>Abre o link do portal do funcionário no navegador.</li>
+                <li>Introduz o teu <strong>nome completo</strong> no campo "Nome do Funcionário".</li>
+                <li>Introduz o teu <strong>PIN</strong> no campo correspondente.</li>
+                <li>Clica em <strong>"Entrar no Portal"</strong>.</li>
+            </ol>
+            <div class="tip"><strong>Esqueceste o PIN?</strong> Pede ao administrador para o repor, ou usa a opção de recuperação de PIN se estiver disponível na página de entrada.</div>
+            <div class="shot-wrap">
+                <img src="login.png" alt="Ecrã de entrada do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>login.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="inicio">
+            <span class="step-badge">Passo 2</span>
+            <h2>Início</h2>
+            <p class="intro">É a primeira página que vês depois de entrar. Dá-te um resumo rápido do teu dia e acesso direto às ações mais usadas.</p>
+            <ol class="steps">
+                <li>No topo vês a <strong>data de hoje</strong> e um botão para registares a tua <strong>entrada</strong> (ponto) diretamente.</li>
+                <li>O botão <strong>"Gorjeta"</strong> permite registar uma gorjeta recebida sem sair desta página.</li>
+                <li>Os quatro cartões mostram: horas trabalhadas este mês, gorjetas este mês, estimativa de salário mensal e dias de férias disponíveis.</li>
+                <li>O cartão <strong>"Próximo Turno"</strong> mostra o teu próximo horário de trabalho agendado.</li>
+                <li>Em baixo tens atalhos diretos para todas as outras secções (Presença, Turnos, Férias, Gorjetas, Extrato, Definições).</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="inicio.png" alt="Ecrã Início do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>inicio.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="presenca">
+            <span class="step-badge">Passo 3</span>
+            <h2>Presença &amp; Ponto</h2>
+            <p class="intro">Aqui registas a tua entrada e saída todos os dias, e consultas o histórico completo de presenças.</p>
+            <ol class="steps">
+                <li>No topo vês um resumo do mês: <strong>horas totais</strong>, <strong>dias trabalhados</strong>, <strong>faltas</strong> e registos <strong>incompletos</strong>.</li>
+                <li>No cartão <strong>"Registo de Ponto"</strong>, clica em <strong>"Entrada"</strong> quando chegares ao trabalho.</li>
+                <li>Depois de registares a entrada, o mesmo botão muda para <strong>"Saída"</strong> — usa-o quando terminares o turno.</li>
+                <li>O cartão <strong>"Presença Hoje"</strong> mostra o estado atual do teu registo de hoje (registada, não registada, pendente de confirmação, etc.).</li>
+                <li>Em baixo, no <strong>"Histórico de Presenças"</strong>, podes navegar entre meses, ver o calendário, exportar os dados ou consultar cada dia em detalhe.</li>
+            </ol>
+            <div class="tip"><strong>Importante:</strong> Se te esqueceres de marcar a saída, esse dia fica "incompleto" — avisa o administrador para corrigir se isso acontecer.</div>
+            <div class="shot-wrap">
+                <img src="presenca.png" alt="Ecrã Presença e Ponto do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>presenca.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="gorjeta">
+            <span class="step-badge">Passo 4</span>
+            <h2>Gorjeta &amp; Salário</h2>
+            <p class="intro">Regista as gorjetas que recebes ao longo do dia e acompanha a tua estimativa salarial.</p>
+            <ol class="steps">
+                <li>Clica em <strong>"Registar Gorjeta"</strong> sempre que receberes uma gorjeta.</li>
+                <li>Indica o <strong>valor</strong> recebido e, se pedido, a forma de pagamento (dinheiro, cartão, etc.).</li>
+                <li>Consulta o total de gorjetas acumuladas este mês e como isso afeta a tua estimativa salarial.</li>
+                <li>As gorjetas registadas ficam pendentes até serem validadas pelo administrador.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="gorjetas.png" alt="Ecrã Gorjeta e Salário do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>gorjetas.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="extrato">
+            <span class="step-badge">Passo 5</span>
+            <h2>Extrato</h2>
+            <p class="intro">Consulta o teu extrato salarial mês a mês — salário base, gorjetas e valor líquido recebido.</p>
+            <ol class="steps">
+                <li>Seleciona o <strong>mês</strong> que queres consultar.</li>
+                <li>Vê o detalhe: salário base, total de gorjetas do mês e valor líquido final.</li>
+                <li>Confirma se o pagamento desse mês já está marcado como <strong>pago</strong> pelo administrador.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="extrato.png" alt="Ecrã Extrato do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>extrato.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="turnos">
+            <span class="step-badge">Passo 6</span>
+            <h2>Turnos</h2>
+            <p class="intro">Consulta os teus horários de trabalho e, se precisares, pede uma troca de turno com um colega.</p>
+            <ol class="steps">
+                <li>Vê todos os teus turnos ativos: dia da semana, horário de início e fim.</li>
+                <li>Se precisares de trocar um turno, usa a opção <strong>"Solicitar Troca"</strong> e escolhe o colega e o turno pretendido.</li>
+                <li>A troca fica pendente até o administrador (e o colega, se aplicável) aprovarem.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="turno.png" alt="Ecrã Turnos do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>turno.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="ferias">
+            <span class="step-badge">Passo 7</span>
+            <h2>Férias</h2>
+            <p class="intro">Consulta o teu saldo de dias de férias disponíveis e pede novas férias diretamente pelo portal.</p>
+            <ol class="steps">
+                <li>Vê quantos <strong>dias de férias</strong> tens disponíveis e quantos já usaste este ano.</li>
+                <li>Clica em <strong>"Pedir Férias"</strong> e escolhe as datas de início e fim.</li>
+                <li>O pedido fica <strong>pendente</strong> até o administrador aprovar ou rejeitar.</li>
+                <li>Podes consultar o estado de pedidos anteriores (agendados, em curso, concluídos, rejeitados).</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="ferias.png" alt="Ecrã Férias do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>ferias.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+        <hr class="sep">
+
+        <section class="manual-step" id="definicoes">
+            <span class="step-badge">Passo 8</span>
+            <h2>Definições</h2>
+            <p class="intro">Gere os teus dados pessoais e a foto de perfil.</p>
+            <ol class="steps">
+                <li>Clica na tua <strong>foto de perfil</strong> para a alterar.</li>
+                <li>Consulta os teus dados pessoais registados (nome, cargo, contacto).</li>
+                <li>Se precisares de mudar o PIN ou corrigir dados, contacta o administrador — algumas alterações precisam de aprovação.</li>
+            </ol>
+            <div class="shot-wrap">
+                <img src="definicoes.png" alt="Ecrã Definições do portal do funcionário"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing">
+                    <span class="icon">🖼️</span>
+                    <span>Captura de ecrã em falta — adiciona <code>definicoes.png</code> a esta pasta.</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    (function () {
+        var sidebar = document.getElementById('manualSidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        var toggleBtn = document.getElementById('menuToggleBtn');
+
+        function openMenu() {
+            sidebar.classList.add('open');
+            overlay.classList.add('open');
+            toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+        function closeMenu() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        toggleBtn.addEventListener('click', function () {
+            if (sidebar.classList.contains('open')) closeMenu(); else openMenu();
+        });
+        overlay.addEventListener('click', closeMenu);
+        sidebar.querySelectorAll('nav a').forEach(function (link) {
+            link.addEventListener('click', closeMenu);
+        });
+    })();
+</script>
+</body>
+</html>

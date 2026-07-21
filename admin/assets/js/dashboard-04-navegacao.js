@@ -483,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             currentSection = sectionName;
+            try { sessionStorage.setItem('rhneto_active_section', sectionName); } catch (e) {}
 
             // Update page title
             const sectionTitles = {
@@ -1393,6 +1394,28 @@ function openSettings() {
     }
 })();
 
+// Mantem o utilizador na mesma seccao sempre que a pagina recarrega (F5, POST de um
+// formulario, etc.). So cede a vez a um ?section= da URL quando este vem acompanhado
+// de um parametro de deep-link reconhecido (solicitacao_card, swap, presenca_view_employee)
+// — caso contrario o ?section= pode ser apenas um resto de uma navegacao anterior (o
+// utilizador muda de seccao por clique, sem a URL mudar, e um F5 reabriria essa URL antiga).
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const urlParams = new URLSearchParams(window.location.search || '');
+        const hasRecognizedDeepLink = urlParams.has('solicitacao_card')
+            || urlParams.has('swap')
+            || urlParams.has('presenca_view_employee');
+
+        if (!hasRecognizedDeepLink) {
+            const savedSection = sessionStorage.getItem('rhneto_active_section');
+            if (savedSection && typeof showSection === 'function') {
+                showSection(savedSection);
+            }
+        }
+    } catch (e) {
+        console.warn('Nao foi possivel restaurar a seccao anterior:', e);
+    }
+});
 
 
 

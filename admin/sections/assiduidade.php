@@ -19,7 +19,7 @@
             #togglePresencaHistoryBtn.history-active i { color:#fff; }
 
             /* ── pa-* Presença section design system ── */
-            .pa-hdr { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:1.5rem; background:var(--card-bg,#1e293b); border:1px solid var(--border-color,rgba(255,255,255,.07)); border-radius:14px; padding:.875rem 1.25rem; width:100%; box-sizing:border-box; }
+            .pa-hdr { display:flex; align-items:center; justify-content:flex-start; gap:14px; margin-bottom:1.5rem; background:var(--card-bg,#1e293b); border:1px solid var(--border-color,rgba(255,255,255,.07)); border-radius:14px; padding:.875rem 1.25rem; width:100%; box-sizing:border-box; }
             .pa-hdr-icon {
                 width:46px; height:46px; border-radius:13px; flex-shrink:0;
                 background:linear-gradient(135deg,#3b82f6,#1d4ed8);
@@ -245,29 +245,69 @@
                                 // Mantém padrão data_registro
                             }
 
+                            // Base unificada: registros_ponto é a fonte principal (entradas/saídas reais);
+                            // presencas só entra para dias sem NENHUM ponto registado (faltas puras, gravadas
+                            // pela tarefa agendada). Isto evita o histórico ficar quase vazio, já que
+                            // presencas não é alimentada pelo fluxo normal de bater ponto.
                             $historyDateFiltersSql = '';
-                            $historyParamsBase = [(int)$loggedInClientId];
+                            $historyParamsBase = [];
 
                             if ($historyServerStart !== '') {
-                                $historyDateFiltersSql .= " AND DATE(p.{$histPresencaDateColumn}) >= ?";
+                                $historyDateFiltersSql .= ' AND unified.data_registro >= ?';
                                 $historyParamsBase[] = $historyServerStart;
                             }
                             if ($historyServerEnd !== '') {
-                                $historyDateFiltersSql .= " AND DATE(p.{$histPresencaDateColumn}) <= ?";
+                                $historyDateFiltersSql .= ' AND unified.data_registro <= ?';
                                 $historyParamsBase[] = $historyServerEnd;
                             }
+
+                            $historyUnifiedSql = "
+                                (
+                                    SELECT rp.funcionario_id,
+                                           DATE(rp.{$histPontoDateColumn}) AS data_registro,
+                                           CASE WHEN SUM(CASE WHEN LOWER(COALESCE(rp.status,'')) <> 'invalidado' THEN 1 ELSE 0 END) = 0
+                                                THEN 'invalidado' ELSE 'presente' END AS status,
+                                           MIN(NULLIF(rp.hora_entrada,'')) AS hora_entrada,
+                                           MAX(NULLIF(rp.hora_saida,'')) AS hora_saida,
+                                           MAX(rp.tipo_dia) AS tipo_dia,
+                                           GROUP_CONCAT(DISTINCT NULLIF(rp.obs,'') SEPARATOR ' | ') AS obs
+                                    FROM registros_ponto rp
+                                    INNER JOIN employees e2 ON e2.id = rp.funcionario_id
+                                    WHERE e2.client_id = ?
+                                    GROUP BY rp.funcionario_id, DATE(rp.{$histPontoDateColumn})
+                                )
+                                UNION ALL
+                                (
+                                    SELECT p.funcionario_id,
+                                           DATE(p.{$histPresencaDateColumn}) AS data_registro,
+                                           p.status,
+                                           NULL AS hora_entrada,
+                                           NULL AS hora_saida,
+                                           NULL AS tipo_dia,
+                                           NULL AS obs
+                                    FROM presencas p
+                                    WHERE p.client_id = ?
+                                      AND NOT EXISTS (
+                                          SELECT 1 FROM registros_ponto rp2
+                                          WHERE rp2.funcionario_id = p.funcionario_id
+                                            AND DATE(rp2.{$histPontoDateColumn}) = DATE(p.{$histPresencaDateColumn})
+                                      )
+                                )
+                            ";
 
                             // Count total rows for pagination
                             $histTotalRows  = 0;
                             $histTotalPages = 1;
                             try {
                                 $stmtHistCount = $pdo->prepare(
-                                    "SELECT COUNT(*)
-                         FROM presencas p
-                         INNER JOIN employees e ON e.id = p.funcionario_id
-                         WHERE e.client_id = ? {$historyDateFiltersSql}"
+                                    "SELECT COUNT(*) FROM ({$historyUnifiedSql}) unified
+                                     INNER JOIN employees e ON e.id = unified.funcionario_id
+                                     WHERE e.client_id = ? {$historyDateFiltersSql}"
                                 );
-                                $stmtHistCount->execute($historyParamsBase);
+                                $stmtHistCount->execute(array_merge(
+                                    [(int)$loggedInClientId, (int)$loggedInClientId, (int)$loggedInClientId],
+                                    $historyParamsBase
+                                ));
                                 $histTotalRows  = (int)$stmtHistCount->fetchColumn();
                                 $histTotalPages = max(1, (int)ceil($histTotalRows / $histPerPage));
                                 if ($histPage > $histTotalPages) {
@@ -278,36 +318,33 @@
                                 error_log('Erro ao contar histórico de presença: ' . $e->getMessage());
                             }
 
-                            $historyParams = array_merge($historyParamsBase, [$histPerPage, $histOffset]);
-
                             try {
                                 $stmtHistoricoPresenca = $pdo->prepare(
                                     "SELECT
-                            p.funcionario_id,
-                            e.name AS funcionario_nome,
-                            p.status,
-                            p.{$histPresencaDateColumn} AS data_registro,
-                            rp.hora_entrada,
-                            rp.hora_saida,
-                            rp.tipo_dia,
-                            rp.falta_tipo,
-                            rp.obs
-                         FROM presencas p
-                         INNER JOIN employees e ON e.id = p.funcionario_id
-                         LEFT JOIN registros_ponto rp
-                            ON rp.id = (
-                                SELECT rp2.id
-                                FROM registros_ponto rp2
-                                WHERE rp2.funcionario_id = p.funcionario_id
-                                  AND DATE(rp2.{$histPontoDateColumn}) = DATE(p.{$histPresencaDateColumn})
-                                ORDER BY rp2.{$histPontoDateColumn} DESC, rp2.id DESC
-                                LIMIT 1
-                            )
-                         WHERE e.client_id = ? {$historyDateFiltersSql}
-                         ORDER BY p.{$histPresencaDateColumn} DESC, p.id DESC
-                         LIMIT ? OFFSET ?"
+                                        unified.funcionario_id,
+                                        e.name AS funcionario_nome,
+                                        unified.status,
+                                        unified.data_registro,
+                                        unified.hora_entrada,
+                                        unified.hora_saida,
+                                        unified.tipo_dia,
+                                        unified.obs,
+                                        j.tipo AS just_tipo,
+                                        j.status AS just_status
+                                     FROM ({$historyUnifiedSql}) unified
+                                     INNER JOIN employees e ON e.id = unified.funcionario_id
+                                     LEFT JOIN justificativas_presenca j
+                                        ON j.employee_id = unified.funcionario_id
+                                       AND j.data_ocorrencia = unified.data_registro
+                                     WHERE e.client_id = ? {$historyDateFiltersSql}
+                                     ORDER BY unified.data_registro DESC, unified.funcionario_id DESC
+                                     LIMIT ? OFFSET ?"
                                 );
-                                $stmtHistoricoPresenca->execute($historyParams);
+                                $stmtHistoricoPresenca->execute(array_merge(
+                                    [(int)$loggedInClientId, (int)$loggedInClientId, (int)$loggedInClientId],
+                                    $historyParamsBase,
+                                    [$histPerPage, $histOffset]
+                                ));
                                 $historicoPresenca = $stmtHistoricoPresenca->fetchAll(PDO::FETCH_ASSOC) ?: [];
                             } catch (Exception $e) {
                                 error_log('Erro ao carregar histórico de presença: ' . $e->getMessage());
@@ -339,7 +376,7 @@
                                     $histEntrada = !empty($histRow['hora_entrada']) ? htmlspecialchars(substr((string)$histRow['hora_entrada'], 0, 5)) : '--:--';
                                     $histSaida = !empty($histRow['hora_saida']) ? htmlspecialchars(substr((string)$histRow['hora_saida'], 0, 5)) : '--:--';
                                     $histStatusRaw = mb_strtolower(trim((string)($histRow['status'] ?? '')));
-                                    $histFaltaTipo = mb_strtolower(trim((string)($histRow['falta_tipo'] ?? '')));
+                                    $histJustStatus = mb_strtolower(trim((string)($histRow['just_status'] ?? '')));
                                     $histTipoDiaRaw = mb_strtolower(trim((string)($histRow['tipo_dia'] ?? ($histStatusRaw === 'falta' ? 'falta' : 'normal'))));
                                     $histTipoDiaMap = [
                                         'normal' => 'Normal',
@@ -350,7 +387,13 @@
                                     $histTipoDiaLabel = $histTipoDiaMap[$histTipoDiaRaw] ?? 'Normal';
 
                                     if ($histStatusRaw === 'falta') {
-                                        $histStatusLabel = $histFaltaTipo === 'justificada' ? 'Falta Justificada' : 'Falta Injustificada';
+                                        if ($histJustStatus === 'aprovada') {
+                                            $histStatusLabel = 'Falta Justificada';
+                                        } elseif ($histJustStatus === 'pendente') {
+                                            $histStatusLabel = 'Falta (Justificação Pendente)';
+                                        } else {
+                                            $histStatusLabel = 'Falta Injustificada';
+                                        }
                                         $histStatusClass = 'status-falta';
                                         $histStatusKey = 'falta';
                                     } elseif ($histStatusRaw === 'presente' && $histEntrada !== '--:--' && $histSaida === '--:--') {

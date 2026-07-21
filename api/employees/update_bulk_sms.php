@@ -36,7 +36,7 @@ if ($oldMessage === '') {
 }
 
 if ($scope === 'selected' && empty($normalizedIds)) {
-    $response['message'] = 'Selecione ao menos um funcionario';
+    $response['message'] = 'Stestar apliacao com fluxo real , tipo adm usando apliacao elecione ao menos um funcionario';
     echo json_encode($response);
     exit;
 }

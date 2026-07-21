@@ -107,12 +107,14 @@ try {
         }
     }
 
-    // Buscar registo em aberto hoje (entrada sem saída) — suporte a múltiplos períodos por dia
+    // Buscar registo em aberto hoje (entrada sem saída) — suporte a múltiplos períodos por dia.
+    // Registos invalidados (entrada rejeitada pelo admin) não contam como "em aberto".
     $stmt = $pdo->prepare("
         SELECT * FROM registros_ponto
         WHERE funcionario_id = ? AND DATE(data_registro) = ?
           AND hora_entrada IS NOT NULL AND hora_entrada != ''
           AND (hora_saida IS NULL OR hora_saida = '')
+          AND LOWER(COALESCE(status, '')) <> 'invalidado'
         ORDER BY id DESC LIMIT 1
     ");
     $stmt->execute([$employee_id, $data_hoje]);
@@ -170,7 +172,7 @@ try {
         $employee = $stmtEmployee->fetch(PDO::FETCH_ASSOC);
         $employee_name = $employee['name'] ?? 'Funcionário';
         
-        $titulo = "$employee_name registrou " . ($tipo === 'entrada' ? 'entrada' : 'saída') . " às $hora_atual";
+        $titulo = "$employee_name registou " . ($tipo === 'entrada' ? 'entrada' : 'saída') . " às $hora_atual";
         $tipoAtividade = 'info';
         $statusText = ucfirst($tipo);
         

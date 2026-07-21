@@ -66,7 +66,7 @@ try {
         if ($existe && isset($existe['status']) && $existe['status'] === 'falta') {
             echo json_encode([
                 'success' => false,
-                'message' => 'Você não pode mais marcar presença hoje, pois já foi registrado como falta.',
+                'message' => 'Já não é possível marcar presença hoje, pois já foi registado como falta.',
                 'status' => 'falta'
             ]);
             exit();

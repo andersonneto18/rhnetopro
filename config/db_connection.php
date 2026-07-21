@@ -1,11 +1,14 @@
 <?php
 // db_connection.php
 
-// Configurações da base de dados
-$servername = "localhost"; 
-$username = "root"; 
-$password = ""; 
-$dbname = "sistema_cadastro";  // **** SUBSTITUA PELA SUA SENHA DA BASE DE DADOS (se tiver) ****
+require_once __DIR__ . '/env.php';
+
+// Configurações da base de dados: usa DB_* do .env quando definido,
+// caso contrário assume o ambiente local (XAMPP).
+$servername = getenv('DB_HOST') ?: "localhost";
+$username = getenv('DB_USER') ?: "root";
+$password = getenv('DB_PASS') ?: "";
+$dbname = getenv('DB_NAME') ?: "sistema_cadastro";
 try {
     // Cria uma nova instância PDO para a conexão
     $pdo = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);

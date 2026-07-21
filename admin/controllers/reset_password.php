@@ -95,7 +95,7 @@ try {
             $markUsed->execute();
             $markUsed->close();
 
-            $_SESSION['success_message'] = 'Palavra-passe redefinida com sucesso. Inicie sessao com a nova senha.';
+            $_SESSION['success_message'] = 'Palavra-passe redefinida com sucesso. Inicie sessão com a nova palavra-passe.';
             header('Location: ../views/login.php');
             exit();
         }
@@ -232,7 +232,7 @@ try {
                 <input id="new_password" type="password" name="new_password" required minlength="6" placeholder="Minimo 6 caracteres">
 
                 <label for="confirm_password">Confirmar palavra-passe</label>
-                <input id="confirm_password" type="password" name="confirm_password" required minlength="6" placeholder="Repita a nova senha">
+                <input id="confirm_password" type="password" name="confirm_password" required minlength="6" placeholder="Repita a nova palavra-passe">
 
                 <button class="btn" type="submit">Guardar nova palavra-passe</button>
             </form>

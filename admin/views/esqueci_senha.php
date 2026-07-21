@@ -21,7 +21,7 @@ function ensurePasswordResetTable(mysqli $conn): void {
     ";
 
     if (!$conn->query($sql)) {
-        throw new RuntimeException('Erro ao preparar tabela de recuperação de senha.');
+        throw new RuntimeException('Erro ao preparar tabela de recuperação de palavra-passe.');
     }
 }
 
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     unset($_SESSION['recover_debug_link']);
 
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['recover_error'] = 'Informe um email valido para recuperar a senha.';
+        $_SESSION['recover_error'] = 'Indique um email válido para recuperar a palavra-passe.';
         header('Location: esqueci_senha.php');
         exit();
     }
@@ -131,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Palavra-passe - RHNeto Pro</title>
+    <link rel="icon" type="image/png" href="images/rh1.png">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {

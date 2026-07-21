@@ -2,12 +2,13 @@
 // Secção "Definições" — incluída a partir de admin/dashboard.php (depende de $ADMIN_DIR, $pdo, $adminUser, $estHorario, $csrfToken, etc. já definidos lá). Inclui também os modais de horários e perfil de admin, que ficavam soltos após esta secção.
 ?>
         <section id="definicoes-section" class="content-section">
-            <div class="section-header">
-                <div class="section-title">
-                    <div class="section-icon">
-                        <i class="fas fa-cog"></i>
+            <div class="frhd">
+                <div class="frhd-left">
+                    <div class="frhd-icon" style="background:linear-gradient(135deg,#64748b,#334155);box-shadow:0 4px 14px rgba(51,65,85,.35);"><i class="fas fa-sliders-h"></i></div>
+                    <div>
+                        <h2 class="frhd-title">Definições</h2>
+                        <p class="frhd-sub">Conta, negócio e faturação num só lugar</p>
                     </div>
-                    <span>Definições do Sistema</span>
                 </div>
             </div>
 
@@ -62,162 +63,254 @@
             }
             ?>
             <style>
-                #definicoes-section .settings-plan-rows { display: grid; gap: .4rem; font-size: .85rem; margin-bottom: .85rem; }
-                #definicoes-section .settings-plan-row { display: flex; justify-content: space-between; gap: .5rem; }
-                #definicoes-section .settings-plan-row span:first-child { color: var(--text-secondary); }
-                #definicoes-section .settings-badge { display: inline-flex; align-items: center; padding: .3rem .75rem; border-radius: 999px; font-size: .8rem; font-weight: 700; }
-                #definicoes-section .settings-card-note { margin-top: .6rem; }
-                #definicoes-section .settings-card-actions { margin-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap; }
-                #definicoes-section .settings-card-actions form { display: inline; }
-                #definicoes-section .info-card--soon { opacity: .7; }
-                #definicoes-section .settings-soon-badge { display: inline-flex; align-items: center; padding: .15rem .55rem; border-radius: 999px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: var(--neutral-100, #f3f4f6); color: var(--text-secondary, #6b7280); margin-left: .5rem; }
-            </style>
-            <div class="card-grid">
+                #definicoes-section .set-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 1.1rem;
+                    align-items: stretch;
+                    margin-bottom: 1.1rem;
+                }
+                @media (max-width: 1300px) { #definicoes-section .set-grid { grid-template-columns: repeat(3, 1fr); } }
+                @media (max-width: 900px)  { #definicoes-section .set-grid { grid-template-columns: repeat(2, 1fr); } }
+                @media (max-width: 560px)  { #definicoes-section .set-grid { grid-template-columns: 1fr; } }
 
-                <div class="info-card">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: #ede9fe; color: #6d28d9;">
+                #definicoes-section .set-card {
+                    display: flex; flex-direction: column;
+                    background: var(--card-bg,#1e293b);
+                    border: 1px solid var(--border-color,rgba(255,255,255,.07));
+                    border-radius: 16px;
+                    padding: 1.35rem 1.4rem;
+                    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+                }
+                #definicoes-section .set-card:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 14px 30px rgba(0,0,0,.22);
+                    border-color: rgba(59,130,246,.28);
+                }
+                #definicoes-section .set-card.set-card--soon { opacity: .65; }
+                #definicoes-section .set-card.set-card--soon:hover { transform: none; box-shadow: none; border-color: var(--border-color,rgba(255,255,255,.07)); }
+
+                #definicoes-section .set-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin-bottom: .9rem; }
+                #definicoes-section .set-card-icon {
+                    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+                    display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+                }
+                #definicoes-section .set-soon-tag {
+                    display: inline-flex; align-items: center; padding: .2rem .6rem; border-radius: 999px;
+                    font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+                    background: rgba(148,163,184,.14); color: #94a3b8; flex-shrink: 0;
+                }
+                #definicoes-section .set-card-title { font-size: .98rem; font-weight: 700; color: var(--text-primary,#f1f5f9); margin: 0 0 .35rem; line-height:1.3; }
+                #definicoes-section .set-card-desc { font-size: .82rem; color: var(--text-secondary,#94a3b8); line-height: 1.55; margin: 0; flex: 1; }
+
+                #definicoes-section .set-rows { display: grid; gap: .5rem; font-size: .84rem; margin: .2rem 0 1rem; }
+                #definicoes-section .set-row { display: flex; justify-content: space-between; gap: .5rem; }
+                #definicoes-section .set-row span:first-child { color: var(--text-secondary,#94a3b8); }
+                #definicoes-section .set-row strong { color: var(--text-primary,#f1f5f9); }
+                #definicoes-section .set-badge { display: inline-flex; align-items: center; align-self: flex-start; padding: .3rem .75rem; border-radius: 999px; font-size: .76rem; font-weight: 700; margin-bottom: .6rem; }
+                #definicoes-section .set-note { font-size: .8rem; color: var(--text-secondary,#94a3b8); margin: 0 0 1rem; }
+
+                #definicoes-section .set-card-footer { margin-top: auto; padding-top: .9rem; display: flex; gap: .55rem; flex-wrap: wrap; }
+                #definicoes-section .set-card-footer form { display: inline-flex; }
+                #definicoes-section .set-btn {
+                    display: inline-flex; align-items: center; justify-content:center; gap: .5rem;
+                    padding: .6rem 1rem; border-radius: 9px;
+                    font-size: .8rem; font-weight: 700; cursor: pointer;
+                    text-decoration: none; transition: background .15s, transform .15s, border-color .15s;
+                    width: 100%;
+                }
+                #definicoes-section .set-btn:hover:not(:disabled) { transform: translateY(-1px); }
+                #definicoes-section .set-btn:disabled { cursor: not-allowed; opacity: .55; }
+                #definicoes-section .set-btn--primary { border:none; background: linear-gradient(135deg,#3b82f6,#2563eb); color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,.3); }
+                #definicoes-section .set-btn--ghost { background: transparent; color: #60a5fa; border: 1px solid rgba(59,130,246,.4); }
+                #definicoes-section .set-btn--ghost:hover:not(:disabled) { background: rgba(59,130,246,.08); border-color: rgba(59,130,246,.6); }
+                #definicoes-section .set-btn--ghost:disabled { color: var(--text-secondary,#94a3b8); border-color: var(--border-color,rgba(255,255,255,.12)); }
+
+                #definicoes-section .set-tip-bar {
+                    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem;
+                    background: rgba(59,130,246,.07); border: 1px solid rgba(59,130,246,.2);
+                    border-radius: 12px; padding: .9rem 1.25rem; font-size: .85rem; color: var(--text-secondary,#94a3b8);
+                }
+                #definicoes-section .set-tip-bar i.fa-circle-info { color: #60a5fa; margin-right: .4rem; }
+                #definicoes-section .set-tip-bar strong { color: var(--text-primary,#f1f5f9); }
+                #definicoes-section .set-tip-bar a { color: #60a5fa; text-decoration: none; font-weight: 600; }
+                #definicoes-section .set-tip-bar a:hover { text-decoration: underline; }
+            </style>
+
+            <div class="set-grid">
+
+                <div class="set-card">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(124,58,237,.14); color: #a78bfa;">
                             <i class="fas fa-crown"></i>
                         </div>
-                        <h3 class="card-title">Plano e Assinatura</h3>
                     </div>
-                    <div class="card-content">
-                        <div class="settings-plan-rows">
-                            <div class="settings-plan-row">
-                                <span>Plano atual</span>
-                                <strong><?php echo htmlspecialchars($subscriptionPlanName !== '' ? $subscriptionPlanName : 'RHNeto Pro Premium'); ?></strong>
-                            </div>
-                            <div class="settings-plan-row">
-                                <span>Preço</span>
-                                <strong>2,00 € / mês</strong>
-                            </div>
-                            <?php if ($planStatusRaw === 'active' && $subscriptionRenewsAtIso !== ''): ?>
-                            <div class="settings-plan-row">
-                                <span>Próxima renovação</span>
-                                <strong><?php echo htmlspecialchars(date('d/m/Y', strtotime($subscriptionRenewsAtIso))); ?></strong>
-                            </div>
-                            <?php endif; ?>
+                    <h3 class="set-card-title">Plano e Assinatura</h3>
+                    <div class="set-badge" style="background:<?php echo $planStatusBg; ?>; color:<?php echo $planStatusColor; ?>;">
+                        <?php echo htmlspecialchars($planStatusLabel); ?>
+                    </div>
+                    <div class="set-rows">
+                        <div class="set-row">
+                            <span>Plano atual</span>
+                            <strong><?php echo htmlspecialchars($subscriptionPlanName !== '' ? $subscriptionPlanName : 'RHNeto Pro Premium'); ?></strong>
                         </div>
-                        <div class="settings-badge" style="background:<?php echo $planStatusBg; ?>; color:<?php echo $planStatusColor; ?>;">
-                            <?php echo htmlspecialchars($planStatusLabel); ?>
+                        <div class="set-row">
+                            <span>Preço</span>
+                            <strong>2,00 € / mês</strong>
                         </div>
-                        <?php if ($planTrialText !== ''): ?>
-                        <p class="settings-card-note"><?php echo htmlspecialchars($planTrialText); ?></p>
-                        <?php elseif ($planStatusRaw === 'active'): ?>
-                        <p class="settings-card-note">A sua assinatura está ativa. Obrigado por usar o RHNeto Pro.</p>
-                        <?php else: ?>
-                        <p class="settings-card-note">Assine para continuar a usar o painel sem interrupções.</p>
+                        <?php if ($planStatusRaw === 'active' && $subscriptionRenewsAtIso !== ''): ?>
+                        <div class="set-row">
+                            <span>Próxima renovação</span>
+                            <strong><?php echo htmlspecialchars(date('d/m/Y', strtotime($subscriptionRenewsAtIso))); ?></strong>
+                        </div>
                         <?php endif; ?>
-                        <div class="settings-card-actions">
-                            <a href="../planos/" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; text-decoration:none; display:inline-flex;">
-                                <i class="fas fa-bolt"></i>
-                                <span><?php echo $planStatusRaw === 'active' ? 'Ver plano' : 'Assinar agora'; ?></span>
-                            </a>
-                            <?php if ($subscriptionStripeCustomerId !== ''): ?>
-                            <form method="POST" action="../planos/create-portal-session.php">
-                                <button type="submit" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
-                                    <i class="fas fa-credit-card"></i>
-                                    <span>Gerir Assinatura</span>
-                                </button>
-                            </form>
-                            <?php endif; ?>
-                        </div>
+                    </div>
+                    <?php if ($planTrialText !== ''): ?>
+                    <p class="set-note"><?php echo htmlspecialchars($planTrialText); ?></p>
+                    <?php elseif ($planStatusRaw === 'active'): ?>
+                    <p class="set-note">A sua assinatura está ativa. Obrigado por usar o RHNeto Pro.</p>
+                    <?php else: ?>
+                    <p class="set-note">Assine para continuar a usar o painel sem interrupções.</p>
+                    <?php endif; ?>
+                    <div class="set-card-footer">
+                        <a href="../planos/" class="set-btn set-btn--primary">
+                            <i class="fas fa-bolt"></i>
+                            <span><?php echo $planStatusRaw === 'active' ? 'Ver plano' : 'Assinar agora'; ?></span>
+                        </a>
+                        <?php if ($subscriptionStripeCustomerId !== ''): ?>
+                        <form method="POST" action="../planos/create-portal-session.php" style="width:100%;">
+                            <button type="submit" class="set-btn set-btn--ghost">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Gerir Assinatura</span>
+                            </button>
+                        </form>
+                        <?php endif; ?>
                     </div>
                 </div>
 
-                <div class="info-card">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: var(--primary-100); color: var(--primary-600);">
+                <div class="set-card">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(16,185,129,.14); color: #34d399;">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <h3 class="card-title">Horários do Estabelecimento</h3>
                     </div>
-                    <div class="card-content">
-                        <p>Defina horário padrão para cálculo automático de atraso no módulo de presença.</p>
-                        <div class="settings-card-actions">
-                            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
-                                onclick="document.getElementById('modalHorariosEstabelecimento').style.display='flex'">
-                                <i class="fas fa-clock"></i>
-                                <span>Configurar Horários</span>
-                            </button>
-                        </div>
+                    <h3 class="set-card-title">Horários do Estabelecimento</h3>
+                    <p class="set-card-desc">Defina o horário padrão para cálculo automático de atraso no módulo de presença.</p>
+                    <div class="set-card-footer">
+                        <button type="button" class="set-btn set-btn--ghost"
+                            onclick="document.getElementById('modalHorariosEstabelecimento').style.display='flex'">
+                            <i class="fas fa-clock"></i>
+                            <span>Configurar Horários</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="info-card">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: var(--success-100); color: var(--success-600);">
+                <div class="set-card">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(245,158,11,.14); color: #fbbf24;">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <h3 class="card-title">Configuração de Registo Salarial</h3>
                     </div>
-                    <div class="card-content">
-                        <p>Definir parâmetros básicos de registo mensal (sem cálculos fiscais automáticos).</p>
-                        <div class="settings-card-actions">
-                            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
-                                onclick="document.getElementById('modalConfiguracaoSalarial').style.display='flex'">
-                                <i class="fas fa-cogs"></i>
-                                <span>Configurar</span>
-                            </button>
-                        </div>
+                    <h3 class="set-card-title">Configuração de Registo Salarial</h3>
+                    <p class="set-card-desc">Defina parâmetros básicos de registo mensal (sem cálculos fiscais automáticos).</p>
+                    <div class="set-card-footer">
+                        <button type="button" class="set-btn set-btn--ghost"
+                            onclick="document.getElementById('modalConfiguracaoSalarial').style.display='flex'">
+                            <i class="fas fa-cogs"></i>
+                            <span>Configurar</span>
+                        </button>
                     </div>
                 </div>
-                <div class="info-card">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: var(--primary-100); color: var(--primary-600);">
+
+                <div class="set-card">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(59,130,246,.14); color: #60a5fa;">
                             <i class="fas fa-user-cog"></i>
                         </div>
-                        <h3 class="card-title">Perfil do Administrador</h3>
                     </div>
-                    <div class="card-content">
-                        <p>Alterar dados pessoais, palavra-passe e preferências de conta.</p>
-                        <div class="settings-card-actions">
-                            <button type="button" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
-                                onclick="document.getElementById('modalAdminProfile').style.display='flex'">
-                                <i class="fas fa-edit"></i>
-                                <span>Editar Perfil</span>
-                            </button>
-                        </div>
+                    <h3 class="set-card-title">Perfil do Administrador</h3>
+                    <p class="set-card-desc">Alterar dados pessoais, palavra-passe e preferências de conta.</p>
+                    <div class="set-card-footer">
+                        <button type="button" class="set-btn set-btn--ghost"
+                            onclick="document.getElementById('modalAdminProfile').style.display='flex'">
+                            <i class="fas fa-edit"></i>
+                            <span>Editar Perfil</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="info-card info-card--soon">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: var(--secondary-100); color: var(--secondary-600);">
+                <div class="set-card set-card--soon">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(20,184,166,.14); color: #2dd4bf;">
                             <i class="fas fa-building"></i>
                         </div>
-                        <h3 class="card-title">Dados da Empresa <span class="settings-soon-badge">Em breve</span></h3>
+                        <span class="set-soon-tag">Em breve</span>
                     </div>
-                    <div class="card-content">
-                        <p>Configurar informações da empresa, logotipo e dados fiscais.</p>
-                        <div class="settings-card-actions">
-                            <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;" disabled title="Funcionalidade ainda não disponível">
-                                <i class="fas fa-lock"></i>
-                                <span>Configurar</span>
-                            </button>
-                        </div>
+                    <h3 class="set-card-title">Dados da Empresa</h3>
+                    <p class="set-card-desc">Configurar informações da empresa, logótipo e dados fiscais.</p>
+                    <div class="set-card-footer">
+                        <button type="button" class="set-btn set-btn--ghost" disabled title="Funcionalidade ainda não disponível">
+                            <i class="fas fa-lock"></i>
+                            <span>Em breve</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="info-card">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: #e8f4ff; color: #1d4ed8;">
+                <div class="set-card">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(37,99,235,.14); color: #60a5fa;">
                             <i class="fas fa-bell"></i>
                         </div>
-                        <h3 class="card-title">Notificações e Mensagens</h3>
                     </div>
-                    <div class="card-content">
-                        <p>Aceda rapidamente às notificações e à lista de mensagens enviadas para gerir envios no app.</p>
-                        <div class="settings-card-actions">
-                            <button type="button" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
-                                onclick="openNotificationsSentSection()">
-                                <i class="fas fa-paper-plane"></i>
-                                <span>Ver mensagens enviadas</span>
-                            </button>
+                    <h3 class="set-card-title">Notificações e Mensagens</h3>
+                    <p class="set-card-desc">Aceda rapidamente às notificações e à lista de mensagens enviadas para gerir envios no app.</p>
+                    <div class="set-card-footer">
+                        <button type="button" class="set-btn set-btn--ghost" onclick="openNotificationsSentSection()">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Ver mensagens enviadas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="set-card set-card--soon">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(245,158,11,.14); color: #fbbf24;">
+                            <i class="fas fa-shield-alt"></i>
                         </div>
+                        <span class="set-soon-tag">Em breve</span>
+                    </div>
+                    <h3 class="set-card-title">Segurança e Permissões</h3>
+                    <p class="set-card-desc">Gerir permissões de utilizadores, funções e níveis de acesso ao sistema.</p>
+                    <div class="set-card-footer">
+                        <button type="button" class="set-btn set-btn--ghost" disabled title="Funcionalidade ainda não disponível">
+                            <i class="fas fa-lock"></i>
+                            <span>Em breve</span>
+                        </button>
                     </div>
                 </div>
+
+                <div class="set-card set-card--soon">
+                    <div class="set-card-top">
+                        <div class="set-card-icon" style="background: rgba(239,68,68,.14); color: #f87171;">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <span class="set-soon-tag">Em breve</span>
+                    </div>
+                    <h3 class="set-card-title">Cópia de Segurança e Dados</h3>
+                    <p class="set-card-desc">Gerir cópias de segurança e exportação de dados do sistema.</p>
+                    <div class="set-card-footer">
+                        <button type="button" class="set-btn set-btn--ghost" disabled title="Funcionalidade ainda não disponível">
+                            <i class="fas fa-lock"></i>
+                            <span>Em breve</span>
+                        </button>
+                    </div>
                 </div>
+
+            </div>
+
+            <div class="set-tip-bar">
+                <div><i class="fas fa-circle-info"></i><strong>Dica:</strong> Configure todas as opções para uma melhor experiência de utilização do sistema.</div>
+                <a href="#" onclick="return false;">Precisa de ajuda? <i class="fas fa-circle-question"></i></a>
             </div>
 
             <!-- Modal: Configuração de Registo Salarial -->
@@ -545,6 +638,9 @@
                 document.querySelectorAll('form[action*="section=solicitacoes"], form[action*="review_justificativa.php"]').forEach(function(form) {
                     form.addEventListener('submit', function() {
                         sessionStorage.setItem(SCROLL_KEY, String(window.scrollY || window.pageYOffset || 0));
+                        // Mantém o admin na secção de Solicitações após aprovar/rejeitar,
+                        // em vez de cair na secção padrão depois do reload da página.
+                        sessionStorage.setItem('activeSection', 'solicitacoes');
                     });
                 });
             })();
@@ -696,8 +792,8 @@
                                 confirmText,
                                 'Sim, fechar folha',
                                 'Cancelar'
-                            ).then(function(result) {
-                                if (result && result.isConfirmed) {
+                            ).then(function(confirmed) {
+                                if (confirmed) {
                                     closeFolhaForm.submit();
                                 }
                             });
@@ -731,8 +827,8 @@
                                 'Tem certeza que deseja reabrir a folha? Isto permitira correcoes e novas alteracoes nos dados.',
                                 'Sim, reabrir folha',
                                 'Cancelar'
-                            ).then(function(result) {
-                                if (result && result.isConfirmed) {
+                            ).then(function(confirmed) {
+                                if (confirmed) {
                                     reopenFolhaForm.submit();
                                 }
                             });
@@ -912,14 +1008,14 @@
                             value="<?php echo htmlspecialchars($adminUser['phone'] ?? ''); ?>">
                     </div>
                     <div class="am-f am-f-full">
-                        <label class="am-lbl">Nova Senha</label>
+                        <label class="am-lbl">Nova Palavra-passe</label>
                         <input class="am-inp" type="password" name="admin_nova_senha"
                             placeholder="Deixe em branco para não alterar">
                     </div>
                     <div class="am-f am-f-full">
-                        <label class="am-lbl">Confirmar Nova Senha</label>
+                        <label class="am-lbl">Confirmar Nova Palavra-passe</label>
                         <input class="am-inp" type="password" name="admin_confirmar_senha"
-                            placeholder="Confirme a nova senha">
+                            placeholder="Confirme a nova palavra-passe">
                     </div>
                 </div>
                 <div class="am-footer">

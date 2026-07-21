@@ -1390,6 +1390,31 @@ body.dark-theme .bulk-close:hover {
     transform: none;
 }
 
+/* Unifica os botões de ação: qualquer botão com .fr-btn mantém o círculo 32x32px
+   do padrão novo, mesmo quando também carrega classes legadas (btn-view/btn-edit/
+   btn-delete/employee-action-btn) usadas como gancho pelo JS de cada seção. */
+.content-section td .fr-btn {
+    min-width: 32px !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    font-size: .78rem !important;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+    box-shadow: none !important;
+}
+
+.content-section td .fr-btn i {
+    font-size: .78rem !important;
+}
+
+.content-section td .fr-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .2) !important;
+    filter: none;
+}
+
 /* Relatórios - Dashboard */
 .relatorios-container {
   background: #fff;

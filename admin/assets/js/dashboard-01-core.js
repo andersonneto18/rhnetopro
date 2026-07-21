@@ -613,7 +613,8 @@ function renderPresencaModalFromRow(row, employeeId) {
                     let anexoHref = justAnexo;
                     if (!/^https?:\/\//i.test(anexoHref)) {
                         if (!anexoHref.startsWith('/') && !anexoHref.startsWith('../')) {
-                            anexoHref = '../' + anexoHref.replace(/^\.\//, '');
+                            // anexo_path guarda so o nome do ficheiro; o upload fica em app/uploads/justificativas/.
+                            anexoHref = '../app/uploads/justificativas/' + anexoHref.replace(/^\.\//, '');
                         }
                     }
                     anexoLink.href = anexoHref;
@@ -1279,13 +1280,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (data.success) {
-                showSuccess(data.message || 'Registro atualizado!');
+                showSuccess(data.message || 'Registo atualizado!');
                 document.getElementById('modalEditarPresenca').style.display = 'none';
                 if (row && data.record) {
                     applyAttendanceRecordToRow(row, employeeId, data.record);
                 }
             } else {
-                showError(data.message || 'Erro ao editar registro.');
+                showError(data.message || 'Erro ao editar registo.');
             }
         } catch (_) {
             showError('Erro ao comunicar com o servidor.');

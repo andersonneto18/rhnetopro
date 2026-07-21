@@ -7,7 +7,7 @@
                     <div class="frhd-icon"><i class="fas fa-users"></i></div>
                     <div>
                         <h2 class="frhd-title">Funcionários</h2>
-                        <p class="frhd-sub"><?php echo $totalEmployees ?? 0; ?> no total &middot; <?php echo $activeCount ?? 0; ?> ativos hoje</p>
+                       
                     </div>
                 </div>
                 <button id="addEmployeeBtn" type="button" class="frhd-add-btn">
@@ -86,19 +86,7 @@
                                 <i class="fas fa-sliders-h"></i> Filtros
                                 <span class="fr-filter-badge" id="frFilterBadge" style="display:none"></span>
                             </button>
-                            <div class="fr-export-wrap" style="position:relative;">
-                                <button class="fr-export-btn" onclick="toggleExportDropdown()">
-                                    <i class="fas fa-arrow-up-from-bracket"></i> Exportar <i class="fas fa-chevron-down" style="font-size:.7em;margin-left:2px;"></i>
-                                </button>
-                                <div id="exportDropdown" class="fr-export-menu" style="display:none;">
-                                    <a href="#" onclick="exportEmployeesPDF(); return false;" class="fr-export-item">
-                                        <i class="fas fa-file-pdf" style="color:#e74c3c;"></i> PDF
-                                    </a>
-                                    <a href="#" onclick="exportEmployeesExcel(); return false;" class="fr-export-item">
-                                        <i class="fas fa-file-excel" style="color:#27ae60;"></i> Excel
-                                    </a>
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
 
@@ -234,7 +222,7 @@
                 .fr-th-emp   { min-width:220px; }
                 .fr-th-role  { min-width:160px; }
                 .fr-th-status{ width:140px; }
-                .fr-th-acts  { width:110px; text-align:center; }
+                .fr-th-acts  { width:135px; min-width:145px; text-align:center; }
 
                 /* Rows */
                 .fr-row { transition:background .15s; }
@@ -248,6 +236,39 @@
                 .fr-td-role  { padding:.75rem 1rem; vertical-align:middle; }
                 .fr-td-status{ padding:.75rem .5rem; vertical-align:middle; }
                 .fr-td-acts  { padding:.75rem .5rem; vertical-align:middle; text-align:center; }
+
+                /* Linhas mais espacadas entre funcionarios (sobrepoe a regra legada .table tbody td).
+                   So mexe no padding vertical: o horizontal fica a cargo de cada .fr-td-* especifico,
+                   para nao apertar a coluna de Acoes (largura fixa) e forcar os botoes a quebrar linha. */
+                .fr-table.table tbody td {
+                    height: auto;
+                    padding-top: 1.15rem;
+                    padding-bottom: 1.15rem;
+                }
+                /* Corrige o bug da linha divisoria "quebrada": a regra legada forcava
+                   display:flex na ultima celula (Acoes), tirando-a do fluxo de table-cell
+                   e desalinhando a borda inferior em relacao as demais colunas. Tambem tinha
+                   padding horizontal de 1.5rem/1rem (40px), deixando so ~95px uteis na coluna
+                   de 135px — insuficiente para 3 botoes de 32px lado a lado, por isso quebravam
+                   linha sempre (mesmo em desktop largo). Aqui reduzimos para 0.5rem cada lado. */
+                .fr-table.table tbody td:last-child {
+                    display: table-cell;
+                    min-width: 145px;
+                    padding: 1.15rem .5rem;
+                    text-align: center;
+                }
+                /* O cabecalho da ultima coluna (Acoes) vinha alinhado a direita por uma regra
+                   legada (.table thead th:last-child), enquanto os botoes ficam centrados na
+                   celula — descolava visualmente o rotulo "Ações" dos botoes por baixo. */
+                .fr-table.table thead th:last-child {
+                    text-align: center;
+                    padding-right: 1rem;
+                }
+                /* Centra tambem o conteudo de secoes (ex.: Folha) que usam uma <div> simples
+                   sem a classe .fr-acts para agrupar os botoes de acao. */
+                .fr-table.table tbody td:last-child > div {
+                    justify-content: center;
+                }
 
                 /* Employee cell */
                 .fr-emp-cell { display:flex; align-items:center; gap:12px; }
@@ -321,7 +342,7 @@
                 .fr-p-unknown .fr-pdot { background:#475569; }
 
                 /* Action buttons */
-                .fr-acts { display:flex; align-items:center; justify-content:center; gap:5px; }
+                .fr-acts { display:flex; align-items:center; justify-content:center; gap:.4rem; flex-wrap:wrap; }
                 .fr-btn { width:32px; height:32px; border-radius:8px; border:none; display:inline-flex; align-items:center; justify-content:center; font-size:.78rem; cursor:pointer; transition:all .18s; }
                 .fr-btn-view   { background:rgba(59,130,246,.12); color:#3b82f6; }
                 .fr-btn-view:hover{ background:#3b82f6; color:#fff; }
@@ -377,22 +398,27 @@
                     margin: 0;
                 }
 
+                /* Botoes icon-only (sem texto): 32x32px, iguais aos de .fr-btn. Estas regras
+                   por ID venciam qualquer .fr-btn por especificidade, forcando 66px de largura
+                   sem necessidade (nao ha texto dentro, so <i>), e isso quebrava a linha de
+                   Acoes em Turnos/Folha/Ferias/Gorjetas. */
                 #employeesTable .employee-action-btn,
                 #turnosTable .employee-action-btn,
                 #assiduidade-section .employee-action-btn,
                 #folha-pagamento-section .employee-action-btn,
                 #feriasSectionTable .employee-action-btn,
                 #gorjetas-section .employee-action-btn {
-                    min-width: 66px !important;
-                    height: 30px !important;
-                    min-height: 30px !important;
-                    max-height: 30px !important;
-                    padding: 0.3rem 0.5rem !important;
-                    border-radius: 7px !important;
-                    font-size: 0.74rem !important;
+                    min-width: 32px !important;
+                    width: 32px !important;
+                    height: 32px !important;
+                    min-height: 32px !important;
+                    max-height: 32px !important;
+                    padding: 0 !important;
+                    border-radius: 8px !important;
+                    font-size: 0.78rem !important;
                     line-height: 1 !important;
-                    font-weight: 700;
-                    letter-spacing: 0.01em;
+                    font-weight: 400;
+                    letter-spacing: normal;
                     gap: 0.26rem !important;
                     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.14);
                     transition: transform 0.14s ease, box-shadow 0.18s ease, filter 0.18s ease;
@@ -423,7 +449,7 @@
                 #assiduidade-section .employee-action-btn.btn-activate,
                 #folha-pagamento-section .employee-action-btn.btn-activate,
                 #gorjetas-section .employee-action-btn.btn-activate {
-                    min-width: 62px !important;
+                    min-width: 32px !important;
                     background: linear-gradient(145deg, #10b981, #059669) !important;
                 }
 
@@ -777,19 +803,6 @@
                                     } 
                                 }
                             }
-
-                            // Presence pill
-                            $pStatus = (string)($employee['presence_status'] ?? '');
-                            if ($pStatus === 'presente') {
-                                $presencePill = '<span class="fr-presence fr-p-present"><span class="fr-pdot"></span>Presente</span>';
-                            } elseif ($pStatus === 'atrasado') {
-                                $presencePill = '<span class="fr-presence fr-p-late"><span class="fr-pdot"></span>Atrasado</span>';
-                            } elseif (in_array($pStatus, ['falta', 'falta_justificada'], true)) {
-                                $presencePill = '<span class="fr-presence fr-p-absent"><span class="fr-pdot"></span>Falta</span>';
-                            } 
-                             else {
-                                $presencePill = '';
-                            }
                         ?>
                         <tr<?php echo $isDisabledRow ? ' class="disabled-row employee-row fr-row fr-row-dim"' : ' class="employee-row fr-row"'; echo $attrString; ?>>
 
@@ -841,7 +854,6 @@
                                     <i class="fas <?= $icon ?>"></i>
                                     <?= htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8') ?>
                                 </span>
-                                <?= $presencePill ?>
                             </td>
 
                             <!-- Ações: icon-only buttons -->
@@ -859,12 +871,12 @@
                                     <?php if ($isDisabledRow): ?>
                                         <button type="button" class="fr-btn fr-btn-activate btn-activate"
                                             data-id="<?= $empId ?>" title="Ativar">
-                                            <i class="fas fa-user-check"></i>
+                                            <i class="fas fa-check"></i>
                                         </button>
                                     <?php else: ?>
                                         <button type="button" class="fr-btn fr-btn-deact btn-employee-deactivate"
                                             data-id="<?= $empId ?>" title="Desativar">
-                                            <i class="fas fa-ban"></i>
+                                            <i class="fas fa-times"></i>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -878,9 +890,7 @@
             <div id="bulkActionsBar" class="bulk-actions-bar" aria-hidden="true">
 
                 <div class="bulk-left">
-                    <button type="button" class="bulk-close" onclick="closeBulkActionsBar()">
-                        <i class="fas fa-times"></i>
-                    </button>
+                   
 
                     <div class="bulk-info">
                         <i class="fas fa-check-square"></i>
@@ -964,7 +974,7 @@
                     <div class="am-section">
                         <label class="am-lbl" for="smsMessage">Mensagem <span class="am-opt">(máx 160 caracteres)</span></label>
                         <textarea id="smsMessage" maxlength="160" class="am-inp" style="min-height:90px;"
-                            placeholder="Digite uma mensagem clara e objetiva para a equipa."></textarea>
+                            placeholder="Introduza uma mensagem clara e objetiva para a equipa."></textarea>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem;">
                             <p id="charLimitMsg" style="display:none;margin:0;color:#f87171;font-size:.82rem;"></p>
                             <span id="smsCharCounter" class="am-hint">160 restantes</span>
@@ -1356,7 +1366,7 @@
             <div id="viewEmployeeModal" class="modal" style="display:none;">
                 <div class="am-sheet vm-sheet">
 
-                    <button class="am-close close-btn-view" type="button" aria-label="Fechar">&times;</button>
+                    
 
                     <!-- Hero: avatar + nome + posição + estado -->
                     <div class="vm-hero">

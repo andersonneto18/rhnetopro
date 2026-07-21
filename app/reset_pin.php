@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redefinir PIN — Admin</title>
+    <link rel="icon" type="image/png" href="../admin/views/images/rh1.png">
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px;
                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }

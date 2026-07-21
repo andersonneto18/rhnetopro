@@ -1,0 +1,205 @@
+/* ══════════════════════════════════════════
+   Portal do Funcionário – Login
+   Mesma linguagem visual do login do admin
+   (admin/assets/css/login.css), num cartão único.
+   ══════════════════════════════════════════ */
+
+:root {
+    --ink-950: #0f172a;
+    --ink-700: #334155;
+    --ink-500: #64748b;
+    --line:     #e2e8f0;
+    --brand:    #2563eb;
+    --brand-2:  #1d4ed8;
+    --danger-bg:  #fef2f2;
+    --danger-bd:  #fecaca;
+    --danger-ink: #dc2626;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--ink-950);
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background:
+        radial-gradient(circle at 20% 20%, #dbeafe 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, #d1fae5 0%, transparent 35%),
+        linear-gradient(135deg, #f8fafc 0%, #eff6ff 50%, #f0f9ff 100%);
+}
+
+.page-wrapper {
+    width: min(440px, 100%);
+    position: relative;
+    padding: 3px;
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+.bg-rotate {
+    position: absolute;
+    width: 160%;
+    height: 160%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        transparent 30%,
+        #6ee7b7 48%,
+        #60a5fa 58%,
+        #2563eb 68%,
+        transparent 80%,
+        transparent 100%
+    );
+    animation: bgSpin 5s linear infinite;
+    z-index: 0;
+}
+
+@keyframes bgSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.form-box {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-radius: 27px;
+    padding: 2.4rem 2.2rem;
+}
+
+.form-logo {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 6px 22px rgba(37,99,235,.18);
+}
+
+.form-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.form-box h2 {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    text-align: center;
+    color: var(--ink-950);
+}
+
+.form-sub {
+    margin: .32rem 0 1.4rem;
+    color: var(--ink-500);
+    font-size: .83rem;
+    text-align: center;
+}
+
+.field { margin-bottom: .95rem; }
+
+.field label {
+    display: block;
+    margin-bottom: .27rem;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+    color: var(--ink-500);
+}
+
+.field-wrap { position: relative; }
+
+.field-wrap > i {
+    position: absolute;
+    top: 50%;
+    left: .72rem;
+    transform: translateY(-50%);
+    color: var(--ink-500);
+    font-size: .78rem;
+    pointer-events: none;
+    transition: color .2s;
+}
+
+.field-wrap:focus-within > i { color: var(--brand); }
+
+.field-wrap input[type="text"],
+.field-wrap input[type="password"] {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #f8fafc;
+    padding: .88rem 1rem .88rem 2.5rem;
+    font-size: .92rem;
+    color: var(--ink-950);
+    font-family: inherit;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.field-wrap input:focus {
+    outline: none;
+    border-color: var(--brand);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+
+.alert {
+    margin: 0 0 1rem;
+    border-radius: 9px;
+    padding: .65rem .8rem;
+    font-size: .85rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    border: 1px solid var(--danger-bd);
+    background: var(--danger-bg);
+    color: var(--danger-ink);
+    animation: slideDown .22s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.btn-primary {
+    width: 100%;
+    border: 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    padding: .85rem 1rem;
+    font-size: .95rem;
+    font-weight: 600;
+    font-family: inherit;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: .42rem;
+    cursor: pointer;
+    transition: filter .2s ease, box-shadow .2s ease, transform .2s ease;
+    box-shadow: 0 4px 6px -1px rgba(37,99,235,.3), 0 2px 4px -2px rgba(37,99,235,.2);
+}
+
+.btn-primary:hover  { filter: brightness(1.08); box-shadow: 0 10px 15px -3px rgba(37,99,235,.35), 0 4px 6px -4px rgba(37,99,235,.25); }
+.btn-primary:active { filter: brightness(.96); transform: translateY(1px); }
+
+@media (max-width: 480px) {
+    body { padding: 0; align-items: flex-end; }
+    .page-wrapper { width: 100%; border-radius: 22px 22px 0 0; padding: 2px 2px 0; }
+    .form-box { border-radius: 20px 20px 0 0; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; }
+}

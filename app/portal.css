@@ -379,7 +379,7 @@ body {
 
 .turno-item,
 .gorjeta-item {
-    background: var(--neutral-100);
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--border-primary);
     padding: 1rem;
     border-radius: 10px;

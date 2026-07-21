@@ -134,7 +134,7 @@ async function submitFeriasRequest(event) {
     const submitButton = form.querySelector('button[type="submit"]');
     if (submitButton) {
         submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A enviar...';
     }
 
     try {
@@ -192,7 +192,7 @@ async function submitTurnoSwapRequest(event) {
     const submitButton = form.querySelector('button[type="submit"]');
     if (submitButton) {
         submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A enviar...';
     }
 
     try {
@@ -1771,7 +1771,7 @@ async function _pollTrocas() {
             const submitBtn = this.querySelector('button[type="submit"]');
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A enviar...';
             
             try {
                 const res = await fetch('../api/gorjetas/add_gorjeta_employee.php', {
@@ -1786,7 +1786,7 @@ async function _pollTrocas() {
                     closeGorjetaModal();
                     setTimeout(() => location.reload(), 1500);
                 } else {
-                    showError(data.message || 'Erro ao registrar gorjeta');
+                    showError(data.message || 'Erro ao registar gorjeta');
                 }
             } catch(e) {
                 console.error(e);
@@ -1945,8 +1945,11 @@ function _renderHistoricoAjax(registros) {
 
     if (!registros || registros.length === 0) {
         ajaxList.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-minus"></i><p>Sem registos para este período.</p></div>';
+        _atualizarContadorFaltas(0);
         return;
     }
+
+    let faltasCount = 0;
 
     const rows = registros.map(r => {
         const isFalta  = !r.entrada || r.entrada === '--:--';
@@ -1967,6 +1970,7 @@ function _renderHistoricoAjax(registros) {
             displayStatus = 'just-pendente';  badgeCls = 'badge-warning'; badgeLbl = 'Pendente';
         } else {
             displayStatus = 'falta';          badgeCls = 'badge-danger';  badgeLbl = 'Falta';
+            faltasCount++;
         }
 
         const rowJson = escapeHTML(JSON.stringify({
@@ -2026,6 +2030,15 @@ function _renderHistoricoAjax(registros) {
         </table>`;
     const _activeBtn = document.querySelector('.period-btn.active');
     _filtrarTabelaPresencas(_activeBtn ? (_activeBtn.dataset.period || 'all') : 'all', null);
+    _atualizarContadorFaltas(faltasCount);
+}
+
+function _atualizarContadorFaltas(count) {
+    const el = document.getElementById('stat-faltas-value');
+    if (!el) return;
+    el.textContent = count;
+    const pill = el.closest('.stat-pill');
+    if (pill) pill.classList.toggle('stat-pill--alert', count > 0);
 }
 
 // ── Justificativas de Ausência ─────────────────────────────────────────

@@ -79,7 +79,7 @@
                         <i class="fas fa-exchange-alt"></i> Solicitar Troca
                     </button>
                     <button type="button" id="btnOpenBulkTurnoModal" class="frhd-add-btn" style="background:linear-gradient(135deg,#334155,#475569);box-shadow:0 4px 12px rgba(51,65,85,.3);">
-                        <i class="fas fa-layer-group"></i> Criação em Massa
+                        <i class="fas fa-layer-group"></i> Turnos em Grupo
                     </button>
                     <button type="button" id="btnAddTurno" class="frhd-add-btn">
                         <i class="fas fa-plus"></i> Novo Turno
@@ -492,7 +492,7 @@
                             <i class="fas fa-layer-group"></i>
                         </div>
                         <div>
-                            <h2 class="am-title">Criação em Massa</h2>
+                            <h2 class="am-title">Turnos em Grupo</h2>
                             <p class="am-subtitle">Atribua o mesmo turno a vários colaboradores de uma vez</p>
                         </div>
                     </div>

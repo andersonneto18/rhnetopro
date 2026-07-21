@@ -17,19 +17,56 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+// Distância entre duas coordenadas (fórmula de Haversine), em metros.
+function _distanciaMetros(float $lat1, float $lng1, float $lat2, float $lng2): float
+{
+    $raioTerraMetros = 6371000;
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLng = deg2rad($lng2 - $lng1);
+    $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+    return $raioTerraMetros * $c;
+}
+
 try {
     $data        = json_decode(file_get_contents('php://input'), true);
     $tipo        = isset($data['tipo']) ? trim($data['tipo']) : '';
     $observacao  = mb_substr(trim((string)($data['observacao'] ?? '')), 0, 200);
+    $pontoLat    = isset($data['lat']) && is_numeric($data['lat']) ? (float)$data['lat'] : null;
+    $pontoLng    = isset($data['lng']) && is_numeric($data['lng']) ? (float)$data['lng'] : null;
 
     if (!in_array($tipo, ['entrada', 'saida'])) {
         throw new Exception('Tipo inválido');
     }
-    
+
     $employee_id = (int)$_SESSION['employee_id'];
     $client_id = (int)$_SESSION['client_id'];
     $data_hoje = date('Y-m-d');
     $hora_atual = date('H:i:s');
+
+    // Verifica a localização em relação ao estabelecimento configurado (se existir).
+    // Nunca bloqueia a marcação — só regista o estado para o admin rever em Presença.
+    $localizacaoStatus = 'sem_dados';
+    $distanciaMetros = null;
+    if ($pontoLat !== null && $pontoLng !== null) {
+        try {
+            $stmtEst = $pdo->prepare('SELECT latitude, longitude, raio_metros FROM estabelecimento_horarios WHERE client_id = ? LIMIT 1');
+            $stmtEst->execute([$client_id]);
+            $estRow = $stmtEst->fetch(PDO::FETCH_ASSOC);
+            if ($estRow && $estRow['latitude'] !== null && $estRow['longitude'] !== null) {
+                $distanciaMetros = (int)round(_distanciaMetros(
+                    (float)$estRow['latitude'],
+                    (float)$estRow['longitude'],
+                    $pontoLat,
+                    $pontoLng
+                ));
+                $raioPermitido = (int)($estRow['raio_metros'] ?? 150);
+                $localizacaoStatus = $distanciaMetros <= $raioPermitido ? 'dentro' : 'fora';
+            }
+        } catch (Throwable $eLoc) {
+            error_log('Erro ao verificar localização do ponto: ' . $eLoc->getMessage());
+        }
+    }
 
     // Funcionário em férias não pode marcar ponto/presença.
     $stmtEmpStatus = $pdo->prepare("SELECT status FROM employees WHERE id = ? AND client_id = ? LIMIT 1");
@@ -132,7 +169,17 @@ try {
 
         // Inserir novo período (client_id obrigatório na tabela)
         $cols = $pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'observacao'")->fetch();
-        if ($cols && $observacao !== '') {
+        $hasLocCols = (bool)$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'ponto_latitude'")->fetch();
+        if ($hasLocCols) {
+            $stmtInsert = $pdo->prepare(
+                "INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada, observacao, ponto_latitude, ponto_longitude, distancia_metros, localizacao_status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+            $stmtInsert->execute([
+                $employee_id, $client_id, $data_hoje, $hora_atual, ($cols && $observacao !== '') ? $observacao : null,
+                $pontoLat, $pontoLng, $distanciaMetros, $localizacaoStatus,
+            ]);
+        } elseif ($cols && $observacao !== '') {
             $stmtInsert = $pdo->prepare("INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada, observacao) VALUES (?, ?, ?, ?, ?)");
             $stmtInsert->execute([$employee_id, $client_id, $data_hoje, $hora_atual, $observacao]);
         } else {
@@ -151,7 +198,20 @@ try {
 
         // Fechar o período em aberto
         $cols = $pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'observacao'")->fetch();
-        if ($cols && $observacao !== '') {
+        $hasLocCols = (bool)$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'ponto_latitude'")->fetch();
+        if ($hasLocCols) {
+            $stmtUpdate = $pdo->prepare(
+                "UPDATE registros_ponto SET hora_saida = ?,
+                    observacao = CONCAT(COALESCE(observacao,''), IF(observacao IS NOT NULL AND observacao <> '', ' | ', ''), ?),
+                    ponto_latitude = ?, ponto_longitude = ?, distancia_metros = ?, localizacao_status = ?
+                 WHERE id = ?"
+            );
+            $stmtUpdate->execute([
+                $hora_atual, ($cols ? $observacao : ''),
+                $pontoLat, $pontoLng, $distanciaMetros, $localizacaoStatus,
+                $registoAberto['id'],
+            ]);
+        } elseif ($cols && $observacao !== '') {
             $stmtUpdate = $pdo->prepare("UPDATE registros_ponto SET hora_saida = ?, observacao = CONCAT(COALESCE(observacao,''), IF(observacao IS NOT NULL AND observacao <> '', ' | ', ''), ?) WHERE id = ?");
             $stmtUpdate->execute([$hora_atual, $observacao, $registoAberto['id']]);
         } else {

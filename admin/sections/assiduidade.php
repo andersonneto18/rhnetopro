@@ -756,7 +756,8 @@
                         foreach ($employees as $employee):
                             // 1. Lógica para buscar o registro de ponto mais recente do funcionário
                             $stmt = $pdo->prepare("
-                    SELECT id, status, hora_entrada, hora_saida, obs, status_confirmacao, tipo_dia, falta_tipo, {$pontoDateColumn} AS data_registro, {$pontoUpdatedSelect}
+                    SELECT id, status, hora_entrada, hora_saida, obs, status_confirmacao, tipo_dia, falta_tipo,
+                        distancia_metros, localizacao_status, {$pontoDateColumn} AS data_registro, {$pontoUpdatedSelect}
                     FROM registros_ponto
                     WHERE funcionario_id = ? {$pontoPeriodSql}
                     ORDER BY {$pontoDateColumn} DESC, id DESC
@@ -1083,6 +1084,8 @@
                             data-just-decidido-em="<?php echo htmlspecialchars($justificativaDecididoEmFmt); ?>"
                             data-just-anexo="<?php echo htmlspecialchars($justificativaAnexo); ?>"
                             data-employee-status-key="<?php echo htmlspecialchars((string)($employee['status'] ?? '')); ?>"
+                            data-localizacao-status="<?php echo htmlspecialchars((string)($registro['localizacao_status'] ?? '')); ?>"
+                            data-distancia-metros="<?php echo isset($registro['distancia_metros']) && $registro['distancia_metros'] !== null ? (int)$registro['distancia_metros'] : ''; ?>"
                             data-roteiro="<?php echo $_timelineEventosJson; ?>">
                             <td class="fr-td-emp">
                                 <div class="fr-emp-cell">
@@ -1151,6 +1154,19 @@
                                 <span class="status-badge <?php echo $pClass; ?>"
                                     id="attendance-status-<?php echo $employee['id']; ?>"
                                     data-status-key="<?php echo htmlspecialchars($statusKey); ?>"><?php echo $pLabel; ?></span>
+                                <?php
+                                    $locStatus = (string)($registro['localizacao_status'] ?? '');
+                                    $distMetros = isset($registro['distancia_metros']) ? (int)$registro['distancia_metros'] : null;
+                                ?>
+                                <?php if ($locStatus === 'dentro'): ?>
+                                <span class="fr-presence" style="background:rgba(16,185,129,.1); color:#10b981;" title="Marcação dentro do raio do estabelecimento">
+                                    <i class="fas fa-location-dot"></i> No local
+                                </span>
+                                <?php elseif ($locStatus === 'fora'): ?>
+                                <span class="fr-presence" style="background:rgba(245,158,11,.12); color:#f59e0b;" title="Marcação fora do raio do estabelecimento">
+                                    <i class="fas fa-location-dot"></i> Fora do local<?php echo $distMetros !== null ? ' (' . $distMetros . 'm)' : ''; ?>
+                                </span>
+                                <?php endif; ?>
                             </td>
 
                             <?php $_totalEventosCell = count($_timelineEventos); ?>

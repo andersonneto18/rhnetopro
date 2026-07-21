@@ -1452,16 +1452,37 @@ async function _pollTrocas() {
             await _executarRegistoPonto('entrada', 'Regresso');
         }
 
+        // Tenta obter a localização atual do funcionário; nunca rejeita — se o
+        // navegador não suportar, o funcionário recusar a permissão, ou demorar
+        // demasiado, resolve com null e a marcação de ponto segue em frente na
+        // mesma, só sem dados de localização.
+        function _obterLocalizacaoAtual() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) { resolve(null); return; }
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                    () => resolve(null),
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+                );
+            });
+        }
+
         async function _executarRegistoPonto(tipo, observacao) {
             const allPontoBtns = document.querySelectorAll('.btn-ponto-action');
             allPontoBtns.forEach(b => { b.disabled = true; });
 
             try {
+                const localizacao = await _obterLocalizacaoAtual();
                 const res = await fetch('registrar_ponto_session.php', {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ tipo, observacao })
+                    body: JSON.stringify({
+                        tipo,
+                        observacao,
+                        lat: localizacao ? localizacao.lat : null,
+                        lng: localizacao ? localizacao.lng : null
+                    })
                 });
 
                 const data = await res.json();

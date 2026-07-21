@@ -2136,6 +2136,9 @@ try {
             hora_encerramento TIME NOT NULL DEFAULT '23:00:00',
             hora_entrada_padrao TIME NOT NULL DEFAULT '09:00:00',
             tolerancia_atraso_min INT NOT NULL DEFAULT 5,
+            latitude DECIMAL(10,7) NULL,
+            longitude DECIMAL(10,7) NULL,
+            raio_metros INT NOT NULL DEFAULT 150,
             updated_by INT NULL,
             created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -2143,11 +2146,33 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
 
+    if (!$pdo->query("SHOW COLUMNS FROM estabelecimento_horarios LIKE 'latitude'")->fetch()) {
+        $pdo->exec("ALTER TABLE estabelecimento_horarios ADD COLUMN latitude DECIMAL(10,7) NULL AFTER tolerancia_atraso_min");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM estabelecimento_horarios LIKE 'longitude'")->fetch()) {
+        $pdo->exec("ALTER TABLE estabelecimento_horarios ADD COLUMN longitude DECIMAL(10,7) NULL AFTER latitude");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM estabelecimento_horarios LIKE 'raio_metros'")->fetch()) {
+        $pdo->exec("ALTER TABLE estabelecimento_horarios ADD COLUMN raio_metros INT NOT NULL DEFAULT 150 AFTER longitude");
+    }
+
     if (!$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'tipo_dia'")->fetch()) {
         $pdo->exec("ALTER TABLE registros_ponto ADD COLUMN tipo_dia VARCHAR(30) NULL AFTER status");
     }
     if (!$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'falta_tipo'")->fetch()) {
         $pdo->exec("ALTER TABLE registros_ponto ADD COLUMN falta_tipo VARCHAR(20) NULL AFTER tipo_dia");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'ponto_latitude'")->fetch()) {
+        $pdo->exec("ALTER TABLE registros_ponto ADD COLUMN ponto_latitude DECIMAL(10,7) NULL AFTER falta_tipo");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'ponto_longitude'")->fetch()) {
+        $pdo->exec("ALTER TABLE registros_ponto ADD COLUMN ponto_longitude DECIMAL(10,7) NULL AFTER ponto_latitude");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'distancia_metros'")->fetch()) {
+        $pdo->exec("ALTER TABLE registros_ponto ADD COLUMN distancia_metros INT NULL AFTER ponto_longitude");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'localizacao_status'")->fetch()) {
+        $pdo->exec("ALTER TABLE registros_ponto ADD COLUMN localizacao_status VARCHAR(20) NULL AFTER distancia_metros");
     }
 
     $pdo->exec(
@@ -2183,6 +2208,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $horaEntradaPadrao = trim((string)($_POST['hora_entrada_padrao'] ?? '09:00'));
     $toleranciaAtrasoMin = max(0, min(180, (int)($_POST['tolerancia_atraso_min'] ?? 5)));
 
+    $latitudeRaw = trim((string)($_POST['latitude'] ?? ''));
+    $longitudeRaw = trim((string)($_POST['longitude'] ?? ''));
+    $latitude = ($latitudeRaw !== '' && is_numeric($latitudeRaw) && (float)$latitudeRaw >= -90 && (float)$latitudeRaw <= 90)
+        ? round((float)$latitudeRaw, 7) : null;
+    $longitude = ($longitudeRaw !== '' && is_numeric($longitudeRaw) && (float)$longitudeRaw >= -180 && (float)$longitudeRaw <= 180)
+        ? round((float)$longitudeRaw, 7) : null;
+    $raioMetros = max(20, min(1000, (int)($_POST['raio_metros'] ?? 150)));
+
     $isValidTime = static function ($value): bool {
         return (bool)preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $value);
     };
@@ -2194,13 +2227,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     try {
         $stmtSaveHorario = $pdo->prepare(
-            "INSERT INTO estabelecimento_horarios (client_id, hora_abertura, hora_encerramento, hora_entrada_padrao, tolerancia_atraso_min, updated_by)
-             VALUES (?, ?, ?, ?, ?, ?)
+            "INSERT INTO estabelecimento_horarios (client_id, hora_abertura, hora_encerramento, hora_entrada_padrao, tolerancia_atraso_min, latitude, longitude, raio_metros, updated_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
              hora_abertura = VALUES(hora_abertura),
              hora_encerramento = VALUES(hora_encerramento),
              hora_entrada_padrao = VALUES(hora_entrada_padrao),
              tolerancia_atraso_min = VALUES(tolerancia_atraso_min),
+             latitude = VALUES(latitude),
+             longitude = VALUES(longitude),
+             raio_metros = VALUES(raio_metros),
              updated_by = VALUES(updated_by),
              updated_at = NOW()"
         );
@@ -2210,6 +2246,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $horaEncerramento . ':00',
             $horaEntradaPadrao . ':00',
             $toleranciaAtrasoMin,
+            $latitude,
+            $longitude,
+            $raioMetros,
             isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null,
         ]);
 
@@ -2301,9 +2340,12 @@ $estHorario = [
     'hora_encerramento' => '23:00:00',
     'hora_entrada_padrao' => '09:00:00',
     'tolerancia_atraso_min' => 5,
+    'latitude' => null,
+    'longitude' => null,
+    'raio_metros' => 150,
 ];
 try {
-    $stmtEstHorario = $pdo->prepare('SELECT hora_abertura, hora_encerramento, hora_entrada_padrao, tolerancia_atraso_min FROM estabelecimento_horarios WHERE client_id = ? LIMIT 1');
+    $stmtEstHorario = $pdo->prepare('SELECT hora_abertura, hora_encerramento, hora_entrada_padrao, tolerancia_atraso_min, latitude, longitude, raio_metros FROM estabelecimento_horarios WHERE client_id = ? LIMIT 1');
     $stmtEstHorario->execute([(int)$loggedInClientId]);
     $rowEstHorario = $stmtEstHorario->fetch(PDO::FETCH_ASSOC);
     if ($rowEstHorario) {

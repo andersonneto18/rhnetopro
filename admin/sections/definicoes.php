@@ -949,6 +949,45 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="am-section">
+                    <div class="am-sec-lbl"><i class="fas fa-map-marker-alt"></i> Localização do Estabelecimento</div>
+                    <p style="margin:0 0 .75rem; font-size:.78rem; color:#94a3b8;">
+                        Usada para confirmar se o funcionário está no local ao marcar presença. Abra esta página
+                        estando no restaurante e clique no botão abaixo.
+                    </p>
+                    <button type="button" id="btnUsarLocalizacaoAtual" class="am-btn-cancel" style="margin-bottom:.85rem;">
+                        <i class="fas fa-location-crosshairs"></i> Usar a minha localização atual
+                    </button>
+                    <div class="am-g2">
+                        <div class="am-f">
+                            <label class="am-lbl">Latitude</label>
+                            <input class="am-inp" type="number" step="any" name="latitude" id="estLatitude"
+                                value="<?php echo htmlspecialchars((string)($estHorario['latitude'] ?? '')); ?>"
+                                placeholder="Ex: 38.7223000">
+                        </div>
+                        <div class="am-f">
+                            <label class="am-lbl">Longitude</label>
+                            <input class="am-inp" type="number" step="any" name="longitude" id="estLongitude"
+                                value="<?php echo htmlspecialchars((string)($estHorario['longitude'] ?? '')); ?>"
+                                placeholder="Ex: -9.1393000">
+                        </div>
+                        <div class="am-f am-f-full">
+                            <label class="am-lbl">Raio permitido (metros)</label>
+                            <input class="am-inp" type="number" min="20" max="1000" name="raio_metros"
+                                value="<?php echo (int)($estHorario['raio_metros'] ?? 150); ?>">
+                            <small class="am-hint">Distância máxima ao estabelecimento para a marcação ser
+                                considerada "no local". 150m é um valor razoável para a maioria dos GPS de
+                                telemóvel.</small>
+                        </div>
+                    </div>
+                    <small id="estLocalizacaoStatus" class="am-hint" style="display:block; margin-top:.5rem;">
+                        <?php echo ($estHorario['latitude'] ?? null) !== null && ($estHorario['longitude'] ?? null) !== null
+                            ? '<i class="fas fa-check-circle" style="color:#34d399;"></i> Localização definida.'
+                            : '<i class="fas fa-circle-exclamation" style="color:#fbbf24;"></i> Localização ainda não definida — as marcações não serão verificadas até ser configurada.'; ?>
+                    </small>
+                </div>
+
                 <div class="am-footer">
                     <button type="button" class="am-btn-cancel" id="btnCancelHorariosModal">Cancelar</button>
                     <button type="submit" class="am-btn-submit">
@@ -974,6 +1013,34 @@
         modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();
         });
+
+        // Usar a minha localização atual (GPS do navegador do admin)
+        var btnUsarLocalizacao = document.getElementById('btnUsarLocalizacaoAtual');
+        var inpLat = document.getElementById('estLatitude');
+        var inpLng = document.getElementById('estLongitude');
+        var statusEl = document.getElementById('estLocalizacaoStatus');
+        if (btnUsarLocalizacao) {
+            btnUsarLocalizacao.addEventListener('click', function() {
+                if (!navigator.geolocation) {
+                    if (statusEl) statusEl.innerHTML = '<i class="fas fa-circle-exclamation" style="color:#f87171;"></i> O seu navegador não suporta localização.';
+                    return;
+                }
+                var originalHtml = btnUsarLocalizacao.innerHTML;
+                btnUsarLocalizacao.disabled = true;
+                btnUsarLocalizacao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A obter localização…';
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    inpLat.value = pos.coords.latitude.toFixed(7);
+                    inpLng.value = pos.coords.longitude.toFixed(7);
+                    if (statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:#34d399;"></i> Localização atual capturada — clique em "Guardar Horários" para confirmar.';
+                    btnUsarLocalizacao.disabled = false;
+                    btnUsarLocalizacao.innerHTML = originalHtml;
+                }, function() {
+                    if (statusEl) statusEl.innerHTML = '<i class="fas fa-circle-exclamation" style="color:#f87171;"></i> Não foi possível obter a localização. Verifique as permissões do navegador ou introduza as coordenadas manualmente.';
+                    btnUsarLocalizacao.disabled = false;
+                    btnUsarLocalizacao.innerHTML = originalHtml;
+                }, { enableHighAccuracy: true, timeout: 10000 });
+            });
+        }
     })();
     </script>
 

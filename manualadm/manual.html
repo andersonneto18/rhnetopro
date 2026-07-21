@@ -202,6 +202,7 @@
                 <li>Usa <strong>"Editar registo"</strong> para corrigir um ponto (por exemplo, se o funcionário se esqueceu de marcar a saída).</li>
                 <li>Confirma os registos de ponto pendentes para que fiquem validados no histórico oficial.</li>
                 <li>Exporta o histórico para CSV/Excel sempre que precisares de um relatório externo.</li>
+                <li>Se tiveres configurado a <strong>localização do estabelecimento</strong> (em Definições), cada registo mostra também um pequeno indicador: <strong>📍 No local</strong> (verde) ou <strong>📍 Fora do local</strong> (âmbar, com a distância em metros) — nunca bloqueia a marcação, é só um sinal para revisares.</li>
             </ol>
             <div class="shot-wrap">
                 <img src="assiduidade.png" alt="Ecrã Presença do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -336,6 +337,20 @@
             <div class="shot-wrap">
                 <img src="definicoes.png" alt="Ecrã Definições do administrador" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>definicoes.png</code> a esta pasta.</span></div>
+            </div>
+
+            <h3 style="margin:2rem 0 .5rem; font-size:1.05rem; color:var(--ink-950);">Localização do Estabelecimento (novo)</h3>
+            <p class="intro">Dentro do modal de <strong>"Configurar Horários"</strong>, podes agora definir a localização GPS do estabelecimento, para confirmar se os funcionários estão mesmo no local ao marcarem presença.</p>
+            <ol class="steps">
+                <li>Abre a app <strong>estando fisicamente no restaurante</strong> e clica em <strong>"Usar a minha localização atual"</strong> — as coordenadas são preenchidas automaticamente a partir do teu telemóvel/PC.</li>
+                <li>Ajusta o <strong>raio permitido</strong> (em metros) — 150m é um valor razoável para a maioria dos casos.</li>
+                <li>Guarda. A partir daí, cada marcação de ponto de um funcionário passa a mostrar um indicador de localização em <strong>Presença</strong>.</li>
+                <li>Esta configuração é opcional — se não a definires, as marcações continuam a funcionar normalmente, só sem o indicador de localização.</li>
+            </ol>
+            <div class="tip"><strong>Nota:</strong> mesmo que um funcionário marque presença fora do raio (ou sem autorizar a localização), a marcação nunca é bloqueada — só fica assinalada para revisares.</div>
+            <div class="shot-wrap">
+                <img src="localizacao.png" alt="Configuração da localização do estabelecimento" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shot-missing"><span class="icon">🖼️</span><span>Captura de ecrã em falta — adiciona <code>localizacao.png</code> a esta pasta.</span></div>
             </div>
         </section>
 

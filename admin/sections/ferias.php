@@ -390,6 +390,7 @@
                             <button type="button" class="fr-btn fr-btn-view" title="Ver detalhes"
                                 data-ferias-id="<?php echo $feriasIdRow; ?>"
                                 data-ferias-funcionario="<?php echo htmlspecialchars($employeeName); ?>"
+                                data-ferias-foto="<?php echo htmlspecialchars($employeePic); ?>"
                                 data-ferias-inicio="<?php echo htmlspecialchars($fInicioFmt); ?>"
                                 data-ferias-fim="<?php echo htmlspecialchars($fFimFmt); ?>"
                                 data-ferias-duracao="<?php echo htmlspecialchars($duracaoLabel); ?>"
@@ -743,6 +744,7 @@
         if (!modal || !btn) return;
 
         var funcionario    = btn.getAttribute('data-ferias-funcionario') || 'Funcionário';
+        var foto           = btn.getAttribute('data-ferias-foto') || '';
         var inicio         = btn.getAttribute('data-ferias-inicio') || 'N/D';
         var fim            = btn.getAttribute('data-ferias-fim') || 'N/D';
         var duracao        = btn.getAttribute('data-ferias-duracao') || '-';
@@ -752,7 +754,18 @@
 
         var initials = funcionario.replace(/\s+/g,'').substring(0,2).toUpperCase();
         var avEl = document.getElementById('fvmAvatar');
-        if (avEl) avEl.innerHTML = '<span style="font-size:1.4rem;font-weight:700;">' + escapeHtmlFerias(initials) + '</span>';
+        if (avEl) {
+            avEl.innerHTML = '';
+            if (foto) {
+                var img = document.createElement('img');
+                img.src = '../' + foto;
+                img.alt = funcionario;
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+                avEl.appendChild(img);
+            } else {
+                avEl.innerHTML = '<span style="font-size:1.4rem;font-weight:700;">' + escapeHtmlFerias(initials) + '</span>';
+            }
+        }
 
         var setTxt = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
         setTxt('fvmName',    funcionario);

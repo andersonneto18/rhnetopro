@@ -395,22 +395,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(link);
     }
 
-    function exportExcel(fileBase, metadata, headers, data) {
-        if (typeof XLSX === 'undefined') {
-            exportCsv(fileBase, metadata, headers, data);
-            return;
-        }
-        const aoa = [];
-        metadata.forEach((m) => aoa.push([m[0], m[1]]));
-        aoa.push([]);
-        aoa.push(headers);
-        data.forEach((row) => aoa.push(row));
-        const ws = XLSX.utils.aoa_to_sheet(aoa);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
-        XLSX.writeFile(wb, `${fileBase}_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-
     function exportPdf(fileBase, metadata, headers, data) {
         if (!window.jspdf || !window.jspdf.jsPDF) {
             exportCsv(fileBase, metadata, headers, data);
@@ -499,26 +483,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    async function chooseExportFormat() {
-        if (window.Swal) {
-            const result = await window.Swal.fire({
-                title: 'Formato de exportação',
-                input: 'radio',
-                inputOptions: { csv: 'CSV', excel: 'Excel (.xlsx)', pdf: 'PDF' },
-                inputValue: 'excel',
-                showCancelButton: true,
-                confirmButtonText: 'Exportar',
-                cancelButtonText: 'Cancelar'
-            });
-            return result.isConfirmed ? result.value : null;
-        }
-        return 'excel';
-    }
     async function exportReport(config) {
         const collected = collectVisibleTableData(config.tableSelector);
         if (!collected) return;
-        const format = await chooseExportFormat();
-        if (!format) return;
 
         const metadata = buildMetadata(
             config.reportName,
@@ -526,13 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
             collected.data.length
         );
 
-        if (format === 'csv') {
-            exportCsv(config.fileBase, metadata, collected.headers, collected.data);
-        } else if (format === 'pdf') {
-            exportPdf(config.fileBase, metadata, collected.headers, collected.data);
-        } else {
-            exportExcel(config.fileBase, metadata, collected.headers, collected.data);
-        }
+        exportPdf(config.fileBase, metadata, collected.headers, collected.data);
     }
 
     const exportsConfig = [

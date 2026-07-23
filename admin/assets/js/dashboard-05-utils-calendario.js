@@ -1994,7 +1994,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function executeBulkAction(options) {
-        const { actionLabel, employees, buildFormData, validateEmployee } = options;
+        const { actionLabel, employees, buildFormData, validateEmployee, endpoint } = options;
         const results = [];
 
         for (const emp of employees) {
@@ -2006,7 +2006,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 const fd = buildFormData(emp);
-                const response = await fetch('../api/employees/update_employee.php', {
+                const response = await fetch(endpoint || '../api/employees/update_employee.php', {
                     method: 'POST',
                     body: fd
                 });
@@ -2082,6 +2082,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const results = await executeBulkAction({
                 actionLabel: 'Alteração de status',
                 employees,
+                endpoint: newStatus === 'ferias' ? '../api/employees/bulk_set_ferias.php' : undefined,
                 validateEmployee: (emp) => {
                     if (emp.currentStatus === newStatus) {
                         return `Funcionário já está com status "${newStatus}".`;
@@ -2093,17 +2094,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 buildFormData: (emp) => {
                     const fd = new FormData();
-                    fd.append('id', emp.id);
-                    fd.append('status', newStatus);
                     if (newStatus === 'ferias') {
-                        fd.append('start_vacation', vacationStart);
-                        fd.append('end_vacation', vacationEnd);
+                        // Vai para bulk_set_ferias.php: aplica na hora (sem aprovação) e regista
+                        // o período na tabela ferias, igual à criação manual em Férias.
+                        fd.append('employee_id', emp.id);
+                        fd.append('data_inicio', vacationStart);
+                        fd.append('data_fim', vacationEnd);
+                        if (reason) fd.append('motivo', reason);
                     } else {
                         // Ativar/Inativar em lote aplica na hora, igual à ação individual
                         // (update_employee.php só pula a aprovação quando só vêm estas chaves).
+                        fd.append('id', emp.id);
+                        fd.append('status', newStatus);
                         fd.append('quick_status_toggle', '1');
+                        if (reason) fd.append('approval_reason', reason);
                     }
-                    if (reason) fd.append('approval_reason', reason);
                     return fd;
                 }
             });

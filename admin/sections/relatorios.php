@@ -461,7 +461,7 @@
                 const marginX = 12;
                 const generatedAt = new Date().toLocaleString('pt-PT');
 
-                doc.setFillColor(139, 92, 246);
+                doc.setFillColor(29, 78, 216);
                 doc.rect(0, 0, pageWidth, 22, 'F');
                 doc.setTextColor(255, 255, 255);
                 doc.setFont('helvetica', 'bold');
@@ -488,7 +488,7 @@
                     startY: cursorY,
                     margin: { left: marginX, right: marginX },
                     styles: { fontSize: 9, cellPadding: 3, halign: 'center' },
-                    headStyles: { fillColor: [139, 92, 246], textColor: [255, 255, 255], fontStyle: 'bold' }
+                    headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' }
                 });
                 cursorY = doc.lastAutoTable.finalY + 8;
 
@@ -498,7 +498,7 @@
                     startY: cursorY,
                     margin: { left: marginX, right: marginX },
                     styles: { fontSize: 9, cellPadding: 3, halign: 'center' },
-                    headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255], fontStyle: 'bold' }
+                    headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' }
                 });
                 cursorY = doc.lastAutoTable.finalY + 8;
 
@@ -508,7 +508,7 @@
                     startY: cursorY,
                     margin: { left: marginX, right: marginX },
                     styles: { fontSize: 9, cellPadding: 3, halign: 'center' },
-                    headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255], fontStyle: 'bold' }
+                    headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' }
                 });
                 cursorY = doc.lastAutoTable.finalY + 10;
 
@@ -525,7 +525,7 @@
                         startY: cursorY,
                         margin: { left: marginX, right: marginX, bottom: 16 },
                         styles: { fontSize: 8.5, cellPadding: 2.2 },
-                        headStyles: { fillColor: [139, 92, 246], textColor: [255, 255, 255], fontStyle: 'bold' }
+                        headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' }
                     });
                 } else {
                     doc.setFont('helvetica', 'normal');

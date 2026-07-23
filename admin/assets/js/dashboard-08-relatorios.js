@@ -1,7 +1,4 @@
                     document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('filtroRelatorioFuncionarios');
-    if (!form) return;
-
     const tableBody = document.querySelector('#relatorio-funcionarios-resumido tbody');
     if (!tableBody) return;
 
@@ -10,19 +7,11 @@
     const statusSelect = document.getElementById('relatorioFilterStatus');
     const cargoSelect = document.getElementById('relatorioFilterCargo');
     const departamentoSelect = document.getElementById('relatorioFilterDepartamento');
-    const totalMinInput = document.getElementById('relatorioFilterTotalMin');
-    const totalMaxInput = document.getElementById('relatorioFilterTotalMax');
-    const periodoInicioInput = document.getElementById('relatorioPeriodoInicio');
-    const periodoFimInput = document.getElementById('relatorioPeriodoFim');
     const resultCount = document.getElementById('relatorioResultCount');
 
-    if (!searchInput || !statusSelect || !cargoSelect || !departamentoSelect || !totalMinInput || !totalMaxInput || !periodoInicioInput || !periodoFimInput) {
+    if (!searchInput || !statusSelect || !cargoSelect || !departamentoSelect) {
         return;
     }
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-    });
 
     function normalizeText(value) {
         return (value || '').toString().trim().toLowerCase();
@@ -34,14 +23,6 @@
         if (status === 'inactive') return 'inativo';
         if (status === 'férias') return 'ferias';
         return status;
-    }
-
-    function isDateInRange(rowDate, startDate, endDate) {
-        if (!startDate && !endDate) return true;
-        if (!rowDate) return false;
-        if (startDate && rowDate < startDate) return false;
-        if (endDate && rowDate > endDate) return false;
-        return true;
     }
 
     function populateSelectFromRows(selectEl, attrName, defaultLabel) {
@@ -78,10 +59,6 @@
         const statusValue = normalizeStatus(statusSelect.value);
         const cargoValue = normalizeText(cargoSelect.value);
         const deptValue = normalizeText(departamentoSelect.value);
-        const totalMin = parseFloat(totalMinInput.value);
-        const totalMax = parseFloat(totalMaxInput.value);
-        const startDate = periodoInicioInput.value;
-        const endDate = periodoFimInput.value;
         let visibleCount = 0;
 
         rows.forEach((row) => {
@@ -89,18 +66,13 @@
             const rowCargo = normalizeText(row.getAttribute('data-rel-cargo'));
             const rowDept = normalizeText(row.getAttribute('data-rel-department'));
             const rowStatus = normalizeStatus(row.getAttribute('data-rel-status'));
-            const rowTotal = parseFloat(row.getAttribute('data-rel-total') || '0');
-            const rowDate = (row.getAttribute('data-rel-date') || '').trim();
 
             const matchesSearch = searchValue === '' || rowName.includes(searchValue) || rowCargo.includes(searchValue) || rowDept.includes(searchValue);
             const matchesStatus = statusValue === '' || rowStatus === statusValue;
             const matchesCargo = cargoValue === '' || rowCargo === cargoValue;
             const matchesDept = deptValue === '' || rowDept === deptValue;
-            const matchesTotalMin = Number.isNaN(totalMin) || rowTotal >= totalMin;
-            const matchesTotalMax = Number.isNaN(totalMax) || rowTotal <= totalMax;
-            const matchesDateRange = isDateInRange(rowDate, startDate, endDate);
 
-            const visible = matchesSearch && matchesStatus && matchesCargo && matchesDept && matchesTotalMin && matchesTotalMax && matchesDateRange;
+            const visible = matchesSearch && matchesStatus && matchesCargo && matchesDept;
             row.dataset.filterVisible = visible ? 'true' : 'false';
             row.style.display = visible ? '' : 'none';
 
@@ -124,7 +96,7 @@
     populateSelectFromRows(cargoSelect, 'data-rel-cargo', 'Todos os cargos');
     populateSelectFromRows(departamentoSelect, 'data-rel-department', 'Todos os departamentos');
 
-    [searchInput, statusSelect, cargoSelect, departamentoSelect, totalMinInput, totalMaxInput, periodoInicioInput, periodoFimInput].forEach((el) => {
+    [searchInput, statusSelect, cargoSelect, departamentoSelect].forEach((el) => {
         el.addEventListener('input', applyRelatorioFilters);
         el.addEventListener('change', applyRelatorioFilters);
     });
@@ -526,6 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.save(`${fileBase}_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
+
     async function chooseExportFormat() {
         if (window.Swal) {
             const result = await window.Swal.fire({
@@ -541,7 +514,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return 'excel';
     }
-
     async function exportReport(config) {
         const collected = collectVisibleTableData(config.tableSelector);
         if (!collected) return;

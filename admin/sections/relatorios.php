@@ -117,11 +117,7 @@
                         <select id="relatorioFilterDepartamento" class="fr-select">
                             <option value="">Todos os departamentos</option>
                         </select>
-                        <input type="date" id="relatorioPeriodoInicio" class="fr-select" title="Data inicial (admissão)">
-                        <input type="date" id="relatorioPeriodoFim" class="fr-select" title="Data final (admissão)">
-                        <input type="number" id="relatorioFilterTotalMin" class="fr-select" placeholder="Total mín (€)" step="0.01" min="0">
-                        <input type="number" id="relatorioFilterTotalMax" class="fr-select" placeholder="Total máx (€)" step="0.01" min="0">
-                        <button type="button" class="fr-clear-btn" onclick="['relatorioFilterStatus','relatorioFilterCargo','relatorioFilterDepartamento','relatorioPeriodoInicio','relatorioPeriodoFim','relatorioFilterTotalMin','relatorioFilterTotalMax'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('relatorioSearchName').value='';document.getElementById('relatorioSearchName').dispatchEvent(new Event('input'));">Limpar</button>
+                        <button type="button" class="fr-clear-btn" onclick="['relatorioFilterStatus','relatorioFilterCargo','relatorioFilterDepartamento'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('relatorioSearchName').value='';document.getElementById('relatorioSearchName').dispatchEvent(new Event('input'));">Limpar</button>
                     </div>
                 </div>
                 <table class="table fr-table">

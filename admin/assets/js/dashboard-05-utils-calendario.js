@@ -2195,39 +2195,8 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         });
 
-        // escolha do formato usando SweetAlert2
-        const { value: format } = await Swal.fire({
-            title: 'Escolha o formato',
-            input: 'radio',
-            inputOptions: {
-                csv: 'CSV (simples)',
-                excel: 'Excel (.xlsx)',
-                pdf: 'PDF (tabela)',
-                report: 'Relatório de Cadastro (PDF detalhado)'
-            },
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'Você precisa escolher um formato!';
-                }
-            },
-            showCancelButton: true
-        });
-
-        if (!format) {
-            return; // usuário cancelou
-        }
-
         try {
-            if (format === 'csv') {
-                downloadCsv(employees);
-            } else if (format === 'excel') {
-                downloadExcel(employees);
-            } else if (format === 'pdf') {
-                generateSimplePdf(employees);
-            } else if (format === 'report') {
-                generateReportPdf(employees);
-            }
-
+            generateEmployeesPdf(employees);
             showSuccess(`${employees.length} funcionário(s) exportado(s)`);
         } catch (err) {
             console.error(err);
@@ -2277,84 +2246,81 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // helpers for export
-    function downloadCsv(empList) {
-        const headers = ['Nome', 'Cargo', 'Departamento', 'Status'];
-        const csv = [
-            headers.join(','),
-            ...empList.map(e => [
-                `"${e.name}"`,
-                `"${e.position}"`,
-                `"${e.department}"`,
-                `"${e.status}"`
-            ].join(','))
-        ].join('\n');
+    // Gera um PDF com a marca RHNeto Pro (cabeçalho azul, tabela estilizada, rodapé)
+    function generateEmployeesPdf(empList) {
+        const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const marginX = 12;
+        const generatedAt = new Date().toLocaleString('pt-PT');
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `funcionarios_export_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-    }
+        function drawHeader() {
+            doc.setFillColor(29, 78, 216); // #1d4ed8
+            doc.rect(0, 0, pageWidth, 22, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(15);
+            doc.text('RHNeto Pro', marginX, 10);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text('Sistema de Gestão de Recursos Humanos', marginX, 16);
 
-    function downloadExcel(empList) {
-        // usa XLSX library já carregada
-        const ws_data = [
-            ['Nome', 'Cargo', 'Departamento', 'Status'],
-            ...empList.map(e => [e.name, e.position, e.department, e.status])
-        ];
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(ws_data);
-        XLSX.utils.book_append_sheet(wb, ws, 'Funcionarios');
-        XLSX.writeFile(wb, `funcionarios_export_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('Lista de Funcionários', pageWidth - marginX, 10, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text(`Gerado em ${generatedAt}`, pageWidth - marginX, 16, { align: 'right' });
 
-    function generateSimplePdf(empList) {
-        const doc = new jspdf.jsPDF();
-        doc.setFontSize(14);
-        doc.text('Lista de Funcionários', 14, 20);
-        doc.setFontSize(11);
-        let y = 30;
-        // cabeçalho
-        doc.text('Nome', 14, y);
-        doc.text('Cargo', 64, y);
-        doc.text('Departamento', 114, y);
-        doc.text('Status', 164, y);
-        y += 6;
-        empList.forEach(e => {
-            doc.text(e.name, 14, y);
-            doc.text(e.position, 64, y);
-            doc.text(e.department, 114, y);
-            doc.text(e.status, 164, y);
-            y += 6;
-            if (y > 280) {
-                doc.addPage();
-                y = 20;
+            doc.setTextColor(51, 65, 85);
+            doc.setFontSize(9);
+            doc.text(`Total de funcionários: ${empList.length}`, marginX, 29);
+        }
+
+        function drawFooter() {
+            const pageCount = doc.internal.getNumberOfPages();
+            const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+            doc.setDrawColor(226, 232, 240);
+            doc.line(marginX, pageHeight - 12, pageWidth - marginX, pageHeight - 12);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(100, 116, 139);
+            doc.text('RHNeto Pro — Relatório gerado automaticamente', marginX, pageHeight - 7);
+            doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth - marginX, pageHeight - 7, { align: 'right' });
+        }
+
+        drawHeader();
+
+        doc.autoTable({
+            head: [['Nome', 'Cargo', 'Departamento', 'Status']],
+            body: empList.map(e => [e.name, e.position, e.department, e.status]),
+            startY: 34,
+            margin: { left: marginX, right: marginX, bottom: 16 },
+            styles: {
+                fontSize: 9,
+                cellPadding: 3,
+                textColor: [30, 41, 59],
+                lineColor: [226, 232, 240],
+                lineWidth: 0.15
+            },
+            headStyles: {
+                fillColor: [37, 99, 235],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'left'
+            },
+            alternateRowStyles: {
+                fillColor: [241, 245, 249]
+            },
+            didDrawPage: function (pageData) {
+                if (pageData.pageNumber > 1) drawHeader();
+                drawFooter();
             }
         });
+
+        drawFooter();
+
         doc.save(`funcionarios_export_${new Date().toISOString().split('T')[0]}.pdf`);
-    }
-
-    function generateReportPdf(empList) {
-        const doc = new jspdf.jsPDF();
-        let y = 20;
-        empList.forEach((e, idx) => {
-            doc.setFontSize(14);
-            doc.text(e.name, 14, y);
-            y += 6;
-            doc.setFontSize(11);
-            doc.text(`Cargo: ${e.position}`, 14, y);
-            y += 5;
-            doc.text(`Departamento: ${e.department}`, 14, y);
-            y += 5;
-            doc.text(`Status: ${e.status}`, 14, y);
-            y += 10;
-            if (idx < empList.length - 1 && y > 250) {
-                doc.addPage();
-                y = 20;
-            }
-        });
-        doc.save(`relatorio_cadastro_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
     // Função: Limpar Seleção

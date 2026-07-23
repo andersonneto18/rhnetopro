@@ -383,12 +383,11 @@
                                         individualmente.</small>
                                 </div>
                                 <div class="am-f">
-                                    <label class="am-lbl">Fator de Horas Extras</label>
-                                    <input class="am-inp" type="number" step="0.01" min="1.00" max="5.00" name="fator_horas_extra"
-                                        value="<?php echo htmlspecialchars(number_format(max(1.0, (float)($payrollAdminConfig['default_horas_extra'] ?? 1.0)), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>">
-                                    <small class="am-hint">1.25 = 25% acima da hora normal. Em PT:
-                                        1.25
-                                        (1.ªs 60h/ano), 1.625 (excedentes).</small>
+                                    <label class="am-lbl">Horas Semanais</label>
+                                    <input class="am-inp" type="number" step="0.5" min="1" max="80" name="horas_semanais"
+                                        value="<?php echo htmlspecialchars(number_format((float)($payrollAdminConfig['horas_semanais'] ?? 40.0), 2, '.', ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <small class="am-hint">Usado para calcular o valor da hora normal
+                                        e das horas extra: (salário base × 12) / (52 × horas semanais).</small>
                                 </div>
                                 <div class="am-f">
                                     <label class="am-lbl">Bónus Padrão (€)</label>

@@ -181,6 +181,7 @@ if (!function_exists('ensurePayrollSettingsTable')) {
                 default_bonus DECIMAL(12,2) NOT NULL DEFAULT 0.00,
                 gorjetas_auto_split TINYINT(1) NOT NULL DEFAULT 0,
                 gorjetas_total_mes DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                horas_semanais DECIMAL(6,2) NOT NULL DEFAULT 40.00,
                 updated_by INT NULL,
                 created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -189,10 +190,11 @@ if (!function_exists('ensurePayrollSettingsTable')) {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
         );
 
-        // Migração idempotente: garantir colunas de gorjetas existem
+        // Migração idempotente: garantir colunas de gorjetas e horas semanais existem
         $gorjetaCols = [
             'gorjetas_auto_split' => "ALTER TABLE payroll_settings ADD COLUMN gorjetas_auto_split TINYINT(1) NOT NULL DEFAULT 0",
             'gorjetas_total_mes'  => "ALTER TABLE payroll_settings ADD COLUMN gorjetas_total_mes DECIMAL(12,2) NOT NULL DEFAULT 0.00",
+            'horas_semanais'      => "ALTER TABLE payroll_settings ADD COLUMN horas_semanais DECIMAL(6,2) NOT NULL DEFAULT 40.00",
         ];
         foreach ($gorjetaCols as $col => $sql) {
             if (!payrollColumnExists($pdo, 'payroll_settings', $col)) {
@@ -213,11 +215,12 @@ if (!function_exists('obterConfiguracaoFolha')) {
             'default_bonus'       => 0.0,
             'gorjetas_auto_split' => 0,
             'gorjetas_total_mes'  => 0.0,
+            'horas_semanais'      => 40.0,
         ];
 
         $stmt = $pdo->prepare(
             'SELECT default_subsidios, default_horas_extra, default_bonus,
-                    gorjetas_auto_split, gorjetas_total_mes
+                    gorjetas_auto_split, gorjetas_total_mes, horas_semanais
              FROM payroll_settings
              WHERE client_id = ? AND fiscal_year = ?
              LIMIT 1'
@@ -235,6 +238,7 @@ if (!function_exists('obterConfiguracaoFolha')) {
             'default_bonus'       => isset($row['default_bonus'])       ? (float)$row['default_bonus']       : 0.0,
             'gorjetas_auto_split' => isset($row['gorjetas_auto_split']) ? (int)$row['gorjetas_auto_split']   : 0,
             'gorjetas_total_mes'  => isset($row['gorjetas_total_mes'])  ? (float)$row['gorjetas_total_mes']  : 0.0,
+            'horas_semanais'      => isset($row['horas_semanais']) && (float)$row['horas_semanais'] > 0 ? (float)$row['horas_semanais'] : 40.0,
         ];
     }
 }
@@ -415,6 +419,50 @@ if (!function_exists('obterSnapshotRegrasFolha')) {
         }
 
         return $snap;
+    }
+}
+
+if (!function_exists('calcularValorHoraNormal')) {
+    // Valor da hora normal, segundo a fórmula legal portuguesa: (salário base x 12) / (52 x horas semanais).
+    function calcularValorHoraNormal(float $salarioBase, float $horasSemanais): float
+    {
+        $horasSemanais = $horasSemanais > 0 ? $horasSemanais : 40.0;
+        return round(($salarioBase * 12) / (52 * $horasSemanais), 2, PHP_ROUND_HALF_EVEN);
+    }
+}
+
+if (!function_exists('calcularHorasExtraLegais')) {
+    /**
+     * Cálculo de horas extra segundo a legislação portuguesa (Código do Trabalho):
+     * - 1ª hora extra em dia útil: valor da hora x 1,25
+     * - Horas seguintes no mesmo dia útil: valor da hora x 1,375
+     * - Horas em descanso semanal, descanso complementar ou feriado: valor da hora x 1,50
+     *
+     * Não inclui IRS nem Segurança Social — apenas o valor bruto das horas extra.
+     * Usa arredondamento half-even (bancário) para evitar que casos-limite exatos em
+     * ,x5 sejam sempre arredondados para cima.
+     */
+    function calcularHorasExtraLegais(
+        float $salarioBase,
+        float $horasSemanais,
+        float $horas1,
+        float $horasSeguintes,
+        float $horasDescanso
+    ): array {
+        $valorHora = calcularValorHoraNormal($salarioBase, $horasSemanais);
+
+        $valor1h = round(max(0.0, $horas1) * $valorHora * 1.25, 2, PHP_ROUND_HALF_EVEN);
+        $valorSeguintes = round(max(0.0, $horasSeguintes) * $valorHora * 1.375, 2, PHP_ROUND_HALF_EVEN);
+        $valorDescanso = round(max(0.0, $horasDescanso) * $valorHora * 1.50, 2, PHP_ROUND_HALF_EVEN);
+        $total = round($valor1h + $valorSeguintes + $valorDescanso, 2, PHP_ROUND_HALF_EVEN);
+
+        return [
+            'valor_hora' => $valorHora,
+            'valor_1h' => $valor1h,
+            'valor_seguintes' => $valorSeguintes,
+            'valor_descanso' => $valorDescanso,
+            'total' => $total,
+        ];
     }
 }
 

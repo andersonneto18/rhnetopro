@@ -250,6 +250,11 @@
     data-fiscal-year="<?php echo (int)$folhaFiscalYear; ?>"
     data-fiscal-month="<?php echo (int)$folhaFiscalMonth; ?>"
     data-horas-extra="<?php echo $folha ? (float)($folha['horas_extra_mensal'] ?? 0) : 0; ?>"
+    data-horas-extra-h1="<?php echo $folha ? (float)($folha['horas_extra_1h_mensal'] ?? 0) : 0; ?>"
+    data-horas-extra-seguintes="<?php echo $folha ? (float)($folha['horas_extra_seguintes_mensal'] ?? 0) : 0; ?>"
+    data-horas-extra-descanso="<?php echo $folha ? (float)($folha['horas_extra_descanso_mensal'] ?? 0) : 0; ?>"
+    data-salario-base="<?php echo (float)($employee['salary_base'] ?? 0); ?>"
+    data-horas-semanais="<?php echo (float)($folhaConfigDefaults['horas_semanais'] ?? 40.0); ?>"
     data-bonus-mensal="<?php echo $folha ? (float)($folha['bonus_mensal'] ?? 0) : 0; ?>"
     data-subsidios-mensais="<?php echo $folha ? (float)($folha['subsidios_extra'] ?? 0) : 0; ?>"
     data-gorjeta-manual="<?php echo $folha ? (float)($folha['gorjeta_manual'] ?? 0) : 0; ?>"
@@ -446,16 +451,40 @@
                             </div>
                         </div>
 
+                        <!-- Horas extra (legislação portuguesa) -->
+                        <div class="am-section">
+                            <div class="am-sec-lbl"><i class="fas fa-clock"></i> Horas Extra</div>
+                            <div class="am-g3">
+                                <div class="am-f">
+                                    <label class="am-lbl">1ª hora em dia útil</label>
+                                    <input type="number" step="0.25" min="0" name="horas_extra_1h" id="fvHorasExtra1h" class="am-inp"
+                                        <?php echo $folhaFechada ? 'disabled' : ''; ?>>
+                                    <span class="am-hint">×1,25 sobre o valor da hora normal</span>
+                                </div>
+                                <div class="am-f">
+                                    <label class="am-lbl">Horas seguintes (dia útil)</label>
+                                    <input type="number" step="0.25" min="0" name="horas_extra_seguintes" id="fvHorasExtraSeguintes" class="am-inp"
+                                        <?php echo $folhaFechada ? 'disabled' : ''; ?>>
+                                    <span class="am-hint">×1,375 sobre o valor da hora normal</span>
+                                </div>
+                                <div class="am-f">
+                                    <label class="am-lbl">Descanso semanal / feriado</label>
+                                    <input type="number" step="0.25" min="0" name="horas_extra_descanso" id="fvHorasExtraDescanso" class="am-inp"
+                                        <?php echo $folhaFechada ? 'disabled' : ''; ?>>
+                                    <span class="am-hint">×1,50 sobre o valor da hora normal</span>
+                                </div>
+                            </div>
+                            <div style="margin-top:.65rem;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:10px 14px;font-size:.82rem;color:#93c5fd;display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;">
+                                <span>Valor da hora normal: <strong id="fvValorHoraNormal">€ 0,00</strong></span>
+                                <span>Total de horas extra: <strong id="fvTotalHorasExtra">€ 0,00</strong></span>
+                            </div>
+                            <span class="am-hint" style="display:block;margin-top:.4rem;">Cálculo bruto apenas — sem IRS nem Segurança Social, a cargo do contabilista.</span>
+                        </div>
+
                         <!-- Valores mensais -->
                         <div class="am-section">
                             <div class="am-sec-lbl"><i class="fas fa-euro-sign"></i> Valores Mensais</div>
                             <div class="am-g2">
-                                <div class="am-f">
-                                    <label class="am-lbl">Horas Extras (€)</label>
-                                    <input type="number" step="0.01" min="0" name="horas_extra" id="fvHorasExtra" class="am-inp"
-                                        <?php echo $folhaFechada ? 'disabled' : ''; ?>>
-                                    <span class="am-hint">Valor em euros das h. extras</span>
-                                </div>
                                 <div class="am-f">
                                     <label class="am-lbl">Bónus Mensal (€)</label>
                                     <input type="number" step="0.01" min="0" name="bonus_mensal" id="fvBonusMensal" class="am-inp"
@@ -492,6 +521,8 @@
                         </div>
                         <?php endif; ?>
                         <input type="hidden" id="fvGorjetaBaseAtual" value="0">
+                        <input type="hidden" id="fvSalarioBase" value="0">
+                        <input type="hidden" id="fvHorasSemanais" value="40">
 
                         <!-- Bloquear -->
                         <div class="am-section">

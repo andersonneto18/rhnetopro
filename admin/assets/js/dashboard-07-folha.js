@@ -745,6 +745,49 @@
         preview.textContent = fmtEuro(isNaN(valor) ? 0 : valor);
     }
 
+    // Arredondamento half-even (bancário), igual ao PHP_ROUND_HALF_EVEN usado no backend —
+    // evita que casos-limite exatos em ,x5 sejam sempre arredondados para cima.
+    function roundHalfEven(value, decimals) {
+        var factor = Math.pow(10, decimals);
+        var scaled = value * factor;
+        var floorVal = Math.floor(scaled);
+        var diff = scaled - floorVal;
+        if (Math.abs(diff - 0.5) < 1e-9) {
+            return (floorVal % 2 === 0 ? floorVal : floorVal + 1) / factor;
+        }
+        return Math.round(scaled) / factor;
+    }
+
+    // Cálculo de horas extra segundo a legislação portuguesa — espelha calcularHorasExtraLegais() em
+    // includes/payroll_calculator.php: 1ª hora útil x1,25, seguintes x1,375, descanso/feriado x1,50.
+    // Apenas valor bruto — sem IRS nem Segurança Social.
+    function updateHorasExtraPreview() {
+        var valorHoraEl = document.getElementById('fvValorHoraNormal');
+        var totalEl = document.getElementById('fvTotalHorasExtra');
+        if (!valorHoraEl || !totalEl) return;
+
+        var num = function (id, fallback) {
+            var el = document.getElementById(id);
+            var v = parseFloat(el ? el.value : fallback);
+            return isNaN(v) ? 0 : v;
+        };
+
+        var salarioBase = num('fvSalarioBase', 0);
+        var horasSemanais = num('fvHorasSemanais', 40) || 40;
+        var horas1h = Math.max(0, num('fvHorasExtra1h', 0));
+        var horasSeguintes = Math.max(0, num('fvHorasExtraSeguintes', 0));
+        var horasDescanso = Math.max(0, num('fvHorasExtraDescanso', 0));
+
+        var valorHora = roundHalfEven(salarioBase * 12 / (52 * horasSemanais), 2);
+        var valor1h = roundHalfEven(horas1h * valorHora * 1.25, 2);
+        var valorSeguintes = roundHalfEven(horasSeguintes * valorHora * 1.375, 2);
+        var valorDescanso = roundHalfEven(horasDescanso * valorHora * 1.50, 2);
+        var total = roundHalfEven(valor1h + valorSeguintes + valorDescanso, 2);
+
+        valorHoraEl.textContent = fmtEuro(valorHora);
+        totalEl.textContent = fmtEuro(total);
+    }
+
     function openReciboModal(row) {
         var folha = safeJsonParse(row.dataset.folha);
         var nome = row.dataset.empName || '-';
@@ -821,7 +864,11 @@
 
         setVal('fvEmployeeId', employeeId || '');
         setVal('fvEmployeeName', row.dataset.empName || '');
-        setVal('fvHorasExtra', row.dataset.horasExtra || '0');
+        setVal('fvHorasExtra1h', row.dataset.horasExtraH1 || '0');
+        setVal('fvHorasExtraSeguintes', row.dataset.horasExtraSeguintes || '0');
+        setVal('fvHorasExtraDescanso', row.dataset.horasExtraDescanso || '0');
+        setVal('fvSalarioBase', row.dataset.salarioBase || '0');
+        setVal('fvHorasSemanais', row.dataset.horasSemanais || '40');
         setVal('fvBonusMensal', row.dataset.bonusMensal || '0');
         setVal('fvSubsidiosMensais', row.dataset.subsidiosMensais || '0');
         var gorjetaInput = document.getElementById('fvGorjetaManual');
@@ -839,6 +886,7 @@
         if (periodoEl) periodoEl.textContent = 'Periodo: ' + (row.dataset.periodo || '');
 
         updateGorjetaPreview();
+        updateHorasExtraPreview();
 
         modal.style.display = 'block';
     }
@@ -1053,6 +1101,14 @@
         gorjetaInputLive.addEventListener('input', updateGorjetaPreview);
         gorjetaInputLive.addEventListener('change', updateGorjetaPreview);
     }
+
+    ['fvHorasExtra1h', 'fvHorasExtraSeguintes', 'fvHorasExtraDescanso'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updateHorasExtraPreview);
+            el.addEventListener('change', updateHorasExtraPreview);
+        }
+    });
 
     function updateFolhaFilterBadge() {
         var badge = document.getElementById('folhaFilterBadge');

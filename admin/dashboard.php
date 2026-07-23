@@ -3218,7 +3218,7 @@ if (!function_exists('syncPayrollRowsForPeriod')) {
         }
 
         $gorjetaManualColExists = payrollColumnExists($pdo, 'folha_variaveis_mensais', 'gorjeta_manual');
-        $varSelectCols = 'employee_id, horas_extra, faltas_dias, bonus, subsidios_extra, outros_descontos, status, is_locked'
+        $varSelectCols = 'employee_id, horas_extra, horas_extra_1h, horas_extra_seguintes, horas_extra_descanso, faltas_dias, bonus, subsidios_extra, outros_descontos, status, is_locked'
             . ($gorjetaManualColExists ? ', gorjeta_manual' : '');
         $stmtVars = $pdo->prepare(
             "SELECT {$varSelectCols}
@@ -3276,6 +3276,9 @@ if (!function_exists('syncPayrollRowsForPeriod')) {
 
             $vars = $variaveisMensais[$employeeId] ?? [
                 'horas_extra' => 0,
+                'horas_extra_1h' => 0,
+                'horas_extra_seguintes' => 0,
+                'horas_extra_descanso' => 0,
                 'faltas_dias' => 0,
                 'bonus' => 0,
                 'subsidios_extra' => 0,
@@ -3300,11 +3303,19 @@ if (!function_exists('syncPayrollRowsForPeriod')) {
                     + max(0.0, (float)($vars['gorjeta_manual'] ?? 0.0));
             }
 
+            $horasExtraCalc = calcularHorasExtraLegais(
+                $salarioBase,
+                (float)($folhaConfigDefaults['horas_semanais'] ?? 40.0),
+                (float)($vars['horas_extra_1h'] ?? 0),
+                (float)($vars['horas_extra_seguintes'] ?? 0),
+                (float)($vars['horas_extra_descanso'] ?? 0)
+            );
+
             $dadosFuncionario = [
                 'salario_base'          => $salarioBase,
                 'subsidio_alimentacao'  => (float)($employee['subsidio_alimentacao'] ?? 0) + (float)($vars['subsidios_extra'] ?? 0) + (float)($folhaConfigDefaults['default_subsidios'] ?? 0),
                 'subsidios_tributaveis' => 0.0,
-                'horas_extra'           => (float)($vars['horas_extra'] ?? 0) * max(1.0, (float)($folhaConfigDefaults['default_horas_extra'] ?? 1.0)),
+                'horas_extra'           => $horasExtraCalc['total'],
                 'bonus'                 => (float)($employee['bonus'] ?? 0) + (float)($vars['bonus'] ?? 0) + (float)($folhaConfigDefaults['default_bonus'] ?? 0),
                 'gorjetas'              => $gorjetaFuncionario,
             ];
@@ -3324,6 +3335,10 @@ if (!function_exists('syncPayrollRowsForPeriod')) {
             $resultadoFolha['desconto_faltas'] = round($descontoFaltas, 2);
             $resultadoFolha['outros_descontos'] = round($outrosDescontos, 2);
             $resultadoFolha['horas_extra_mensal'] = round((float)($vars['horas_extra'] ?? 0), 2);
+            $resultadoFolha['horas_extra_1h_mensal'] = round((float)($vars['horas_extra_1h'] ?? 0), 2);
+            $resultadoFolha['horas_extra_seguintes_mensal'] = round((float)($vars['horas_extra_seguintes'] ?? 0), 2);
+            $resultadoFolha['horas_extra_descanso_mensal'] = round((float)($vars['horas_extra_descanso'] ?? 0), 2);
+            $resultadoFolha['valor_hora_normal'] = $horasExtraCalc['valor_hora'];
             $resultadoFolha['bonus_mensal'] = round((float)($vars['bonus'] ?? 0), 2);
             $resultadoFolha['subsidios_extra'] = round((float)($vars['subsidios_extra'] ?? 0), 2);
             $resultadoFolha['gorjeta_manual'] = round((float)($vars['gorjeta_manual'] ?? 0), 2);
@@ -3354,6 +3369,9 @@ try {
             fiscal_year INT NOT NULL,
             fiscal_month TINYINT NOT NULL,
             horas_extra DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+            horas_extra_1h DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+            horas_extra_seguintes DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+            horas_extra_descanso DECIMAL(6,2) NOT NULL DEFAULT 0.00,
             faltas_dias DECIMAL(6,2) NOT NULL DEFAULT 0.00,
             bonus DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             subsidios_extra DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -3392,6 +3410,23 @@ try {
         }
     } catch (Throwable $eMig) {
         error_log('Migração gorjeta_manual: ' . $eMig->getMessage());
+    }
+
+    // Migração idempotente: horas extra passam a ser 3 campos de horas (não mais um valor em €),
+    // calculados segundo a legislação portuguesa (1ª hora útil, seguintes, descanso/feriado).
+    try {
+        $horasExtraCols = [
+            'horas_extra_1h'         => "ALTER TABLE folha_variaveis_mensais ADD COLUMN horas_extra_1h DECIMAL(6,2) NOT NULL DEFAULT 0.00 AFTER horas_extra",
+            'horas_extra_seguintes'  => "ALTER TABLE folha_variaveis_mensais ADD COLUMN horas_extra_seguintes DECIMAL(6,2) NOT NULL DEFAULT 0.00 AFTER horas_extra_1h",
+            'horas_extra_descanso'   => "ALTER TABLE folha_variaveis_mensais ADD COLUMN horas_extra_descanso DECIMAL(6,2) NOT NULL DEFAULT 0.00 AFTER horas_extra_seguintes",
+        ];
+        foreach ($horasExtraCols as $col => $sql) {
+            if (!payrollColumnExists($pdo, 'folha_variaveis_mensais', $col)) {
+                $pdo->exec($sql);
+            }
+        }
+    } catch (Throwable $eMig) {
+        error_log('Migração horas_extra (legislação PT): ' . $eMig->getMessage());
     }
 
     // Inicialização automática do período mensal:
@@ -3496,23 +3531,27 @@ try {
         $postConfigYear = max($currentYear - 5, min($currentYear + 1, $postConfigYear));
 
         $defaultSubsidios  = max(0.0, (float)($_POST['default_subsidios'] ?? 0));
-        // Fator de horas extras: multiplicador (1.0 = sem acréscimo; 1.25 = 25% acima)
+        // Fator de horas extras: mantido só por compatibilidade, já não é usado no cálculo
+        // (as horas extra passaram a seguir os multiplicadores fixos da legislação portuguesa).
         $fatorHorasExtra   = max(1.0, (float)($_POST['fator_horas_extra'] ?? 1.0));
         $defaultBonus      = max(0.0, (float)($_POST['default_bonus'] ?? 0));
         $gorjetasAutoSplit = isset($_POST['gorjetas_auto_split']) ? 1 : 0;
         $gorjetasTotalMes  = max(0.0, (float)($_POST['gorjetas_total_mes'] ?? 0));
+        $horasSemanais     = (float)($_POST['horas_semanais'] ?? 40.0);
+        $horasSemanais     = $horasSemanais > 0 ? min(80.0, $horasSemanais) : 40.0;
 
         $pdo->beginTransaction();
         try {
             $saveSettings = $pdo->prepare(
-                "INSERT INTO payroll_settings (client_id, fiscal_year, default_subsidios, default_horas_extra, default_bonus, gorjetas_auto_split, gorjetas_total_mes, updated_by)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                "INSERT INTO payroll_settings (client_id, fiscal_year, default_subsidios, default_horas_extra, default_bonus, gorjetas_auto_split, gorjetas_total_mes, horas_semanais, updated_by)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                  ON DUPLICATE KEY UPDATE
                  default_subsidios = VALUES(default_subsidios),
                  default_horas_extra = VALUES(default_horas_extra),
                  default_bonus = VALUES(default_bonus),
                  gorjetas_auto_split = VALUES(gorjetas_auto_split),
                  gorjetas_total_mes = VALUES(gorjetas_total_mes),
+                 horas_semanais = VALUES(horas_semanais),
                  updated_by = VALUES(updated_by),
                  updated_at = NOW()"
             );
@@ -3524,6 +3563,7 @@ try {
                 $defaultBonus,
                 $gorjetasAutoSplit,
                 $gorjetasTotalMes,
+                $horasSemanais,
                 isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null,
             ]);
 
@@ -3556,11 +3596,11 @@ try {
         $isClosedNow = (int)$checkCloseStmt->fetchColumn() === 1;
 
         if (!$isClosedNow && $postEmployeeId > 0) {
-            $checkEmpStmt = $pdo->prepare("SELECT id FROM employees WHERE id = ? AND client_id = ? LIMIT 1");
+            $checkEmpStmt = $pdo->prepare("SELECT id, salary_base FROM employees WHERE id = ? AND client_id = ? LIMIT 1");
             $checkEmpStmt->execute([$postEmployeeId, (int)$loggedInClientId]);
-            $employeeExists = (bool)$checkEmpStmt->fetch(PDO::FETCH_ASSOC);
+            $employeeRowSave = $checkEmpStmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$employeeExists) {
+            if (!$employeeRowSave) {
                 header('Location: dashboard.php?section=folha-pagamento&folha_mes=' . $postMonth . '&folha_ano=' . $postYear);
                 exit;
             }
@@ -3581,12 +3621,28 @@ try {
                 }
             }
 
+            $horasExtra1h = max(0.0, (float)($_POST['horas_extra_1h'] ?? 0));
+            $horasExtraSeguintes = max(0.0, (float)($_POST['horas_extra_seguintes'] ?? 0));
+            $horasExtraDescanso = max(0.0, (float)($_POST['horas_extra_descanso'] ?? 0));
+
+            $postFolhaConfig = obterConfiguracaoFolha($pdo, (int)$loggedInClientId, $postYear);
+            $horasExtraCalcSave = calcularHorasExtraLegais(
+                (float)($employeeRowSave['salary_base'] ?? 0),
+                (float)($postFolhaConfig['horas_semanais'] ?? 40.0),
+                $horasExtra1h,
+                $horasExtraSeguintes,
+                $horasExtraDescanso
+            );
+
             $saveStmt = $pdo->prepare(
                 "INSERT INTO folha_variaveis_mensais
-                (client_id, employee_id, fiscal_year, fiscal_month, horas_extra, faltas_dias, bonus, subsidios_extra, outros_descontos, gorjeta_manual, status, is_locked, updated_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (client_id, employee_id, fiscal_year, fiscal_month, horas_extra, horas_extra_1h, horas_extra_seguintes, horas_extra_descanso, faltas_dias, bonus, subsidios_extra, outros_descontos, gorjeta_manual, status, is_locked, updated_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                 horas_extra = VALUES(horas_extra),
+                horas_extra_1h = VALUES(horas_extra_1h),
+                horas_extra_seguintes = VALUES(horas_extra_seguintes),
+                horas_extra_descanso = VALUES(horas_extra_descanso),
                 faltas_dias = VALUES(faltas_dias),
                 bonus = VALUES(bonus),
                 subsidios_extra = VALUES(subsidios_extra),
@@ -3605,7 +3661,10 @@ try {
                 $postEmployeeId,
                 $postYear,
                 $postMonth,
-                (float)($_POST['horas_extra'] ?? 0),
+                $horasExtraCalcSave['total'],
+                $horasExtra1h,
+                $horasExtraSeguintes,
+                $horasExtraDescanso,
                 0.0,
                 (float)($_POST['bonus_mensal'] ?? 0),
                 (float)($_POST['subsidios_mensais'] ?? 0),
@@ -3951,7 +4010,7 @@ try {
     $folhaCalculos = []; // Array para guardar resultados (calculados ou histórico)
 
     $gorjetaManualColExists = payrollColumnExists($pdo, 'folha_variaveis_mensais', 'gorjeta_manual');
-    $varSelectCols = 'employee_id, horas_extra, faltas_dias, bonus, subsidios_extra, outros_descontos, status, is_locked'
+    $varSelectCols = 'employee_id, horas_extra, horas_extra_1h, horas_extra_seguintes, horas_extra_descanso, faltas_dias, bonus, subsidios_extra, outros_descontos, status, is_locked'
         . ($gorjetaManualColExists ? ', gorjeta_manual' : '');
     $stmtVars = $pdo->prepare(
         "SELECT {$varSelectCols}
@@ -4041,6 +4100,9 @@ try {
         // ── Se não tem histórico ou folha não está fechada, calcular normalmente ──
         $vars = $variaveisMensais[$employeeId] ?? [
             'horas_extra' => 0,
+            'horas_extra_1h' => 0,
+            'horas_extra_seguintes' => 0,
+            'horas_extra_descanso' => 0,
             'faltas_dias' => 0,
             'bonus' => 0,
             'subsidios_extra' => 0,
@@ -4067,11 +4129,19 @@ try {
                 + max(0.0, (float)($vars['gorjeta_manual'] ?? 0.0));
         }
 
+        $horasExtraCalc = calcularHorasExtraLegais(
+            $salarioBase,
+            (float)($folhaConfigDefaults['horas_semanais'] ?? 40.0),
+            (float)($vars['horas_extra_1h'] ?? 0),
+            (float)($vars['horas_extra_seguintes'] ?? 0),
+            (float)($vars['horas_extra_descanso'] ?? 0)
+        );
+
         $dadosFuncionario = [
             'salario_base'         => $salarioBase,
             'subsidio_alimentacao' => (float)($employee['subsidio_alimentacao'] ?? 0) + (float)($vars['subsidios_extra'] ?? 0) + (float)($folhaConfigDefaults['default_subsidios'] ?? 0),
             'subsidios_tributaveis' => 0.0,
-            'horas_extra'          => (float)($vars['horas_extra'] ?? 0) * max(1.0, (float)($folhaConfigDefaults['default_horas_extra'] ?? 1.0)),
+            'horas_extra'          => $horasExtraCalc['total'],
             'bonus'                => (float)($employee['bonus'] ?? 0) + (float)($vars['bonus'] ?? 0) + (float)($folhaConfigDefaults['default_bonus'] ?? 0),
             'gorjetas'             => $gorjetaFuncionario,
         ];
@@ -4092,6 +4162,10 @@ try {
         $resultadoFolha['desconto_faltas'] = round($descontoFaltas, 2);
         $resultadoFolha['outros_descontos'] = round($outrosDescontos, 2);
         $resultadoFolha['horas_extra_mensal'] = round((float)($vars['horas_extra'] ?? 0), 2);
+        $resultadoFolha['horas_extra_1h_mensal'] = round((float)($vars['horas_extra_1h'] ?? 0), 2);
+        $resultadoFolha['horas_extra_seguintes_mensal'] = round((float)($vars['horas_extra_seguintes'] ?? 0), 2);
+        $resultadoFolha['horas_extra_descanso_mensal'] = round((float)($vars['horas_extra_descanso'] ?? 0), 2);
+        $resultadoFolha['valor_hora_normal'] = $horasExtraCalc['valor_hora'];
         $resultadoFolha['bonus_mensal'] = round((float)($vars['bonus'] ?? 0), 2);
         $resultadoFolha['subsidios_extra'] = round((float)($vars['subsidios_extra'] ?? 0), 2);
         $resultadoFolha['gorjeta_manual'] = round((float)($vars['gorjeta_manual'] ?? 0), 2);

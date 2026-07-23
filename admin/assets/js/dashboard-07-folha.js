@@ -752,12 +752,29 @@
         var depto = row.dataset.empDepartment || '';
         var statusText = row.dataset.empStatus || '';
         var periodo = row.dataset.periodo || '';
+        var foto = row.dataset.empPhoto || '';
 
         var nomeEl = document.getElementById('recibo-nome');
         var cargoEl = document.getElementById('recibo-cargo');
         var periodoEl = document.getElementById('recibo-periodo');
         var badge = document.getElementById('recibo-status-badge');
         if (!nomeEl || !cargoEl || !periodoEl || !badge) return;
+
+        var avatarEl = document.getElementById('view-recibo-avatar');
+        if (avatarEl) {
+            avatarEl.innerHTML = '';
+            if (foto) {
+                var img = document.createElement('img');
+                img.src = '../' + foto;
+                img.alt = nome;
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+                avatarEl.appendChild(img);
+            } else {
+                var icon = document.createElement('i');
+                icon.className = 'fas fa-user';
+                avatarEl.appendChild(icon);
+            }
+        }
 
         nomeEl.textContent = nome;
         cargoEl.textContent = [cargo, depto].filter(Boolean).join(' | ');

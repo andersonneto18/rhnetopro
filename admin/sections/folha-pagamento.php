@@ -170,9 +170,7 @@
                             </form>
                             <?php endif; ?>
 
-                            <button type="button" id="btnExportFolhaCsv" class="fr-export-btn">
-                                <i class="fas fa-download"></i> CSV
-                            </button>
+                           
                             </div><!-- /acções -->
                         </div><!-- /fr-toolbar-right -->
                     </div><!-- /fr-toolbar-top -->
@@ -247,6 +245,7 @@
     data-emp-position="<?php echo htmlspecialchars($employee['position'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
     data-emp-department="<?php echo htmlspecialchars($employee['department'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
     data-emp-status="<?php echo htmlspecialchars($empStatusLabel, ENT_QUOTES, 'UTF-8'); ?>"
+    data-emp-photo="<?php echo htmlspecialchars($employee['profile_picture'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
     data-periodo="<?php echo htmlspecialchars($folhaPeriodoLabel, ENT_QUOTES, 'UTF-8'); ?>"
     data-fiscal-year="<?php echo (int)$folhaFiscalYear; ?>"
     data-fiscal-month="<?php echo (int)$folhaFiscalMonth; ?>"

@@ -18,7 +18,7 @@ if ($id <= 0) {
 try {
     // Busca gorjeta apenas do cliente logado
     $stmt = $pdo->prepare("
-        SELECT g.*, e.name as funcionario_nome
+        SELECT g.*, e.name as funcionario_nome, e.profile_picture as funcionario_profile_picture
         FROM gorjetas g
         INNER JOIN employees e ON g.funcionario_id = e.id
         WHERE g.id = ? AND g.client_id = ?

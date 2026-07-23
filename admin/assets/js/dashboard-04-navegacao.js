@@ -50,7 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const avatarEl = document.getElementById('gv-avatar');
         if (avatarEl) {
-            avatarEl.textContent = nome ? nome.slice(0, 2).toUpperCase() : '--';
+            avatarEl.innerHTML = '';
+            const foto = (data.funcionario_profile_picture || '').toString();
+            if (foto) {
+                const img = document.createElement('img');
+                img.src = '../' + foto;
+                img.alt = nome;
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+                avatarEl.appendChild(img);
+            } else {
+                avatarEl.textContent = nome ? nome.slice(0, 2).toUpperCase() : '--';
+            }
         }
 
         const statusEl = document.getElementById('gv-status');

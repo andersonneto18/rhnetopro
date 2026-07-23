@@ -2093,14 +2093,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 buildFormData: (emp) => {
                     const fd = new FormData();
-                    fd.append('action', 'update_status');
                     fd.append('id', emp.id);
                     fd.append('status', newStatus);
                     if (newStatus === 'ferias') {
                         fd.append('start_vacation', vacationStart);
                         fd.append('end_vacation', vacationEnd);
+                    } else {
+                        // Ativar/Inativar em lote aplica na hora, igual à ação individual
+                        // (update_employee.php só pula a aprovação quando só vêm estas chaves).
+                        fd.append('quick_status_toggle', '1');
                     }
-                    if (reason) fd.append('reason', reason);
+                    if (reason) fd.append('approval_reason', reason);
                     return fd;
                 }
             });

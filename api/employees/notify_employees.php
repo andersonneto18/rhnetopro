@@ -108,10 +108,15 @@ try {
     $sendToPhone = in_array('phone', $channels, true);
     $sendToEmail = in_array('email', $channels, true);
 
+    if ($sendToEmail) {
+        require_once __DIR__ . '/../../includes/mail_sender.php';
+    }
+
     // Mensagem com marcadores (modelo de boas-vindas): personaliza por funcionário
     // ({nome}, {pin}, {restaurante}, {link_app}) em vez de enviar o mesmo texto a todos.
     $usaPersonalizacao = (bool)preg_match('/\{nome\}|\{pin\}|\{restaurante\}|\{link_app\}/', $message);
     $personalizedMessages = [];
+    $personalizedEmailBodies = [];
 
     if ($usaPersonalizacao) {
         // Novos PINs definidos no modal (para funcionários que ainda não tinham PIN em texto).
@@ -147,6 +152,16 @@ try {
         foreach ($validEmployees as $employee) {
             $empId = (int)($employee['id'] ?? 0);
             $personalizedMessages[$empId] = personalizarMensagemSms($message, $employee, $clientName, $appLoginUrl);
+
+            if ($sendToEmail) {
+                $pinParaEmail = trim((string)($employee['pin'] ?? ''));
+                $personalizedEmailBodies[$empId] = renderBrandedEmailShell(renderWelcomeEmailBody(
+                    (string)($employee['name'] ?? 'Funcionário'),
+                    $clientName,
+                    $pinParaEmail !== '' ? $pinParaEmail : '(peça ao administrador)',
+                    $appLoginUrl
+                ));
+            }
         }
     }
 
@@ -240,11 +255,11 @@ try {
     ];
 
     if ($sendToEmail) {
-        require_once __DIR__ . '/../../includes/mail_sender.php';
         $emailSendResult['configured'] = trim((string)(getenv('SMTP_HOST') ?: '')) !== ''
             && trim((string)(getenv('MAIL_FROM_EMAIL') ?: '')) !== '';
 
         $emailSubject = $usaPersonalizacao ? 'Bem-vindo(a) à equipa!' : 'Mensagem da equipa';
+        $defaultEmailHtml = renderBrandedEmailShell(renderPlainMessageEmailBody($message));
 
         foreach ($validEmployees as $employee) {
             $empId = (int)($employee['id'] ?? 0);
@@ -256,8 +271,9 @@ try {
                 continue;
             }
 
-            $bodyText = $personalizedMessages[$empId] ?? $message;
-            $emailResult = sendTransactionalEmail($empEmail, (string)($employee['name'] ?? ''), $emailSubject, $bodyText);
+            $htmlBody = $personalizedEmailBodies[$empId] ?? $defaultEmailHtml;
+            $plainFallback = $personalizedMessages[$empId] ?? $message;
+            $emailResult = sendTransactionalEmail($empEmail, (string)($employee['name'] ?? ''), $emailSubject, $htmlBody, $plainFallback);
 
             if ($emailResult['success']) {
                 $emailSendResult['sent_count']++;

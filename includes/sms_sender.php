@@ -18,7 +18,7 @@ function normalizeSmsPhone(string $phone): ?string
     return null;
 }
 
-function sendInfobipSms(array $employees, string $message, array $config): array
+function sendInfobipSms(array $employees, string $message, array $config, array $personalizedMessages = []): array
 {
     $provider = $config['infobip'] ?? [];
     $enabled = !empty($provider['enabled']);
@@ -47,7 +47,9 @@ function sendInfobipSms(array $employees, string $message, array $config): array
         return $result;
     }
 
-    $destinations = [];
+    // Cada destinatário vira a sua própria mensagem no payload — permite texto
+    // personalizado por funcionário (nome, PIN, etc.) numa única chamada à API.
+    $messagesPayload = [];
     $employeeByPhone = [];
 
     foreach ($employees as $employee) {
@@ -67,7 +69,15 @@ function sendInfobipSms(array $employees, string $message, array $config): array
             continue;
         }
 
-        $destinations[] = ['to' => $normalizedPhone];
+        $textoFinal = $personalizedMessages[$employeeId] ?? $message;
+
+        $messagesPayload[] = [
+            'destinations' => [['to' => $normalizedPhone]],
+            'sender' => $sender,
+            'content' => [
+                'text' => $textoFinal,
+            ],
+        ];
         $employeeByPhone[$normalizedPhone] = [
             'employee_id' => $employeeId,
             'employee_name' => $employeeName,
@@ -75,22 +85,12 @@ function sendInfobipSms(array $employees, string $message, array $config): array
         ];
     }
 
-    if (empty($destinations)) {
+    if (empty($messagesPayload)) {
         $result['error'] = 'Nenhum telefone válido para envio.';
         return $result;
     }
 
-    $payload = [
-        'messages' => [
-            [
-                'destinations' => $destinations,
-                'sender' => $sender,
-                'content' => [
-                    'text' => $message,
-                ],
-            ],
-        ],
-    ];
+    $payload = ['messages' => $messagesPayload];
 
     $ch = curl_init($baseUrl . '/sms/3/messages');
     curl_setopt_array($ch, [
@@ -112,7 +112,7 @@ function sendInfobipSms(array $employees, string $message, array $config): array
 
     if ($rawResponse === false) {
         $result['error'] = $curlError !== '' ? $curlError : 'Falha desconhecida ao comunicar com Infobip.';
-        $result['failed_count'] = count($destinations);
+        $result['failed_count'] = count($messagesPayload);
         foreach ($employeeByPhone as $meta) {
             $result['details'][] = [
                 'employee_id' => $meta['employee_id'],
@@ -130,7 +130,7 @@ function sendInfobipSms(array $employees, string $message, array $config): array
         $result['error'] = is_array($decoded)
             ? (string)($decoded['requestError']['serviceException']['text'] ?? $decoded['message'] ?? 'Erro ao enviar SMS pelo Infobip.')
             : 'Erro ao enviar SMS pelo Infobip.';
-        $result['failed_count'] = count($destinations);
+        $result['failed_count'] = count($messagesPayload);
         foreach ($employeeByPhone as $meta) {
             $result['details'][] = [
                 'employee_id' => $meta['employee_id'],

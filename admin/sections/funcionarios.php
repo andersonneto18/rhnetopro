@@ -972,13 +972,31 @@
                     </div>
 
                     <div class="am-section">
-                        <label class="am-lbl" for="smsMessage">Mensagem <span class="am-opt">(máx 160 caracteres)</span></label>
-                        <textarea id="smsMessage" maxlength="160" class="am-inp" style="min-height:90px;"
+                        <div style="display:flex;justify-content:flex-end;margin-bottom:.5rem;">
+                            <button type="button" class="am-btn-cancel" id="btnUsarModeloBoasVindas"
+                                style="padding:.4rem .8rem;font-size:.8rem;">
+                                <i class="fas fa-hand-sparkles"></i> Usar modelo de boas-vindas
+                            </button>
+                        </div>
+                        <label class="am-lbl" for="smsMessage">Mensagem <span class="am-opt">(máx 160 caracteres por funcionário)</span></label>
+                        <textarea id="smsMessage" maxlength="500" class="am-inp" style="min-height:90px;"
                             placeholder="Introduza uma mensagem clara e objetiva para a equipa."></textarea>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem;">
                             <p id="charLimitMsg" style="display:none;margin:0;color:#f87171;font-size:.82rem;"></p>
                             <span id="smsCharCounter" class="am-hint">160 restantes</span>
                         </div>
+                        <span class="am-hint" id="smsTemplateHint" style="display:none;">
+                            Modelo com marcadores — {nome} e {pin} são substituídos automaticamente por funcionário.
+                            A contagem de caracteres acima é só uma estimativa.
+                        </span>
+                    </div>
+
+                    <div class="am-section" id="smsPinSetupSection" style="display:none;">
+                        <div class="am-sec-lbl"><i class="fas fa-key" style="color:#f59e0b;"></i> Definir PIN de acesso</div>
+                        <span class="am-hint" style="display:block;margin-bottom:.5rem;">
+                            Estes funcionários ainda não têm PIN definido — introduza um (mín. 4 dígitos) para incluir na mensagem.
+                        </span>
+                        <div id="smsPinSetupList" style="display:flex;flex-direction:column;gap:.5rem;"></div>
                     </div>
 
                     <div class="am-footer">

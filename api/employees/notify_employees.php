@@ -5,6 +5,27 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db_connection.php';
 require_once __DIR__ . '/../../includes/sms_sender.php';
 
+function buildAppLoginUrl(): string
+{
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    // Este ficheiro vive em /api/employees/; a raiz do projeto fica dois níveis acima.
+    $scriptDir = str_replace('\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? '')));
+    $projectRoot = preg_replace('#/api/employees$#', '', $scriptDir);
+    return $scheme . '://' . $host . $projectRoot . '/app/employee_login.php';
+}
+
+function personalizarMensagemSms(string $template, array $employee, string $clientName, string $appLoginUrl): string
+{
+    $pin = trim((string)($employee['pin'] ?? ''));
+    return strtr($template, [
+        '{nome}' => (string)($employee['name'] ?? 'Funcionário'),
+        '{restaurante}' => $clientName,
+        '{link_app}' => $appLoginUrl,
+        '{pin}' => $pin !== '' ? $pin : '(peça ao administrador)',
+    ]);
+}
+
 $response = ['success' => false, 'message' => ''];
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['client_id'])) {
@@ -57,7 +78,7 @@ try {
     $params[] = $client_id;
 
     // valida todos os IDs do cliente em uma única query
-    $stmt = $pdo->prepare("SELECT id, name, phone FROM employees WHERE id IN ($placeholders) AND client_id = ?");
+    $stmt = $pdo->prepare("SELECT id, name, phone, pin FROM employees WHERE id IN ($placeholders) AND client_id = ?");
     $stmt->execute($params);
     $validEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -74,6 +95,48 @@ try {
     $sendToApp = in_array($deliveryMode, ['app', 'both'], true);
     $sendToPhone = in_array($deliveryMode, ['phone', 'both'], true);
 
+    // Mensagem com marcadores (modelo de boas-vindas): personaliza por funcionário
+    // ({nome}, {pin}, {restaurante}, {link_app}) em vez de enviar o mesmo texto a todos.
+    $usaPersonalizacao = (bool)preg_match('/\{nome\}|\{pin\}|\{restaurante\}|\{link_app\}/', $message);
+    $personalizedMessages = [];
+
+    if ($usaPersonalizacao) {
+        // Novos PINs definidos no modal (para funcionários que ainda não tinham PIN em texto).
+        $newPins = [];
+        if (isset($_POST['new_pins'])) {
+            $decodedPins = json_decode((string)$_POST['new_pins'], true);
+            if (is_array($decodedPins)) {
+                $newPins = $decodedPins;
+            }
+        }
+
+        foreach ($newPins as $empIdRaw => $novoPin) {
+            $empId = (int)$empIdRaw;
+            $novoPin = trim((string)$novoPin);
+            if ($empId <= 0 || strlen($novoPin) < 4) {
+                continue;
+            }
+            $stmtPin = $pdo->prepare('UPDATE employees SET pin = ?, pin_hash = ? WHERE id = ? AND client_id = ?');
+            $stmtPin->execute([$novoPin, password_hash($novoPin, PASSWORD_DEFAULT), $empId, $client_id]);
+            foreach ($validEmployees as &$empRef) {
+                if ((int)($empRef['id'] ?? 0) === $empId) {
+                    $empRef['pin'] = $novoPin;
+                }
+            }
+            unset($empRef);
+        }
+
+        $clientNameStmt = $pdo->prepare('SELECT client_name FROM clients WHERE id = ? LIMIT 1');
+        $clientNameStmt->execute([$client_id]);
+        $clientName = (string)($clientNameStmt->fetchColumn() ?: 'a equipa');
+        $appLoginUrl = buildAppLoginUrl();
+
+        foreach ($validEmployees as $employee) {
+            $empId = (int)($employee['id'] ?? 0);
+            $personalizedMessages[$empId] = personalizarMensagemSms($message, $employee, $clientName, $appLoginUrl);
+        }
+    }
+
     $pdo->beginTransaction();
 
     // Inserção em lote para reduzir latência
@@ -81,7 +144,7 @@ try {
     $insertParams = [];
     foreach ($validIds as $empId) {
         $valueParts[] = '(?, ?, NOW(), ?, ?)';
-        $insertParams[] = $message;
+        $insertParams[] = $personalizedMessages[$empId] ?? $message;
         $insertParams[] = 'info';
         $insertParams[] = $client_id;
         $insertParams[] = (int)$empId;
@@ -124,7 +187,7 @@ try {
             }
             $notifParams[] = (int)$empId;
             $notifParams[] = $client_id;
-            $notifParams[] = $message;
+            $notifParams[] = $personalizedMessages[$empId] ?? $message;
             if ($hasSendChannelCol) {
                 $notifParams[] = $notifChannel;
             }
@@ -152,7 +215,7 @@ try {
     ];
 
     if ($sendToPhone) {
-        $smsSendResult = sendInfobipSms($validEmployees, $message, $smsConfig);
+        $smsSendResult = sendInfobipSms($validEmployees, $message, $smsConfig, $personalizedMessages);
     }
 
     try {
@@ -186,7 +249,7 @@ try {
                 $historyParams[] = $client_id;
                 $historyParams[] = $employeeId;
                 $historyParams[] = (string)($detail['phone'] ?? '');
-                $historyParams[] = $message;
+                $historyParams[] = $personalizedMessages[$employeeId] ?? $message;
                 $historyParams[] = (string)($smsSendResult['provider'] ?? 'infobip');
                 $historyParams[] = isset($detail['provider_message_id']) ? (string)$detail['provider_message_id'] : null;
                 $historyParams[] = (string)($detail['status'] ?? 'pending');

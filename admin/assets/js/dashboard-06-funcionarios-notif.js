@@ -86,10 +86,112 @@ window.addEventListener('click', function(event) {
 });
 
 // 1. Lógica do Contador de Caracteres
-const smsTextarea = document.getElementById('smsMessage');
-const charLimitMsg = document.getElementById('charLimitMsg');
-const smsCharCounter = document.getElementById('smsCharCounter');
+// Nota: este script carrega no <head>, antes do HTML do modal (no <body>) existir —
+// por isso estas referências são recapturadas no DOMContentLoaded logo abaixo, em vez
+// de ficarem presas a `null` para sempre (o que impedia o contador e o botão de modelo
+// de funcionar).
+let smsTextarea = document.getElementById('smsMessage');
+let charLimitMsg = document.getElementById('charLimitMsg');
+let smsCharCounter = document.getElementById('smsCharCounter');
 const MAX_CHARS = 160;
+
+document.addEventListener('DOMContentLoaded', function () {
+    smsTextarea = document.getElementById('smsMessage');
+    charLimitMsg = document.getElementById('charLimitMsg');
+    smsCharCounter = document.getElementById('smsCharCounter');
+
+    if (smsTextarea) {
+        smsTextarea.addEventListener('input', () => {
+            const remaining = MAX_CHARS - smsTextarea.value.length;
+            if (smsCharCounter) {
+                smsCharCounter.innerText = `${remaining} restantes`;
+            }
+
+            if (remaining <= 0) {
+                if (charLimitMsg) {
+                    charLimitMsg.innerText = "Você atingiu o limite de caracteres!";
+                    charLimitMsg.style.display = "block";
+                }
+                smsTextarea.style.borderColor = 'red';
+            } else {
+                if (charLimitMsg) charLimitMsg.style.display = "none";
+                smsTextarea.style.borderColor = '';
+            }
+        });
+    }
+});
+
+// ========== MODELO DE SMS DE BOAS-VINDAS ==========
+const WELCOME_SMS_TEMPLATE = 'Bem-vindo(a) {nome}! Equipa {restaurante}. Acesse a app: {link_app} — Login: seu nome completo | PIN: {pin}';
+window.__smsPendingPins = window.__smsPendingPins || {};
+
+function usaModeloBoasVindas() {
+    return smsTextarea && /\{nome\}|\{pin\}|\{restaurante\}|\{link_app\}/.test(smsTextarea.value);
+}
+
+async function verificarEExibirPinsFaltantes() {
+    const section = document.getElementById('smsPinSetupSection');
+    const list = document.getElementById('smsPinSetupList');
+    window.__smsPendingPins = {};
+    if (!section || !list) return;
+
+    if (!usaModeloBoasVindas()) {
+        section.style.display = 'none';
+        list.innerHTML = '';
+        return;
+    }
+
+    const recipients = getSelectedSMSRecipients();
+    if (recipients.length === 0) {
+        section.style.display = 'none';
+        list.innerHTML = '';
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('ids', JSON.stringify(recipients.map((r) => r.id)));
+        const res = await fetch('../api/employees/check_employee_pins.php', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        });
+        const data = await res.json();
+        if (!data.success) return;
+
+        const semPin = (data.employees || []).filter((emp) => !emp.has_pin);
+        if (semPin.length === 0) {
+            section.style.display = 'none';
+            list.innerHTML = '';
+            return;
+        }
+
+        list.innerHTML = semPin.map((emp) => `
+            <div style="display:flex;align-items:center;gap:.6rem;">
+                <span style="flex:1;font-size:.85rem;color:#e2e8f0;">${emp.name}</span>
+                <input type="text" inputmode="numeric" minlength="4" maxlength="8" placeholder="Novo PIN (mín. 4 dígitos)"
+                    class="am-inp sms-pin-input" data-employee-id="${emp.id}" style="max-width:200px;">
+            </div>
+        `).join('');
+        section.style.display = 'block';
+    } catch (err) {
+        console.error('Erro ao verificar PINs:', err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const btnTemplate = document.getElementById('btnUsarModeloBoasVindas');
+    if (btnTemplate) {
+        btnTemplate.addEventListener('click', function () {
+            if (!smsTextarea) return;
+            smsTextarea.value = WELCOME_SMS_TEMPLATE;
+            smsTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+            const hint = document.getElementById('smsTemplateHint');
+            if (hint) hint.style.display = 'block';
+            verificarEExibirPinsFaltantes();
+        });
+    }
+});
 
 window.__lastSentSmsData = window.__lastSentSmsData || null;
 
@@ -776,6 +878,12 @@ function clearSMSDraft() {
         smsTextarea.dispatchEvent(new Event('input'));
         smsTextarea.focus();
     }
+    const templateHint = document.getElementById('smsTemplateHint');
+    if (templateHint) templateHint.style.display = 'none';
+    const pinSection = document.getElementById('smsPinSetupSection');
+    const pinList = document.getElementById('smsPinSetupList');
+    if (pinSection) pinSection.style.display = 'none';
+    if (pinList) pinList.innerHTML = '';
 }
 
 async function editAdminMessageForAll() {
@@ -908,24 +1016,6 @@ async function deleteAdminMessageForAll() {
     }
 }
 
-if (smsTextarea) {
-    smsTextarea.addEventListener('input', () => {
-        const remaining = MAX_CHARS - smsTextarea.value.length;
-        if (smsCharCounter) {
-            smsCharCounter.innerText = `${remaining} restantes`;
-        }
-
-        if (remaining <= 0) {
-            charLimitMsg.innerText = "Você atingiu o limite de caracteres!";
-            charLimitMsg.style.display = "block";
-            smsTextarea.style.borderColor = 'red';
-        } else {
-            charLimitMsg.style.display = "none";
-            smsTextarea.style.borderColor = '';
-        }
-    });
-}
-
 // note: closeBulkActionsBar is defined earlier inside initializeBulkActions
 // to manage appearance and body class. Duplicate definition removed to avoid conflicts.
 
@@ -994,11 +1084,30 @@ async function sendBulkSMS() {
         return;
     }
 
+    // modelo de boas-vindas: recolher PINs definidos para quem ainda não tinha
+    const newPins = {};
+    if (usaModeloBoasVindas()) {
+        const pinInputs = document.querySelectorAll('.sms-pin-input');
+        for (const input of pinInputs) {
+            const value = input.value.trim();
+            const empId = input.getAttribute('data-employee-id');
+            if (value.length < 4) {
+                showError('Defina um PIN de pelo menos 4 dígitos para todos os funcionários listados.');
+                input.focus();
+                return;
+            }
+            newPins[empId] = value;
+        }
+    }
+
     // enviar para o endpoint
     const formData = new FormData();
     formData.append('ids', JSON.stringify(ids));
     formData.append('message', msg);
     formData.append('delivery_mode', deliveryMode);
+    if (Object.keys(newPins).length > 0) {
+        formData.append('new_pins', JSON.stringify(newPins));
+    }
 
     console.log('Enviando para ' + ids.length + ' funcionários:', ids);
 

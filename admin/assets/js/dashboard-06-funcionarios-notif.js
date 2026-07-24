@@ -1061,9 +1061,8 @@ async function deleteAdminMessage() {
 // Exemplo de como mostrar a div após o envio
 async function sendBulkSMS() {
     const msg = document.getElementById('smsMessage').value;
-    const selectedModeEl = document.querySelector('input[name="notifyDeliveryMode"]:checked');
-    const deliveryMode = selectedModeEl ? selectedModeEl.value : 'both';
-    
+    const channels = Array.from(document.querySelectorAll('input[name="notifyChannel"]:checked')).map((el) => el.value);
+
     // validar mensagem
     if (msg.trim() === "") {
         showError('Mensagem vazia!');
@@ -1079,8 +1078,8 @@ async function sendBulkSMS() {
         return;
     }
 
-    if (!['app', 'phone', 'both'].includes(deliveryMode)) {
-        showError('Canal de envio inválido.');
+    if (channels.length === 0) {
+        showError('Selecione pelo menos um canal de envio.');
         return;
     }
 
@@ -1104,7 +1103,7 @@ async function sendBulkSMS() {
     const formData = new FormData();
     formData.append('ids', JSON.stringify(ids));
     formData.append('message', msg);
-    formData.append('delivery_mode', deliveryMode);
+    formData.append('channels', JSON.stringify(channels));
     if (Object.keys(newPins).length > 0) {
         formData.append('new_pins', JSON.stringify(newPins));
     }
@@ -1138,7 +1137,7 @@ async function sendBulkSMS() {
                 message: msg,
                 sentAt: Date.now(),
                 scope: 'selected',
-                deliveryMode
+                channels
             };
 
             showSuccess(data.message || 'SMS enviado com sucesso!');

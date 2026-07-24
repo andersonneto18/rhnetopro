@@ -46,10 +46,22 @@ if (isset($_POST['ids'])) {
     }
 }
 $message = trim($_POST['message'] ?? '');
-$deliveryMode = strtolower(trim((string)($_POST['delivery_mode'] ?? 'both')));
 
-if (!in_array($deliveryMode, ['app', 'phone', 'both'], true)) {
-    $deliveryMode = 'both';
+$channels = [];
+if (isset($_POST['channels'])) {
+    $decodedChannels = json_decode((string)$_POST['channels'], true);
+    if (is_array($decodedChannels)) {
+        $channels = array_map('strtolower', $decodedChannels);
+    }
+} elseif (isset($_POST['delivery_mode'])) {
+    // Compatibilidade com o formato antigo (um único modo: app/phone/both).
+    $legacyMode = strtolower(trim((string)$_POST['delivery_mode']));
+    $channels = $legacyMode === 'both' ? ['app', 'phone'] : [$legacyMode];
+}
+$channels = array_values(array_intersect($channels, ['app', 'phone', 'email']));
+
+if (empty($channels)) {
+    $channels = ['app', 'phone'];
 }
 
 if (empty($ids) || $message === '') {
@@ -78,7 +90,7 @@ try {
     $params[] = $client_id;
 
     // valida todos os IDs do cliente em uma única query
-    $stmt = $pdo->prepare("SELECT id, name, phone, pin FROM employees WHERE id IN ($placeholders) AND client_id = ?");
+    $stmt = $pdo->prepare("SELECT id, name, phone, email, pin FROM employees WHERE id IN ($placeholders) AND client_id = ?");
     $stmt->execute($params);
     $validEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -92,8 +104,9 @@ try {
         return (int)($employee['id'] ?? 0);
     }, $validEmployees);
 
-    $sendToApp = in_array($deliveryMode, ['app', 'both'], true);
-    $sendToPhone = in_array($deliveryMode, ['phone', 'both'], true);
+    $sendToApp = in_array('app', $channels, true);
+    $sendToPhone = in_array('phone', $channels, true);
+    $sendToEmail = in_array('email', $channels, true);
 
     // Mensagem com marcadores (modelo de boas-vindas): personaliza por funcionário
     // ({nome}, {pin}, {restaurante}, {link_app}) em vez de enviar o mesmo texto a todos.
@@ -176,7 +189,7 @@ try {
             $hasSendChannelCol = false;
         }
 
-        $notifChannel = $deliveryMode === 'both' ? 'both' : 'app';
+        $notifChannel = count($channels) > 1 ? 'both' : 'app';
         $notifParts = [];
         $notifParams = [];
         foreach ($validIds as $empId) {
@@ -216,6 +229,44 @@ try {
 
     if ($sendToPhone) {
         $smsSendResult = sendInfobipSms($validEmployees, $message, $smsConfig, $personalizedMessages);
+    }
+
+    $emailSendResult = [
+        'configured' => false,
+        'sent_count' => 0,
+        'failed_count' => 0,
+        'skipped_count' => 0,
+        'details' => [],
+    ];
+
+    if ($sendToEmail) {
+        require_once __DIR__ . '/../../includes/mail_sender.php';
+        $emailSendResult['configured'] = trim((string)(getenv('SMTP_HOST') ?: '')) !== ''
+            && trim((string)(getenv('MAIL_FROM_EMAIL') ?: '')) !== '';
+
+        $emailSubject = $usaPersonalizacao ? 'Bem-vindo(a) à equipa!' : 'Mensagem da equipa';
+
+        foreach ($validEmployees as $employee) {
+            $empId = (int)($employee['id'] ?? 0);
+            $empEmail = trim((string)($employee['email'] ?? ''));
+
+            if ($empEmail === '') {
+                $emailSendResult['skipped_count']++;
+                $emailSendResult['details'][] = ['employee_id' => $empId, 'status' => 'skipped', 'error' => 'Email ausente.'];
+                continue;
+            }
+
+            $bodyText = $personalizedMessages[$empId] ?? $message;
+            $emailResult = sendTransactionalEmail($empEmail, (string)($employee['name'] ?? ''), $emailSubject, $bodyText);
+
+            if ($emailResult['success']) {
+                $emailSendResult['sent_count']++;
+                $emailSendResult['details'][] = ['employee_id' => $empId, 'status' => 'sent'];
+            } else {
+                $emailSendResult['failed_count']++;
+                $emailSendResult['details'][] = ['employee_id' => $empId, 'status' => 'failed', 'error' => $emailResult['error']];
+            }
+        }
     }
 
     try {
@@ -267,44 +318,37 @@ try {
     }
 
     $response['success'] = true;
-    $response['delivery_mode'] = $deliveryMode;
+    $response['channels'] = $channels;
     $response['app_sent_count'] = $sendToApp ? $sent : 0;
     $response['sms'] = $smsSendResult;
+    $response['email'] = $emailSendResult;
 
-    if ($deliveryMode === 'app') {
-        $response['message'] = sprintf(
-            'Notificação no app enviada para %d funcionário(s).',
-            $sent
-        );
-    } elseif ($deliveryMode === 'phone' && !empty($smsSendResult['configured'])) {
-        $response['message'] = sprintf(
-            'SMS real enviado para %d funcionário(s): %d enviado(s), %d falha(s), %d ignorado(s).',
-            $sent,
-            (int)($smsSendResult['sent_count'] ?? 0),
-            (int)($smsSendResult['failed_count'] ?? 0),
-            (int)($smsSendResult['skipped_count'] ?? 0)
-        );
-    } elseif ($deliveryMode === 'both' && !empty($smsSendResult['configured'])) {
-        $response['message'] = sprintf(
-            'Notificações internas enviadas para %d funcionário(s). SMS real: %d enviado(s), %d falha(s), %d ignorado(s).',
-            $sent,
-            (int)($smsSendResult['sent_count'] ?? 0),
-            (int)($smsSendResult['failed_count'] ?? 0),
-            (int)($smsSendResult['skipped_count'] ?? 0)
-        );
-    } elseif ($deliveryMode === 'phone') {
-        $response['message'] = sprintf(
-            'SMS real não configurado para %d funcionário(s): %s',
-            $sent,
-            (string)($smsSendResult['error'] ?? 'configuração ausente')
-        );
-    } else {
-        $response['message'] = sprintf(
-            'Notificações internas enviadas para %d funcionário(s). SMS real não configurado: %s',
-            $sent,
-            (string)($smsSendResult['error'] ?? 'configuração ausente')
-        );
+    $messageParts = [];
+    if ($sendToApp) {
+        $messageParts[] = sprintf('App: %d notificado(s)', $sent);
     }
+    if ($sendToPhone) {
+        $messageParts[] = !empty($smsSendResult['configured'])
+            ? sprintf(
+                'SMS: %d enviado(s), %d falha(s), %d ignorado(s)',
+                (int)($smsSendResult['sent_count'] ?? 0),
+                (int)($smsSendResult['failed_count'] ?? 0),
+                (int)($smsSendResult['skipped_count'] ?? 0)
+            )
+            : sprintf('SMS não configurado (%s)', (string)($smsSendResult['error'] ?? 'configuração ausente'));
+    }
+    if ($sendToEmail) {
+        $messageParts[] = !empty($emailSendResult['configured'])
+            ? sprintf(
+                'Email: %d enviado(s), %d falha(s), %d ignorado(s)',
+                $emailSendResult['sent_count'],
+                $emailSendResult['failed_count'],
+                $emailSendResult['skipped_count']
+            )
+            : 'Email não configurado';
+    }
+
+    $response['message'] = $messageParts !== [] ? implode(' | ', $messageParts) : 'Nenhum canal processado.';
 } catch (Throwable $e) {
     if ($pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();

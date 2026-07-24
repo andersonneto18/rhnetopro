@@ -957,16 +957,16 @@
                         <div class="am-sec-lbl"><i class="fas fa-paper-plane"></i> Canal de Envio</div>
                         <div style="display:flex;flex-wrap:wrap;gap:.85rem;">
                             <label class="am-lbl" style="display:flex;align-items:center;gap:.35em;cursor:pointer;font-weight:400;">
-                                <input type="radio" name="notifyDeliveryMode" value="app" />
+                                <input type="checkbox" name="notifyChannel" value="app" checked />
                                 App do funcionário
                             </label>
                             <label class="am-lbl" style="display:flex;align-items:center;gap:.35em;cursor:pointer;font-weight:400;">
-                                <input type="radio" name="notifyDeliveryMode" value="phone" />
-                                Número de telefone
+                                <input type="checkbox" name="notifyChannel" value="phone" checked />
+                                Número de telefone (SMS)
                             </label>
                             <label class="am-lbl" style="display:flex;align-items:center;gap:.35em;cursor:pointer;font-weight:400;">
-                                <input type="radio" name="notifyDeliveryMode" value="both" checked />
-                                Ambos
+                                <input type="checkbox" name="notifyChannel" value="email" />
+                                Email
                             </label>
                         </div>
                     </div>

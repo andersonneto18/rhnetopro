@@ -2870,6 +2870,15 @@ async function openReciboModal(periodoKey) {
             statusBadge.textContent = r.status ? (r.status.charAt(0).toUpperCase() + r.status.slice(1)) : 'Pendente';
         }
 
+        const btnImprimir = document.getElementById('btnImprimirRecibo');
+        if (btnImprimir) {
+            const podeImprimir = r.status === 'pago';
+            btnImprimir.disabled = !podeImprimir;
+            btnImprimir.style.opacity = podeImprimir ? '' : '.5';
+            btnImprimir.style.cursor = podeImprimir ? '' : 'not-allowed';
+            btnImprimir.title = podeImprimir ? '' : 'Disponível apenas depois de o pagamento ser confirmado';
+        }
+
         const fmt = v => parseFloat(v || 0).toFixed(2).replace('.', ',') + ' €';
         const row = (lbl, val, bold) => `<tr${bold ? ' class="recibo-row-total"' : ''}>
             <td class="recibo-td-lbl">${lbl}</td>
@@ -2907,6 +2916,9 @@ function closeReciboModal() {
 }
 
 function imprimirRecibo() {
+    const btnImprimir = document.getElementById('btnImprimirRecibo');
+    if (btnImprimir && btnImprimir.disabled) return;
+
     const body = document.getElementById('reciboModalBody');
     const titulo = document.getElementById('reciboModalPeriodo')?.textContent || '';
     if (!body) return;

@@ -2111,7 +2111,8 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                 </div>
                 <div class="recibo-modal-body" id="reciboModalBody"></div>
                 <div class="recibo-modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="imprimirRecibo()">
+                    <button type="button" class="btn btn-primary" id="btnImprimirRecibo" onclick="imprimirRecibo()"
+                        title="Disponível apenas depois de o pagamento ser confirmado">
                         <i class="fas fa-print"></i> Imprimir / PDF
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="closeReciboModal()">Fechar</button>

@@ -1737,7 +1737,14 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                 $turnoBadgeClass = $turnoFoiTrocado ? 'badge-warning' : ($turnoEmAndamento ? 'badge-info' : 'badge-success');
                                 $turnoBadgeLabel = $turnoFoiTrocado ? 'Trocado' : ($turnoEmAndamento ? 'Em andamento' : 'Ativo');
                             ?>
-                            <div class="turno-item">
+                            <div class="turno-item"
+                                data-turno-id="<?php echo (int)($turno['id'] ?? 0); ?>"
+                                data-turno-tipo="<?php echo htmlspecialchars($turno['turno_tipo'], ENT_QUOTES, 'UTF-8'); ?>"
+                                data-dias-semana="<?php echo htmlspecialchars((string)($turno['dias_semana'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                data-data-inicio="<?php echo htmlspecialchars((string)($turno['data_inicio'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                data-data-fim="<?php echo htmlspecialchars((string)($turno['data_fim'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                data-horario-inicio="<?php echo htmlspecialchars((string)($turno['horario_inicio'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                data-horario-fim="<?php echo htmlspecialchars((string)($turno['horario_fim'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="turno-topo">
                                     <strong><?php echo htmlspecialchars($turno['turno_tipo']); ?></strong>
                                     <span class="status-badge <?php echo $turnoBadgeClass; ?>">
@@ -1789,6 +1796,9 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                     </div>
                                     <?php endforeach; ?>
                                 </div>
+                                <button type="button" class="btn-ver-calendario-turno" onclick="abrirCalendarioTurno(this)">
+                                    <i class="fas fa-calendar-days"></i> Ver calendário completo
+                                </button>
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -2120,23 +2130,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
             }
             $defPhone  = htmlspecialchars($employee['phone'] ?? '');
             ?>
-            <div class="def-profile-header">
-                <div class="def-avatar-wrap">
-                    <?php if ($defAvatar): ?>
-                        <img id="defAvatarImg" src="<?= htmlspecialchars($defAvatar) ?>?v=<?= time() ?>" alt="Avatar" class="def-avatar-img">
-                    <?php else: ?>
-                        <div id="defAvatarInitials" class="def-avatar-initials"><?= $defInitials ?></div>
-                    <?php endif; ?>
-                    <label class="def-avatar-overlay" title="Alterar foto" for="defAvatarInput">
-                        <i class="fas fa-camera"></i>
-                    </label>
-                    <input type="file" id="defAvatarInput" accept="image/jpeg,image/png,image/webp" style="display:none">
-                </div>
-                <div class="def-profile-name">
-                    <span class="def-name"><?= $defName ?></span>
-                    <span class="def-position"><?= htmlspecialchars($employee['position'] ?? 'Funcionário') ?></span>
-                </div>
-            </div>
+           
 
             <div class="grid">
                 <!-- Informações -->
@@ -2411,6 +2405,30 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="turnoCalendarModal" class="modal">
+        <div class="modal-content" style="max-width:420px;">
+            <span class="close-modal" onclick="closeTurnoCalendarModal()">&times;</span>
+            <h3 style="margin-bottom:.25rem;color:var(--dark);">
+                <i class="fas fa-calendar-days"></i> <span id="turnoCalTitulo">Escala</span>
+            </h3>
+            <p style="margin:0 0 1rem;font-size:.82rem;color:#94a3b8;" id="turnoCalHorario"></p>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
+                <button type="button" class="btn-turno-cal-nav" onclick="mudarMesCalendarioTurno(-1)"><i class="fas fa-chevron-left"></i></button>
+                <strong id="turnoCalMesLabel" style="font-size:.95rem;"></strong>
+                <button type="button" class="btn-turno-cal-nav" onclick="mudarMesCalendarioTurno(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <div class="turno-full-cal-grid" id="turnoCalGrid"></div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem;font-size:.75rem;color:#94a3b8;">
+                <span><span class="turno-cal-legend-dot turno-cal-legend-dot--turno"></span> Dia de turno</span>
+                <span><span class="turno-cal-legend-dot turno-cal-legend-dot--proximo"></span> Próximo turno</span>
+                <span><span class="turno-cal-legend-dot turno-cal-legend-dot--hoje"></span> Hoje</span>
+            </div>
         </div>
     </div>
 

@@ -1782,6 +1782,147 @@ async function _pollTrocas() {
             if (event.target === modal) {
                 closeGorjetaModal();
             }
+            const calModal = document.getElementById('turnoCalendarModal');
+            if (event.target === calModal) {
+                closeTurnoCalendarModal();
+            }
+        }
+
+        // ========== CALENDÁRIO COMPLETO DO TURNO ==========
+        var _turnoCalState = null; // { tipo, diasOn, dataInicio, dataFim, horarioInicio, horarioFim, year, month }
+
+        function _parseDiasSemanaJs(str) {
+            var map = {
+                'dom': 0, 'sun': 0, 'domingo': 0,
+                'seg': 1, 'mon': 1, 'segunda': 1,
+                'ter': 2, 'tue': 2, 'terca': 2, 'terça': 2,
+                'qua': 3, 'wed': 3, 'quarta': 3,
+                'qui': 4, 'thu': 4, 'quinta': 4,
+                'sex': 5, 'fri': 5, 'sexta': 5,
+                'sab': 6, 'sat': 6, 'sabado': 6, 'sábado': 6
+            };
+            var out = [];
+            (str || '').toLowerCase().split(/[,;\s/|]+/).forEach(function (raw) {
+                var p = raw.replace(/[-_].*/, '').trim();
+                if (p === '') return;
+                if (map.hasOwnProperty(p)) {
+                    out.push(map[p]);
+                } else if (/^[0-6]$/.test(p)) {
+                    out.push(parseInt(p, 10));
+                }
+            });
+            return out.filter(function (v, i, arr) { return arr.indexOf(v) === i; });
+        }
+
+        function _isoDate(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function _diaCorrespondeATurno(dateObj, diasOn, dataInicio, dataFim) {
+            var iso = _isoDate(dateObj);
+            if (dataInicio && iso < dataInicio) return false;
+            if (dataFim && iso > dataFim) return false;
+            if (diasOn.length === 0) return true; // sem dias definidos = todos os dias, dentro da vigência
+            return diasOn.indexOf(dateObj.getDay()) !== -1;
+        }
+
+        function _calcularProximoTurno(diasOn, dataInicio, dataFim) {
+            var hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            for (var i = 0; i < 730; i++) {
+                var d = new Date(hoje);
+                d.setDate(hoje.getDate() + i);
+                if (_diaCorrespondeATurno(d, diasOn, dataInicio, dataFim)) {
+                    return _isoDate(d);
+                }
+            }
+            return null;
+        }
+
+        function abrirCalendarioTurno(btnEl) {
+            var item = btnEl.closest('.turno-item');
+            if (!item) return;
+
+            var diasOn = _parseDiasSemanaJs(item.getAttribute('data-dias-semana') || '');
+            var dataInicio = item.getAttribute('data-data-inicio') || '';
+            var dataFim = item.getAttribute('data-data-fim') || '';
+            if (dataInicio === '0000-00-00') dataInicio = '';
+            if (dataFim === '0000-00-00') dataFim = '';
+
+            var hoje = new Date();
+            _turnoCalState = {
+                tipo: item.getAttribute('data-turno-tipo') || 'Turno',
+                diasOn: diasOn,
+                dataInicio: dataInicio,
+                dataFim: dataFim,
+                horarioInicio: (item.getAttribute('data-horario-inicio') || '').substring(0, 5),
+                horarioFim: (item.getAttribute('data-horario-fim') || '').substring(0, 5),
+                proximoTurno: _calcularProximoTurno(diasOn, dataInicio, dataFim),
+                year: hoje.getFullYear(),
+                month: hoje.getMonth()
+            };
+
+            document.getElementById('turnoCalTitulo').textContent = _turnoCalState.tipo;
+            document.getElementById('turnoCalHorario').textContent =
+                _turnoCalState.horarioInicio && _turnoCalState.horarioFim
+                    ? ('Horário: ' + _turnoCalState.horarioInicio + ' - ' + _turnoCalState.horarioFim)
+                    : '';
+
+            _renderCalendarioTurno();
+            document.getElementById('turnoCalendarModal').style.display = 'block';
+        }
+
+        function closeTurnoCalendarModal() {
+            document.getElementById('turnoCalendarModal').style.display = 'none';
+        }
+
+        function mudarMesCalendarioTurno(delta) {
+            if (!_turnoCalState) return;
+            _turnoCalState.month += delta;
+            if (_turnoCalState.month < 0) {
+                _turnoCalState.month = 11;
+                _turnoCalState.year -= 1;
+            } else if (_turnoCalState.month > 11) {
+                _turnoCalState.month = 0;
+                _turnoCalState.year += 1;
+            }
+            _renderCalendarioTurno();
+        }
+
+        function _renderCalendarioTurno() {
+            var s = _turnoCalState;
+            if (!s) return;
+
+            var mesesPt = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            document.getElementById('turnoCalMesLabel').textContent = mesesPt[s.month] + ' ' + s.year;
+
+            var firstOfMonth = new Date(s.year, s.month, 1);
+            var startOffset = (firstOfMonth.getDay() + 6) % 7; // grelha começa na segunda-feira
+            var gridStart = new Date(s.year, s.month, 1 - startOffset);
+            var hojeIso = _isoDate(new Date());
+
+            var dowLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+            var html = dowLabels.map(function (d) { return '<div class="turno-full-cal-dow">' + d + '</div>'; }).join('');
+
+            for (var i = 0; i < 42; i++) {
+                var d = new Date(gridStart);
+                d.setDate(gridStart.getDate() + i);
+                var iso = _isoDate(d);
+                var outside = d.getMonth() !== s.month;
+                var ehTurno = !outside && _diaCorrespondeATurno(d, s.diasOn, s.dataInicio, s.dataFim);
+                var ehProximo = iso === s.proximoTurno;
+                var ehHoje = iso === hojeIso;
+
+                var classes = ['turno-full-cal-day'];
+                if (outside) classes.push('turno-full-cal-day--outside');
+                if (ehTurno) classes.push('turno-full-cal-day--turno');
+                if (ehHoje) classes.push('turno-full-cal-day--hoje');
+                if (ehProximo) classes.push('turno-full-cal-day--proximo');
+
+                html += '<div class="' + classes.join(' ') + '" title="' + (ehProximo ? 'Próximo turno' : '') + '">' + d.getDate() + '</div>';
+            }
+
+            document.getElementById('turnoCalGrid').innerHTML = html;
         }
 
         // Registrar gorjeta

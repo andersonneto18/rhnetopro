@@ -509,6 +509,11 @@ body {
     transition: background 0.2s ease;
 }
 
+.message-content {
+    flex: 1 1 0%;
+    min-width: 0;
+}
+
 .sms-actions {
     display: flex;
     justify-content: space-between;

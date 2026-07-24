@@ -1540,6 +1540,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                         >
                                     <?php endif; ?>
                                 </div>
+                                <div class="message-content">
                                 <div class="message-meta">
                                     <?php
                                     $msg = $m['mensagem'] ?? '';
@@ -1583,6 +1584,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>

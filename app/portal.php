@@ -888,7 +888,8 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
     <div class="header">
         <div class="header-content">
             <div class="user-info">
-                <div class="avatar" id="navAvatar">
+                <div class="avatar" id="navAvatar" onclick="showPortalSection('definicoes-section')"
+                    role="button" tabindex="0" title="Definições da conta" style="cursor:pointer;">
                     <?php if (!empty($employee['profile_picture'])): ?>
                         <img src="../<?php echo htmlspecialchars($employee['profile_picture']); ?>" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
                     <?php else:
@@ -940,10 +941,6 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
             <button type="button" class="nav-btn" data-section="ferias-section">
                 <i class="fas fa-umbrella-beach"></i>
                 Férias
-            </button>
-            <button type="button" class="nav-btn" data-section="definicoes-section">
-                <i class="fas fa-cog"></i>
-                Definições
             </button>
         </nav>
 

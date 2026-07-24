@@ -913,6 +913,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    const navAvatar = document.getElementById('navAvatar');
+    if (navAvatar) {
+        navAvatar.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                showPortalSection('definicoes-section');
+            }
+        });
+    }
+
     document.addEventListener('click', function (event) {
         if (window.innerWidth > 768) {
             return;

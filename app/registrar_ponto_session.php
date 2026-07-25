@@ -89,9 +89,11 @@ try {
     }
 
     // Encontra o turno previsto para hoje (dia da semana + vigência), tal como usado em Assiduidade.
-    $turnoDeHoje = null;
+    // Quando há mais do que um turno válido para hoje (ex.: turno antigo já terminado + turno novo
+    // criado pelo admin), preferimos o que está mesmo a decorrer agora — nunca o primeiro da lista.
     $weekdayMap = [0 => 'dom', 1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => 'sab'];
     $weekdayToken = $weekdayMap[(int)date('w')];
+    $candidatosHoje = [];
     foreach ($turnosAtivos as $t) {
         $diasRaw = trim((string)($t['dias_semana'] ?? ''));
         $dias = [];
@@ -113,8 +115,42 @@ try {
             && ($fimVig === '' || $fimVig === '0000-00-00' || $fimVig >= $data_hoje);
 
         if ($diaCorreto && $dentroVig) {
-            $turnoDeHoje = $t;
-            break;
+            $candidatosHoje[] = $t;
+        }
+    }
+
+    $turnoDeHoje = null;
+    if (count($candidatosHoje) === 1) {
+        $turnoDeHoje = $candidatosHoje[0];
+    } elseif (count($candidatosHoje) > 1) {
+        $agoraTsSel = time();
+        $melhorFuturo = null;
+        $melhorPassado = null;
+        foreach ($candidatosHoje as $t) {
+            $hIni = substr((string)($t['horario_inicio'] ?? ''), 0, 5);
+            $hFim = substr((string)($t['horario_fim'] ?? ''), 0, 5);
+            if ($hIni === '' || $hFim === '') continue;
+            $iTs = strtotime($data_hoje . ' ' . $hIni);
+            $fTs = strtotime($data_hoje . ' ' . $hFim);
+            if ($iTs === false || $fTs === false) continue;
+            if ($fTs <= $iTs) $fTs += 24 * 60 * 60; // turno noturno
+
+            if ($agoraTsSel >= $iTs && $agoraTsSel <= $fTs) {
+                // Turno a decorrer agora — é sempre a melhor escolha.
+                $turnoDeHoje = $t;
+                break;
+            }
+            if ($agoraTsSel < $iTs && ($melhorFuturo === null || $iTs < $melhorFuturo['ts'])) {
+                $melhorFuturo = ['t' => $t, 'ts' => $iTs];
+            }
+            if ($agoraTsSel > $fTs && ($melhorPassado === null || $fTs > $melhorPassado['ts'])) {
+                $melhorPassado = ['t' => $t, 'ts' => $fTs];
+            }
+        }
+        if ($turnoDeHoje === null) {
+            // Nenhum a decorrer agora: prioriza o próximo a começar; só cai no mais
+            // recente já terminado se não houver nenhum turno ainda por começar.
+            $turnoDeHoje = $melhorFuturo['t'] ?? $melhorPassado['t'] ?? $candidatosHoje[0];
         }
     }
 

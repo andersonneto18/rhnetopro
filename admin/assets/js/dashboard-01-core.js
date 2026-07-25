@@ -522,6 +522,7 @@ function renderPresencaModalFromRow(row, employeeId) {
         'falta': 'status-falta',
         'Atrasado': 'status-warning', 'atrasado': 'status-warning',
         'Em Aberto': 'status-warning', 'Em aberto': 'status-warning',
+        'Turno em Curso': 'status-warning', 'Turno em curso': 'status-warning', 'TURNO EM CURSO': 'status-warning',
         'Inativo': 'status-inactive',
         'Férias': 'status-ferias', 'Ferias': 'status-ferias',
         'Sem turno': 'status-nao-marcado',
@@ -978,6 +979,13 @@ function syncFaltaTipoVisibility() {
     }
 }
 
+function formatAtrasoMinutos(min) {
+    if (min < 60) return `${min} min`;
+    const horas = Math.floor(min / 60);
+    const minutosRestantes = min % 60;
+    return minutosRestantes > 0 ? `${horas}h ${minutosRestantes}min` : `${horas}h`;
+}
+
 function calculateDelayStatus(horaEntrada, expectedStart, toleranciaMin, tipoDia) {
     const tipo = String(tipoDia || 'normal').trim().toLowerCase();
     if (!horaEntrada || horaEntrada === '--:--') return '—';
@@ -992,7 +1000,7 @@ function calculateDelayStatus(horaEntrada, expectedStart, toleranciaMin, tipoDia
     if (Number.isNaN(entradaMin) || Number.isNaN(previstoMin)) return '—';
 
     const atraso = entradaMin - previstoMin - Math.max(0, parseInt(toleranciaMin, 10) || 0);
-    if (atraso > 0) return `Atrasado (+${atraso} min)`;
+    if (atraso > 0) return `Atrasado (+${formatAtrasoMinutos(atraso)})`;
     return 'Pontual';
 }
 
@@ -1063,7 +1071,7 @@ function applyAttendanceRecordToRow(row, employeeId, record) {
         statusKey = 'sem-turno';
     } else if (record.status === 'presente' && entrada !== '--:--' && saida === '--:--' && record.status_confirmacao !== 'confirmado') {
         pClass = 'status-warning';
-        pLabel = 'EM ABERTO';
+        pLabel = 'TURNO EM CURSO';
         statusKey = 'em-aberto';
     } else if (record.status === 'presente') {
         pClass = 'status-presente';

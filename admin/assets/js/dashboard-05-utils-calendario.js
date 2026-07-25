@@ -577,7 +577,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (statusText.includes('sem turno')) return 'sem-turno';
         if (statusText.includes('folga')) return 'folga';
         if (statusText.includes('falta')) return 'falta';
-        if (statusText.includes('em aberto')) return 'em-aberto';
+        if (statusText.includes('em curso')) return 'em-aberto';
         if (statusText.includes('atras')) return 'atrasado';
         if (statusText.includes('férias') || statusText.includes('ferias')) return 'ferias';
         if (statusText.includes('inativo')) return 'inativo';

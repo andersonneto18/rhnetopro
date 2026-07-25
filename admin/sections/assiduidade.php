@@ -1,5 +1,21 @@
 <?php
 // Secção "Assiduidade" — incluída a partir de admin/dashboard.php (depende de $pdo, $employees, $loggedInClientId, $estHorario, etc. já definidos lá). Define $allJustificativas, $pontoDateColumn, $justificativasPendentes, etc. usados pela secção Solicitações logo a seguir.
+
+// Formata minutos de atraso — abaixo de 60 mostra "X min", a partir daí passa
+// a "Xh Ymin" para não mostrar números de 3 dígitos pouco legíveis nas badges.
+function formatAtrasoMinutos(int $min): string
+{
+    if ($min < 60) {
+        return $min . ' min';
+    }
+    $horas = intdiv($min, 60);
+    $minutosRestantes = $min % 60;
+    $label = $horas . 'h';
+    if ($minutosRestantes > 0) {
+        $label .= ' ' . $minutosRestantes . 'min';
+    }
+    return $label;
+}
 ?>
         <section id="assiduidade-section" class="content-section">
 
@@ -165,7 +181,7 @@
                                 <option value="">Todos os status</option>
                                 <option value="presente">Presente</option>
                                 <option value="falta">Falta</option>
-                                <option value="em-aberto">Em aberto</option>
+                                <option value="em-aberto">Turno em curso</option>
                                 <option value="invalidado">Invalidado</option>
                             </select>
 
@@ -397,7 +413,7 @@
                                         $histStatusClass = 'status-falta';
                                         $histStatusKey = 'falta';
                                     } elseif ($histStatusRaw === 'presente' && $histEntrada !== '--:--' && $histSaida === '--:--') {
-                                        $histStatusLabel = 'Em Aberto';
+                                        $histStatusLabel = 'Turno em Curso';
                                         $histStatusClass = 'status-warning';
                                         $histStatusKey = 'em-aberto';
                                     } elseif ($histStatusRaw === 'presente') {
@@ -505,7 +521,7 @@
                         <span id="summaryPresencaEmAberto" class="pa-kpi-num">0</span>
                         <span class="pa-kpi-ico" style="color:#fb923c;"><i class="fas fa-hourglass-half"></i></span>
                     </div>
-                    <span class="pa-kpi-lbl">Em aberto</span>
+                    <span class="pa-kpi-lbl">Turno em curso</span>
                 </button>
 
                 <button type="button" class="pa-kpi-card" data-status-key="sem-turno" style="--pa-accent:#94a3b8;"
@@ -526,11 +542,7 @@
                             class="pa-inp pa-search">
                         <span id="resultCountPresenca" class="pa-chip"></span>
                         <div class="pa-spacer"></div>
-                        <button type="button" class="fr-filter-toggle" id="paFilterToggle"
-                            onclick="document.getElementById('paAdvFilters').classList.toggle('fr-adv-open'); this.classList.toggle('pa-filter-open')">
-                            <i class="fas fa-sliders-h"></i> Filtros
-                            <span class="fr-filter-badge" id="paFilterBadge" style="display:none"></span>
-                        </button>
+                        
                         <button type="button" id="togglePresencaHistoryBtn" class="btn btn-secondary"
                             aria-haspopup="dialog"
                             aria-controls="presencaHistoryPanel"
@@ -539,21 +551,7 @@
                             <i class="fas fa-history"></i>
                             <span>Histórico</span>
                         </button>
-                        <div class="fr-export-wrap" style="position:relative;">
-                            <button class="fr-export-btn" onclick="toggleExportPresencaDropdown()">
-                                <i class="fas fa-arrow-up-from-bracket"></i>
-                                <span>Exportar</span>
-                                <i class="fas fa-chevron-down" style="margin-left:4px; font-size:.78em;"></i>
-                            </button>
-                            <div id="exportPresencaDropdown" class="fr-export-menu" style="display:none;">
-                                <a href="#" id="exportPresencaPDF" onclick="exportPresencaPDF(); return false;" class="fr-export-item">
-                                    <i class="fas fa-file-pdf" style="color:#e74c3c;"></i> PDF
-                                </a>
-                                <a href="#" id="expotpresenca" onclick="exportPresencaCSV(); return false;" class="fr-export-item">
-                                    <i class="fas fa-file-csv" style="color:#27ae60;"></i> CSV
-                                </a>
-                            </div>
-                        </div>
+                       
                     </div>
 
                     <!-- Collapsible advanced filters -->
@@ -564,7 +562,7 @@
                             <option value="presente">Presente</option>
                             <option value="falta">Falta</option>
                             <option value="atrasado">Atrasado</option>
-                            <option value="em-aberto">Em aberto</option>
+                            <option value="em-aberto">Turno em curso</option>
                             <option value="nao-registrado">Não registado</option>
                             <option value="sem-turno">Sem turno</option>
                             <option value="folga">Folga</option>
@@ -577,12 +575,12 @@
                         <button type="button" id="applyPresencaServer" class="fr-select"
                             onclick="applyPresencaServerFilter()"
                             style="cursor:pointer; background:rgba(59,130,246,.12); color:#60a5fa; border-color:rgba(59,130,246,.25); white-space:nowrap;">
-                            <i class="fas fa-database"></i> Aplicar período
+                            <i class="fas fa-database"></i> Aplicar
                         </button>
                         <button type="button" id="clearPresencaServer" class="fr-clear-btn"
                             onclick="clearPresencaServerFilter()"
                             style="border-color:rgba(148,163,184,.25); color:#94a3b8; background:rgba(148,163,184,.07);">
-                            <i class="fas fa-eraser"></i> Limpar período
+                            <i class="fas fa-eraser"></i> Limpar
                         </button>
                     </div>
                 </div>
@@ -926,7 +924,7 @@
                                 if ($entradaTsCalc !== false && $previstoTsCalc !== false) {
                                     $diffMinAtraso = (int) floor(($entradaTsCalc - $previstoTsCalc) / 60) - $toleranciaMin;
                                     if ($diffMinAtraso > 0) {
-                                        $atrasoTexto = 'Atrasado (+' . $diffMinAtraso . ' min)';
+                                        $atrasoTexto = 'Atrasado (+' . formatAtrasoMinutos($diffMinAtraso) . ')';
                                     } else {
                                         $atrasoTexto = 'Pontual';
                                     }
@@ -956,7 +954,7 @@
                                 $status_classe = 'status-nao-marcado';
                             } elseif ($entrada && (!$saida && !$confirmado)) {
                                 // Ponto em aberto tem prioridade — é sobre o período em curso, não sobre pontualidade.
-                                $status_texto = 'EM ABERTO';
+                                $status_texto = 'TURNO EM CURSO';
                                 $status_classe = 'status-warning';
                             } else {
                                 $horaInicioTurno = substr((string)$horarioPrevisto, 0, 5);
@@ -981,7 +979,7 @@
                                     $entradaTs = strtotime($dateIso . ' ' . substr($primeiraEntradaHoje, 0, 5));
                                     if ($entradaTs !== false && $entradaTs > $toleranciaTs) {
                                         $_minAtrasoChegada = (int)round(($entradaTs - $inicioTurnoTs) / 60);
-                                        $status_texto = 'PRES. ATRASO (' . $_minAtrasoChegada . ' min)';
+                                        $status_texto = 'PRES. ATRASO (' . formatAtrasoMinutos($_minAtrasoChegada) . ')';
                                         $status_classe = 'status-warning';
                                     } else {
                                         $status_texto = 'PRESENTE';
@@ -999,7 +997,7 @@
                                     $status_classe = 'status-nao-marcado';
                                 } else {
                                     $_minAtrasoAtual = (int)round(($agoraTs - $inicioTurnoTs) / 60);
-                                    $status_texto = 'ATRASADO (' . $_minAtrasoAtual . ' min)';
+                                    $status_texto = 'ATRASADO (' . formatAtrasoMinutos($_minAtrasoAtual) . ')';
                                     $status_classe = 'status-warning';
                                 }
                             }
@@ -1136,7 +1134,7 @@
                                         $statusKey = 'agendado';
                                     } elseif (mb_stripos($normalizedStatusTexto, 'falta') !== false) {
                                         $statusKey = 'falta';
-                                    } elseif (mb_stripos($normalizedStatusTexto, 'em aberto') !== false) {
+                                    } elseif (mb_stripos($normalizedStatusTexto, 'em curso') !== false) {
                                         $statusKey = 'em-aberto';
                                     } elseif (mb_stripos($normalizedStatusTexto, 'atras') !== false) {
                                         $statusKey = 'atrasado';

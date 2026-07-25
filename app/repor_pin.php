@@ -78,7 +78,16 @@ if ($error === '' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="page-wrapper">
     <div class="bg-rotate"></div>
     <div class="form-box">
-        <div class="form-logo"><img src="../admin/views/images/rh1.png" alt="RHNeto Pro"></div>
+        <?php
+        $badgeIcon = 'fa-lock';
+        $badgeClass = '';
+        if ($success) { $badgeIcon = 'fa-check'; $badgeClass = 'form-logo-badge--ok'; }
+        elseif ($error !== '' && $_SERVER['REQUEST_METHOD'] !== 'POST') { $badgeIcon = 'fa-exclamation'; $badgeClass = 'form-logo-badge--warn'; }
+        ?>
+        <div class="form-logo-wrap">
+            <div class="form-logo"><img src="../admin/views/images/rh1.png" alt="RHNeto Pro"></div>
+            <div class="form-logo-badge <?php echo $badgeClass; ?>"><i class="fas <?php echo $badgeIcon; ?>"></i></div>
+        </div>
         <h2>Repor o PIN</h2>
 
         <?php if ($success): ?>

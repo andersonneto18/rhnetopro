@@ -119,9 +119,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="bg-rotate"></div>
     <div class="form-box">
         <form method="post" action="esqueci_pin.php" autocomplete="off">
-            <div class="form-logo"><img src="../admin/views/images/rh1.png" alt="RHNeto Pro"></div>
+            <div class="form-logo-wrap">
+                <div class="form-logo"><img src="../admin/views/images/rh1.png" alt="RHNeto Pro"></div>
+                <div class="form-logo-badge"><i class="fas fa-envelope"></i></div>
+            </div>
             <h2>Repor o PIN</h2>
-            <p class="form-sub">Indique o seu email — enviamos um link para repor o PIN</p>
+            <p class="form-sub">Indique o seu email e enviamos um link para definir um novo PIN</p>
 
             <?php if (!empty($_SESSION['pin_recover_error'])): ?>
             <div class="alert"><i class="fas fa-exclamation-triangle"></i><span><?php echo htmlspecialchars($_SESSION['pin_recover_error']); ?></span></div>
@@ -145,11 +148,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
 
             <?php if (!empty($_SESSION['pin_recover_debug_link'])): ?>
-            <p class="form-sub" style="margin-top:1rem;word-break:break-all;">Ambiente sem SMTP configurado — link de teste: <a href="<?php echo htmlspecialchars($_SESSION['pin_recover_debug_link']); ?>"><?php echo htmlspecialchars($_SESSION['pin_recover_debug_link']); ?></a></p>
+            <div class="debug-box">
+                <i class="fas fa-flask"></i>
+                <span>Ambiente sem SMTP configurado — link de teste: <a href="<?php echo htmlspecialchars($_SESSION['pin_recover_debug_link']); ?>"><?php echo htmlspecialchars($_SESSION['pin_recover_debug_link']); ?></a></span>
+            </div>
             <?php unset($_SESSION['pin_recover_debug_link']); ?>
             <?php endif; ?>
 
-            <p style="text-align:center;margin:1rem 0 0;font-size:.85rem;"><a href="employee_login.php" class="link-muted">Voltar ao login</a></p>
+            <p class="back-link"><a href="employee_login.php" class="link-muted"><i class="fas fa-arrow-left"></i> Voltar ao login</a></p>
         </form>
     </div>
 </div>

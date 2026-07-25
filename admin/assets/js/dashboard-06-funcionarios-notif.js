@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (remaining <= 0) {
                 if (charLimitMsg) {
-                    charLimitMsg.innerText = "Você atingiu o limite de caracteres!";
+                    charLimitMsg.innerText = "Atingiu o limite de caracteres!";
                     charLimitMsg.style.display = "block";
                 }
                 smsTextarea.style.borderColor = 'red';

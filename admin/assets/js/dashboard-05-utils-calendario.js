@@ -2223,7 +2223,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const confirmed = await showConfirm(
             'Excluir Funcionários',
-            `Você tem certeza que deseja excluir ${selected.length} funcionário${selected.length !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`,
+            `Tem certeza que deseja excluir ${selected.length} funcionário${selected.length !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`,
             'Sim, excluir',
             'Cancelar'
         );

@@ -4839,7 +4839,7 @@ try {
                 <i class="fas fa-gift"></i>
             </div>
             <div class="trial-banner__content">
-                <div class="trial-banner__title">7 dias grátis para testar o painel</div>
+                <div class="trial-banner__title">30 dias grátis para testar o painel</div>
                 <div class="trial-banner__text">
                     Termina em <span class="trial-banner__countdown" data-trial-countdown>--d --h --m --s</span>
                 </div>

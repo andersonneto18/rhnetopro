@@ -269,7 +269,7 @@ $planFeatures = [
         <?php if (!empty($_GET['trial_expirado'])): ?>
             <div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4);color:#fecaca;border-radius:12px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:10px;">
                 <i class="fas fa-triangle-exclamation"></i>
-                <span>O seu período de teste de 7 dias terminou. Subscreva o plano abaixo para continuar a utilizar o painel.</span>
+                <span>O seu período de teste de 30 dias terminou. Subscreva o plano abaixo para continuar a utilizar o painel.</span>
             </div>
         <?php endif; ?>
 

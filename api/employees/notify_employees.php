@@ -18,10 +18,12 @@ function buildAppLoginUrl(): string
 function personalizarMensagemSms(string $template, array $employee, string $clientName, string $appLoginUrl): string
 {
     $pin = trim((string)($employee['pin'] ?? ''));
+    $email = trim((string)($employee['email'] ?? ''));
     return strtr($template, [
         '{nome}' => (string)($employee['name'] ?? 'Funcionário'),
         '{restaurante}' => $clientName,
         '{link_app}' => $appLoginUrl,
+        '{email}' => $email !== '' ? $email : '(peça ao administrador)',
         '{pin}' => $pin !== '' ? $pin : '(peça ao administrador)',
     ]);
 }

@@ -176,7 +176,7 @@ try {
         $pdo->prepare(
             "INSERT INTO atividades_recentes (title, type, timestamp, client_id) VALUES (?, 'info', NOW(), ?)"
         )->execute([
-            "$empName enviou justificativa de ausência para " . date('d/m/Y', strtotime($dataAusencia)),
+            "$empName enviou justificação de ausência para " . date('d/m/Y', strtotime($dataAusencia)),
             $client_id,
         ]);
     } catch (Exception $e) {
@@ -185,7 +185,7 @@ try {
 
     echo json_encode([
         'success' => true,
-        'message' => 'Justificativa enviada com sucesso. O administrador irá analisar o pedido.',
+        'message' => 'Justificação enviada com sucesso. O administrador irá analisar o pedido.',
         'item'    => [
             'id'           => $newId,
             'data_ausencia'=> $dataAusencia,

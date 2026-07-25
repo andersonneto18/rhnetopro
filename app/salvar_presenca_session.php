@@ -78,10 +78,10 @@ try {
         $message = 'Ainda não está no horário de entrada.';
     } elseif ($agoraTimestamp <= $toleranciaTimestamp) {
         $status = 'presente';
-        $message = 'Presença registrada: Presente';
+        $message = 'Presença registada: Presente';
     } else {
         $status = 'falta';
-        $message = 'Presença não pode ser registrada: Falta (fora do tempo de tolerância)';
+        $message = 'Presença não pode ser registada: Falta (fora do tempo de tolerância)';
     }
 
     if ($status === 'nao_registrado') {

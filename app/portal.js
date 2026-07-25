@@ -268,7 +268,7 @@ async function respondTurnoSwapRequest(requestId, decision, triggerButton) {
             return;
         }
 
-        showSuccess(data.message || 'Resposta registrada com sucesso.');
+        showSuccess(data.message || 'Resposta registada com sucesso.');
         setTimeout(() => window.location.reload(), 1100);
     } catch (error) {
         console.error(error);
@@ -1656,7 +1656,7 @@ async function _pollTrocas() {
                 const data = await res.json();
                 
                 if (data.success) {
-                    showSuccess(data.message || 'Presença registrada com sucesso!');
+                    showSuccess(data.message || 'Presença registada com sucesso!');
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showError(data.message || 'Erro ao marcar presença');
@@ -1954,7 +1954,7 @@ async function _pollTrocas() {
                 const data = await res.json();
                 
                 if (data.success) {
-                    showSuccess('Gorjeta registrada com sucesso!');
+                    showSuccess('Gorjeta registada com sucesso!');
                     closeGorjetaModal();
                     setTimeout(() => location.reload(), 1500);
                 } else {
@@ -1965,7 +1965,7 @@ async function _pollTrocas() {
                 showError('Erro de comunicação com o servidor');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-save"></i> Registrar';
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Registar';
             }
         });
 
@@ -2233,9 +2233,9 @@ async function _submeterJustificativa(e) {
             body: JSON.stringify({ data_ausencia: dataAus, motivo }),
         });
         const data = await res.json();
-        if (!data.success) { showError(data.message || 'Erro ao enviar justificativa'); return; }
+        if (!data.success) { showError(data.message || 'Erro ao enviar justificação'); return; }
 
-        showSuccess(data.message || 'Justificativa enviada com sucesso.');
+        showSuccess(data.message || 'Justificação enviada com sucesso.');
         form.reset();
 
         // Adicionar ao topo da lista sem reload
@@ -2253,9 +2253,9 @@ async function _submeterJustificativa(e) {
         // Remover "sem justificativas" se existir
         document.querySelector('.justificativas-list + .empty-hint')?.remove();
     } catch (err) {
-        showError('Erro de comunicação ao enviar justificativa');
+        showError('Erro de comunicação ao enviar justificação');
     } finally {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Justificativa'; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Justificação'; }
     }
 }
 

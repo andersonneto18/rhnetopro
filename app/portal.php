@@ -1608,7 +1608,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                     </div>
                     <button class="btn btn-success" onclick="openGorjetaModal()" style="width: 100%;">
                         <i class="fas fa-plus"></i>
-                        Registrar Gorjeta
+                        Registar Gorjeta
                     </button>
                     <div class="total-gorjetas">
                         <h4>Total de Gorjetas no Mês</h4>
@@ -1709,7 +1709,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                 <?php else: ?>
                     <div class="empty-state">
                         <i class="fas fa-receipt"></i>
-                        <p>Sem registros de gorjeta neste mês.</p>
+                        <p>Sem registos de gorjeta neste mês.</p>
                     </div>
                 <?php endif; ?>
                 </div><!-- /gorjeta-list -->
@@ -2340,12 +2340,12 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
         </div>
     </div>
 
-    <!-- Modal Registrar Gorjeta -->
+    <!-- Modal Registar Gorjeta -->
     <div id="gorjetaModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeGorjetaModal()">&times;</span>
             <h3 style="margin-bottom: 1.5rem; color: var(--dark);">
-                <i class="fas fa-money-bill-wave"></i> Registrar Gorjeta
+                <i class="fas fa-money-bill-wave"></i> Registar Gorjeta
             </h3>
             
             <form id="gorjetaForm">
@@ -2402,7 +2402,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                 
                 <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                     <button type="submit" class="btn btn-success" style="flex: 1;">
-                        <i class="fas fa-save"></i> Registrar
+                        <i class="fas fa-save"></i> Registar
                     </button>
                     <button type="button" onclick="closeGorjetaModal()" class="btn btn-danger" style="flex: 1;">
                         <i class="fas fa-times"></i> Cancelar

@@ -710,14 +710,8 @@
                 .udm-dropzone.udm-has-file { border-color:rgba(16,185,129,.4); background:rgba(16,185,129,.05); border-style:solid; }
                 .udm-dropzone.udm-has-file .udm-dz-icon { color:#10b981; opacity:1; }
                 .udm-dropzone.udm-has-file .udm-dz-title { color:#6ee7b7; }
-                /* Scroll interno da tabela — evita que a lista de funcionários obrigue a
-                   página inteira a fazer scroll; só a área da tabela desliza, com o
-                   cabeçalho fixo (sticky) para as colunas continuarem visíveis. */
-                .fr-table-scroll { max-height: 560px; overflow-y: auto; overflow-x: auto; }
-                .fr-table-scroll .fr-thead-row th { position: sticky; top: 0; z-index: 2; background: var(--card-bg,#1e293b); }
                 </style>
 
-                <div class="fr-table-scroll">
                  <table id="employeesTable" class="table fr-table">
                     <thead>
                         <tr class="fr-thead-row">
@@ -891,7 +885,6 @@
                             <?php endforeach; ?>
                     </tbody>
                 </table>
-                </div>
             </div>
 
             <div id="bulkActionsBar" class="bulk-actions-bar" aria-hidden="true">

@@ -4514,14 +4514,22 @@ try {
     if (!in_array('data_registro', $pontoColsEarly, true) && in_array('data', $pontoColsEarly, true)) {
         $pontoDateColumnEarly = 'data';
     }
+    // Conta só o registo mais recente por funcionário+dia (o mesmo que a lista de
+    // Solicitações mostra) — não cada linha isolada. Um dia com várias pausas/regressos
+    // tem várias linhas; só a mais recente é que determina se aquele dia ainda está
+    // pendente, senão o badge contava dias já confirmados como se ainda faltassem.
     $stmtPendPres = $pdo->prepare(
-        "SELECT COUNT(DISTINCT rp.funcionario_id, DATE(rp.{$pontoDateColumnEarly}))
-         FROM registros_ponto rp
+        "SELECT COUNT(*) FROM registros_ponto rp
          INNER JOIN employees e ON e.id = rp.funcionario_id
          WHERE e.client_id = ?
+           AND (COALESCE(rp.hora_entrada, '') <> '' OR COALESCE(rp.hora_saida, '') <> '')
+           AND rp.id = (
+               SELECT MAX(rp2.id) FROM registros_ponto rp2
+               WHERE rp2.funcionario_id = rp.funcionario_id
+                 AND DATE(rp2.{$pontoDateColumnEarly}) = DATE(rp.{$pontoDateColumnEarly})
+           )
            AND LOWER(COALESCE(rp.status, '')) <> 'invalidado'
-           AND LOWER(COALESCE(rp.status_confirmacao, 'pendente')) <> 'confirmado'
-           AND (COALESCE(rp.hora_entrada, '') <> '' OR COALESCE(rp.hora_saida, '') <> '')"
+           AND LOWER(COALESCE(rp.status_confirmacao, 'pendente')) <> 'confirmado'"
     );
     $stmtPendPres->execute([$loggedInClientId]);
     $solicitacoesPendentesTotal += (int)$stmtPendPres->fetchColumn();

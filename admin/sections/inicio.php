@@ -15,7 +15,25 @@ try {
 
 $pendConfirmacoes = 0;
 try {
-    $stmtPendConf = $pdo->prepare("SELECT COUNT(*) FROM registros_ponto WHERE client_id = ? AND LOWER(COALESCE(status_confirmacao, '')) <> 'confirmado'");
+    // Só conta o registo mais recente por funcionário+dia (o mesmo que a lista de
+    // Solicitações mostra), excluindo invalidados — senão um dia com várias
+    // pausas/regressos conta várias vezes, e um dia já invalidado ou cuja última
+    // entrada já foi confirmada continua a aparecer como pendente.
+    $pontoColsPend = $pdo->query('SHOW COLUMNS FROM registros_ponto')->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    $pontoDateColumnPend = (!in_array('data_registro', $pontoColsPend, true) && in_array('data', $pontoColsPend, true))
+        ? 'data' : 'data_registro';
+    $stmtPendConf = $pdo->prepare(
+        "SELECT COUNT(*) FROM registros_ponto rp
+         WHERE rp.client_id = ?
+           AND (COALESCE(rp.hora_entrada, '') <> '' OR COALESCE(rp.hora_saida, '') <> '')
+           AND rp.id = (
+               SELECT MAX(rp2.id) FROM registros_ponto rp2
+               WHERE rp2.funcionario_id = rp.funcionario_id
+                 AND DATE(rp2.{$pontoDateColumnPend}) = DATE(rp.{$pontoDateColumnPend})
+           )
+           AND LOWER(COALESCE(rp.status, '')) <> 'invalidado'
+           AND LOWER(COALESCE(rp.status_confirmacao, 'pendente')) <> 'confirmado'"
+    );
     $stmtPendConf->execute([$loggedInClientId]);
     $pendConfirmacoes = (int) $stmtPendConf->fetchColumn();
 } catch (Throwable $e) {

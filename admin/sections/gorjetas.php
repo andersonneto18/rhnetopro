@@ -31,10 +31,7 @@
                                 <i class="fas fa-sliders-h"></i> Filtros
                                 <span class="fr-filter-badge" id="gorjetasFilterBadge" style="display:none"></span>
                             </button>
-                            <button id="exportGorjetasBtn" type="button" class="fr-export-btn"
-                                onclick="exportGorjetas()">
-                                <i class="fas fa-download"></i> Exportar
-                            </button>
+                         
                         </div>
                     </div>
 

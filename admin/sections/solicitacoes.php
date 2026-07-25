@@ -424,9 +424,7 @@
                 $solTotalHistorico = (int)($solicitacoesAprovadasTotal + $solicitacoesRejeitadasTotal);
             ?>
             <?php if ($solReview === 'ok'): ?>
-            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#14532d,#166534);color:#ecfdf5;">
-                <i class="fas fa-check-circle"></i> Operação concluída com sucesso.
-            </div>
+            
             <?php elseif ($solReview === 'error'): ?>
             <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fef2f2;">
                 <i class="fas fa-exclamation-circle"></i> Ocorreu um erro. Tente novamente.
@@ -591,10 +589,7 @@
                             title="Data inicial" value="<?php echo htmlspecialchars($solServerStart); ?>">
                         <input type="date" id="filterSolEnd" class="fr-select" style="min-width:160px;"
                             title="Data final" value="<?php echo htmlspecialchars($solServerEnd); ?>">
-                        <button type="button" onclick="applySolicitacoesServerFilter()"
-                            style="padding:.5rem 1rem;white-space:nowrap;background:linear-gradient(145deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;">
-                            <i class="fas fa-database"></i> Aplicar período
-                        </button>
+                       
                         <button type="button" class="fr-clear-btn" onclick="clearSolicitacoesServerFilter()">
                             <i class="fas fa-eraser"></i> Limpar
                         </button>

@@ -89,9 +89,7 @@
         <i class="fas fa-check-circle"></i> Férias criadas e aprovadas com sucesso.
     </div>
     <?php elseif ($feriasReview === 'ok'): ?>
-    <div class="alert-success" style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#14532d,#166534);color:#ecfdf5;">
-        <i class="fas fa-check-circle"></i> Operação concluída com sucesso.
-    </div>
+    
     <?php elseif ($feriasReview === 'error'): ?>
     <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding:.85rem 1.1rem;border-radius:10px;background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fef2f2;">
         <i class="fas fa-exclamation-circle"></i> Ocorreu um erro. Tente novamente.

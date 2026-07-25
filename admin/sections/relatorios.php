@@ -248,9 +248,7 @@
                     <div id="rfModalConteudo" class="am-section"></div>
 
                     <div class="am-footer" style="justify-content:space-between;flex-wrap:wrap;gap:.5rem;">
-                        <button type="button" class="am-btn-cancel" onclick="rfVerHistorico()">
-                            <i class="fas fa-history"></i> Ver Histórico
-                        </button>
+                        
                         <div style="display:flex;gap:.5rem;">
                             <button type="button" class="fr-export-btn" onclick="baixarRelatorioFuncionarioPDF()">
                                 <i class="fas fa-file-pdf"></i> Exportar PDF

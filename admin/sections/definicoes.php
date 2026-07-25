@@ -37,8 +37,6 @@
             $empresaSaveReasonMsgs = [
                 'nome_invalido' => 'Indique o nome da empresa (máx. 255 caracteres).',
                 'nif_invalido' => 'NIF inválido. Deve conter 9 dígitos.',
-                'logo_formato' => 'Formato de imagem inválido. Use JPG, PNG, GIF ou SVG.',
-                'logo_tamanho' => 'Logótipo demasiado grande. Tamanho máximo: 2MB.',
                 'csrf' => 'Sessão expirada. Recarregue a página e tente novamente.',
                 'erro' => 'Não foi possível guardar os dados da empresa.',
             ];
@@ -265,7 +263,7 @@
                         </div>
                     </div>
                     <h3 class="set-card-title">Dados da Empresa</h3>
-                    <p class="set-card-desc">Configurar informações da empresa, logótipo e dados fiscais.</p>
+                    <p class="set-card-desc">Configurar informações da empresa e dados fiscais.</p>
                     <div class="set-card-footer">
                         <button type="button" class="set-btn set-btn--ghost"
                             onclick="document.getElementById('modalDadosEmpresa').style.display='flex'">
@@ -1039,7 +1037,7 @@
                     <p class="am-subtitle">Informações que identificam o seu negócio</p>
                 </div>
             </div>
-            <form method="post" action="dashboard.php?section=definicoes" enctype="multipart/form-data">
+            <form method="post" action="dashboard.php?section=definicoes">
                 <input type="hidden" name="action" value="save_company_data">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <div class="am-section">
@@ -1058,17 +1056,6 @@
                         <label class="am-lbl">NIF</label>
                         <input class="am-inp" type="text" name="company_nif" inputmode="numeric" maxlength="9"
                             value="<?php echo htmlspecialchars($companyData['company_nif'] ?? ''); ?>" placeholder="9 dígitos">
-                    </div>
-                    <div class="am-f am-f-full">
-                        <label class="am-lbl">Logótipo</label>
-                        <?php if (!empty($companyData['company_logo'])): ?>
-                        <div style="margin-bottom:.6rem;">
-                            <img src="../<?php echo htmlspecialchars($companyData['company_logo']); ?>" alt="Logótipo atual"
-                                style="max-height:64px; max-width:100%; border-radius:8px; background:#fff; padding:.35rem;">
-                        </div>
-                        <?php endif; ?>
-                        <input class="am-inp" type="file" name="company_logo" accept=".jpg,.jpeg,.png,.gif,.svg">
-                        <small class="am-hint">JPG, PNG, GIF ou SVG — máx. 2MB.</small>
                     </div>
                 </div>
                 <div class="am-footer">

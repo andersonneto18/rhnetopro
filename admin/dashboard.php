@@ -2351,53 +2351,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     try {
-        $companyLogoPath = null;
-        if (isset($_FILES['company_logo']) && $_FILES['company_logo']['error'] === UPLOAD_ERR_OK) {
-            $logoFile = $_FILES['company_logo'];
-            $logoExtension = strtolower(pathinfo($logoFile['name'], PATHINFO_EXTENSION));
-            $allowedLogoExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg'];
-
-            if (!in_array($logoExtension, $allowedLogoExtensions, true)) {
-                header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=logo_formato');
-                exit;
-            }
-            if ($logoFile['size'] > 2 * 1024 * 1024) {
-                header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=logo_tamanho');
-                exit;
-            }
-
-            $logoUploadDir = __DIR__ . '/../uploads/company/';
-            if (!is_dir($logoUploadDir)) {
-                mkdir($logoUploadDir, 0755, true);
-            }
-            $logoFileName = 'company_' . (int)$loggedInClientId . '_' . time() . '.' . $logoExtension;
-            if (move_uploaded_file($logoFile['tmp_name'], $logoUploadDir . $logoFileName)) {
-                $companyLogoPath = 'uploads/company/' . $logoFileName;
-            }
-        }
-
-        if ($companyLogoPath !== null) {
-            $stmtSaveCompany = $pdo->prepare(
-                'UPDATE clients SET client_name = ?, company_address = ?, company_nif = ?, company_logo = ? WHERE id = ?'
-            );
-            $stmtSaveCompany->execute([
-                $companyNamePost,
-                $companyAddressPost !== '' ? $companyAddressPost : null,
-                $companyNifPost !== '' ? $companyNifPost : null,
-                $companyLogoPath,
-                (int)$loggedInClientId,
-            ]);
-        } else {
-            $stmtSaveCompany = $pdo->prepare(
-                'UPDATE clients SET client_name = ?, company_address = ?, company_nif = ? WHERE id = ?'
-            );
-            $stmtSaveCompany->execute([
-                $companyNamePost,
-                $companyAddressPost !== '' ? $companyAddressPost : null,
-                $companyNifPost !== '' ? $companyNifPost : null,
-                (int)$loggedInClientId,
-            ]);
-        }
+        $stmtSaveCompany = $pdo->prepare(
+            'UPDATE clients SET client_name = ?, company_address = ?, company_nif = ? WHERE id = ?'
+        );
+        $stmtSaveCompany->execute([
+            $companyNamePost,
+            $companyAddressPost !== '' ? $companyAddressPost : null,
+            $companyNifPost !== '' ? $companyNifPost : null,
+            (int)$loggedInClientId,
+        ]);
 
         $_SESSION['client_name'] = $companyNamePost;
         $_SESSION['company_name'] = $companyNamePost;

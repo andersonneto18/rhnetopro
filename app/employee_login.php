@@ -34,9 +34,9 @@ unset($_SESSION['login_error']);
             <?php endif; ?>
 
             <div class="field">
-                <label for="employee_name">Nome do Funcionário</label>
-                <div class="field-wrap"><i class="fas fa-user"></i>
-                    <input id="employee_name" name="employee_name" type="text" required autofocus placeholder="Introduza o seu nome completo">
+                <label for="employee_email">Email</label>
+                <div class="field-wrap"><i class="fas fa-envelope"></i>
+                    <input id="employee_email" name="employee_email" type="email" required autofocus placeholder="Introduza o seu email">
                 </div>
             </div>
 
@@ -45,6 +45,10 @@ unset($_SESSION['login_error']);
                 <div class="field-wrap"><i class="fas fa-lock"></i>
                     <input id="pin" name="pin" type="password" required placeholder="Introduza o seu PIN">
                 </div>
+            </div>
+
+            <div class="field-end">
+                <a href="esqueci_pin.php" class="link-muted">Esqueceu o PIN?</a>
             </div>
 
             <button type="submit" class="btn-primary">

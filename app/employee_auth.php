@@ -7,29 +7,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$employee_name = trim($_POST['employee_name'] ?? '');
+$employee_email = trim($_POST['employee_email'] ?? '');
 $pin = trim($_POST['pin'] ?? '');
 
-if ($employee_name === '' || $pin === '') {
-    $_SESSION['login_error'] = 'Nome e PIN obrigatórios';
+if ($employee_email === '' || $pin === '') {
+    $_SESSION['login_error'] = 'Email e PIN obrigatórios';
     header('Location: employee_login.php');
     exit;
 }
 
 try {
-    // SEGURANÇA: busca por nome (case-insensitive)
-    // NOTA: Se houver funcionários com o mesmo nome em clientes diferentes, 
-    // o sistema pode precisar de identificação adicional (email ou ID)
-    $stmt = $pdo->prepare("SELECT id, name, pin_hash, pin, client_id FROM employees WHERE LOWER(name) = LOWER(?) LIMIT 1");
-    $stmt->execute([$employee_name]);
+    // SEGURANÇA: busca por email (case-insensitive)
+    $stmt = $pdo->prepare("SELECT id, name, email, pin_hash, pin, client_id FROM employees WHERE LOWER(email) = LOWER(?) LIMIT 1");
+    $stmt->execute([$employee_email]);
     $emp = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+
     // Log de tentativa para auditoria
-    error_log("Employee login attempt: $employee_name - Found: " . ($emp ? 'yes (client_id: '.$emp['client_id'].')' : 'no'));
+    error_log("Employee login attempt: $employee_email - Found: " . ($emp ? 'yes (client_id: '.$emp['client_id'].')' : 'no'));
 
     if (!$emp) {
         $_SESSION['login_error'] = 'Funcionário não encontrado';
-        error_log("Login attempt - Employee not found: $employee_name");
+        error_log("Login attempt - Employee not found: $employee_email");
         header('Location: employee_login.php');
         exit;
     }

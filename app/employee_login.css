@@ -157,6 +157,20 @@ body {
     box-shadow: 0 0 0 3px rgba(37,99,235,.15);
 }
 
+.field-end {
+    display: flex;
+    justify-content: flex-end;
+    margin: -.35rem 0 1rem;
+    font-size: .82rem;
+}
+
+.link-muted {
+    color: var(--brand);
+    font-weight: 700;
+    text-decoration: none;
+}
+.link-muted:hover { text-decoration: underline; }
+
 .alert {
     margin: 0 0 1rem;
     border-radius: 9px;
@@ -169,6 +183,12 @@ body {
     background: var(--danger-bg);
     color: var(--danger-ink);
     animation: slideDown .22s ease-out;
+}
+
+.alert.alert-ok {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+    color: #16a34a;
 }
 
 @keyframes slideDown {

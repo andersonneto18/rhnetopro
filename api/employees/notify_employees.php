@@ -159,7 +159,8 @@ try {
                     (string)($employee['name'] ?? 'Funcionário'),
                     $clientName,
                     $pinParaEmail !== '' ? $pinParaEmail : '(peça ao administrador)',
-                    $appLoginUrl
+                    $appLoginUrl,
+                    (string)($employee['email'] ?? '')
                 ));
             }
         }

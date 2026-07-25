@@ -103,12 +103,13 @@ HTML;
  * Corpo do email de boas-vindas: nome, restaurante, credenciais de acesso em
  * destaque e botão para aceder à app.
  */
-function renderWelcomeEmailBody(string $employeeName, string $clientName, string $pin, string $appLoginUrl): string
+function renderWelcomeEmailBody(string $employeeName, string $clientName, string $pin, string $appLoginUrl, string $employeeEmail = ''): string
 {
     $nome = htmlspecialchars($employeeName, ENT_QUOTES, 'UTF-8');
     $restaurante = htmlspecialchars($clientName, ENT_QUOTES, 'UTF-8');
     $pinHtml = htmlspecialchars($pin, ENT_QUOTES, 'UTF-8');
     $link = htmlspecialchars($appLoginUrl, ENT_QUOTES, 'UTF-8');
+    $loginLabel = $employeeEmail !== '' ? htmlspecialchars($employeeEmail, ENT_QUOTES, 'UTF-8') : 'o seu email';
 
     return <<<HTML
 <h1 style="margin:0 0 6px;font-size:22px;color:#0f172a;">Bem-vindo(a), {$nome}!</h1>
@@ -116,7 +117,7 @@ function renderWelcomeEmailBody(string $employeeName, string $clientName, string
 
 <div style="background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
 <p style="margin:0 0 10px;font-size:11px;color:#1d4ed8;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Os seus dados de acesso</p>
-<p style="margin:0 0 4px;font-size:14px;color:#0f172a;">Login: <strong>o seu nome completo</strong></p>
+<p style="margin:0 0 4px;font-size:14px;color:#0f172a;">Login: <strong>{$loginLabel}</strong></p>
 <p style="margin:0;font-size:14px;color:#0f172a;">PIN: <strong style="font-size:19px;letter-spacing:.1em;color:#1d4ed8;">{$pinHtml}</strong></p>
 </div>
 

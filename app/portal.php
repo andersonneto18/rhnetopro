@@ -403,6 +403,22 @@ try {
 // Estado dos botões de ponto — baseado no último registo de hoje
 $pontoAberto = $lastPonto && !empty($lastPonto['hora_entrada']) && empty($lastPonto['hora_saida']);
 
+// Formata minutos de atraso — abaixo de 60 mostra "X minuto(s)", a partir daí
+// passa a "Xh Ymin" para não mostrar números de 3 dígitos pouco legíveis.
+function formatAtrasoMinutos(int $min): string
+{
+    if ($min < 60) {
+        return $min . ' minuto' . ($min !== 1 ? 's' : '') . ' de atraso';
+    }
+    $horas = intdiv($min, 60);
+    $minutosRestantes = $min % 60;
+    $label = $horas . 'h';
+    if ($minutosRestantes > 0) {
+        $label .= ' ' . $minutosRestantes . 'min';
+    }
+    return $label . ' de atraso';
+}
+
 // Alerta de atraso/falta actual (funcionário ainda não entrou hoje mas devia ter).
 // Segue o mesmo motor de estados do admin: dentro da tolerância fica em silêncio,
 // atrasado mostra os minutos até o turno terminar, e só então vira falta.
@@ -446,7 +462,7 @@ if (($semPonto || !$lastPonto) && $alertaAtraso && $alertaAtraso['tipo'] === 'fa
     // Turno em curso, tolerância já passou e ainda não registou entrada: mostra os
     // minutos de atraso já aqui no topo, não só na secção de Presença.
     $_pStatusIcon = 'fa-exclamation-triangle'; $_pStatusLabel = 'Atrasado'; $_pStatusClass = 'ponto-status--atrasado';
-    $_pStatusHora = $alertaAtraso['minutos'] . ' minuto' . ($alertaAtraso['minutos'] !== 1 ? 's' : '') . ' de atraso';
+    $_pStatusHora = formatAtrasoMinutos((int)$alertaAtraso['minutos']);
 } elseif ($semPonto || !$lastPonto) {
     $_pStatusIcon = 'fa-clock'; $_pStatusLabel = 'Sem ponto hoje'; $_pStatusClass = 'ponto-status--none';
     $_pStatusHora = 'Registe a sua entrada';
@@ -1153,7 +1169,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
             <div class="presenca-alert-banner">
                 <i class="fas fa-exclamation-triangle"></i>
                 O seu turno começou às <strong><?= htmlspecialchars($alertaAtraso['inicio']) ?></strong>.
-                Está com <strong><?= $alertaAtraso['minutos'] ?> minuto<?= $alertaAtraso['minutos'] !== 1 ? 's' : '' ?> de atraso</strong> — registe a entrada agora.
+                Está com <strong><?= formatAtrasoMinutos((int)$alertaAtraso['minutos']) ?></strong> — registe a entrada agora.
             </div>
             <?php endif; ?>
 

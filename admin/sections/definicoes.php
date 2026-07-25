@@ -211,7 +211,7 @@
                             <i class="fas fa-clock"></i>
                         </div>
                     </div>
-                    <h3 class="set-card-title">Horários do Estabelecimento</h3>
+                    <h3 class="set-card-title">Localização do Estabelecimento</h3>
                     <p class="set-card-desc">Defina o horário padrão para cálculo automático de atraso no módulo de presença.</p>
                     <div class="set-card-footer">
                         <button type="button" class="set-btn set-btn--ghost"
@@ -293,7 +293,7 @@
 
             <div class="set-tip-bar">
                 <div><i class="fas fa-circle-info"></i><strong>Dica:</strong> Configure todas as opções para uma melhor experiência de utilização do sistema.</div>
-                <a href="#" onclick="return false;">Precisa de ajuda? <i class="fas fa-circle-question"></i></a>
+                <a href="../manualadm/manual.html" target="_blank" rel="noopener">Precisa de ajuda? <i class="fas fa-circle-question"></i></a>
             </div>
 
             <!-- Modal: Configuração de Registo Salarial -->

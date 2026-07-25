@@ -9,14 +9,14 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $companyName = $_SESSION['company_name'] ?? $_SESSION['client_name'] ?? 'RHNeto Pro';
-$planName = 'Plano Unico Pro';
+$planName = 'Plano Único Pro';
 $planPrice = '2,00';
-$planBilling = 'por mes';
+$planBilling = 'por mês';
 $planFeatures = [
-    'Funcionarios ilimitados',
-    'Turnos, presenca e gorjetas',
-    'Relatorios e notificacoes incluidos',
-    'Suporte prioritario',
+    'Funcionários ilimitados',
+    'Turnos, presença e gorjetas',
+    'Relatórios e notificações incluídos',
+    'Suporte prioritário',
 ];
 ?>
 <!DOCTYPE html>
@@ -260,7 +260,7 @@ $planFeatures = [
                 <div class="brand-badge"><i class="fas fa-crown"></i></div>
                 <div>
                     <strong><?php echo htmlspecialchars($companyName); ?></strong>
-                    <small>Escolha o unico plano disponivel</small>
+                    <small>Escolha o único plano disponível</small>
                 </div>
             </div>
             <a class="back-link" href="../admin/dashboard.php"><i class="fas fa-arrow-left"></i> Voltar ao painel</a>
@@ -269,16 +269,16 @@ $planFeatures = [
         <?php if (!empty($_GET['trial_expirado'])): ?>
             <div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4);color:#fecaca;border-radius:12px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:10px;">
                 <i class="fas fa-triangle-exclamation"></i>
-                <span>O seu periodo de teste de 7 dias terminou. Assine o plano abaixo para continuar a usar o painel.</span>
+                <span>O seu período de teste de 7 dias terminou. Subscreva o plano abaixo para continuar a utilizar o painel.</span>
             </div>
         <?php endif; ?>
 
         <section class="hero">
             <div class="eyebrow"><i class="fas fa-bolt"></i> Planos</div>
-            <h1>Um plano simples, sem complicacao.</h1>
+            <h1>Um plano simples, sem complicações.</h1>
             <p class="subtitle">
-                Criamos uma oferta unica para acelerar a ativacao. Sem menu confuso, sem comparacao desnecessaria.
-                Selecione o plano abaixo e avance para a proxima etapa.
+                Criámos uma proposta única para acelerar a sua ativação. Sem tabelas confusas nem comparações
+                desnecessárias — escolha o plano abaixo e avance para o passo seguinte.
             </p>
 
             <div class="plan-grid">
@@ -297,10 +297,10 @@ $planFeatures = [
                     <form method="POST" action="create-checkout-session.php" id="checkoutForm">
                         <button type="submit" class="cta" id="checkoutBtn">
                             <i class="fab fa-stripe"></i>
-                            <span id="checkoutBtnLabel">Assinar Plano Premium</span>
+                            <span id="checkoutBtnLabel">Subscrever o Plano Único Pro</span>
                         </button>
                     </form>
-                    <div class="note">Sera redirecionado para o checkout seguro da Stripe.</div>
+                    <div class="note">Será redirecionado para o checkout seguro da Stripe.</div>
                     <div id="checkoutError" style="display:none;margin-top:10px;color:#f87171;font-size:13px;"></div>
                 </article>
             </div>

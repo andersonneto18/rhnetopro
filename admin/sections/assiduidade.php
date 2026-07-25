@@ -542,7 +542,13 @@ function formatAtrasoMinutos(int $min): string
                             class="pa-inp pa-search">
                         <span id="resultCountPresenca" class="pa-chip"></span>
                         <div class="pa-spacer"></div>
-                        
+
+                        <button type="button" class="fr-filter-toggle" id="paFilterToggle"
+                            onclick="document.getElementById('paAdvFilters').classList.toggle('fr-adv-open'); this.classList.toggle('pa-filter-open');">
+                            <i class="fas fa-sliders-h"></i> Filtros
+                            <span class="fr-filter-badge" id="paFilterBadge" style="display:none"></span>
+                        </button>
+
                         <button type="button" id="togglePresencaHistoryBtn" class="btn btn-secondary"
                             aria-haspopup="dialog"
                             aria-controls="presencaHistoryPanel"
@@ -568,6 +574,12 @@ function formatAtrasoMinutos(int $min): string
                             <option value="folga">Folga</option>
                             <option value="ferias">Férias</option>
                             <option value="inativo">Inativo</option>
+                        </select>
+                        <select id="filterPresencaLocalizacao" class="fr-select">
+                            <option value="">Todas as localizações</option>
+                            <option value="dentro">Localizado no estabelecimento</option>
+                            <option value="fora">Localizado fora do estabelecimento</option>
+                            <option value="sem_dados">Não localizado</option>
                         </select>
                         <button id="clearFiltersPresenca" class="fr-clear-btn" style="display:none;">
                             <i class="fas fa-times"></i> Limpar
@@ -751,7 +763,21 @@ function formatAtrasoMinutos(int $min): string
                         $pontoPeriodSql = " AND DATE({$pontoDateColumn}) >= ? AND DATE({$pontoDateColumn}) <= ?";
                         $presencaPeriodSql = " AND DATE({$presencaDateColumn}) >= ? AND DATE({$presencaDateColumn}) <= ?";
 
-                        foreach ($employees as $employee):
+                        // Funcionários em férias vão para o fim da tabela — a lista de presença/ponto
+                        // é sobre quem precisa de atenção hoje, e quem está de férias não gera ação.
+                        $employeesPresencaAtivos = [];
+                        $employeesPresencaFerias = [];
+                        foreach ($employees as $employeeOrdenar) {
+                            $statusOrdenar = mb_strtolower(trim((string)($employeeOrdenar['status'] ?? '')));
+                            if (in_array($statusOrdenar, ['ferias', 'férias'], true)) {
+                                $employeesPresencaFerias[] = $employeeOrdenar;
+                            } else {
+                                $employeesPresencaAtivos[] = $employeeOrdenar;
+                            }
+                        }
+                        $employeesPresenca = array_merge($employeesPresencaAtivos, $employeesPresencaFerias);
+
+                        foreach ($employeesPresenca as $employee):
                             // 1. Lógica para buscar o registro de ponto mais recente do funcionário
                             $stmt = $pdo->prepare("
                     SELECT id, status, hora_entrada, hora_saida, obs, status_confirmacao, tipo_dia, falta_tipo,

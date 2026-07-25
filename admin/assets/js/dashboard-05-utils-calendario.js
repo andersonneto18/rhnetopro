@@ -548,6 +548,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterPresencaStart = document.getElementById('filterPresencaStart');
     const filterPresencaEnd = document.getElementById('filterPresencaEnd');
     const filterPresencaStatus = document.getElementById('filterPresencaStatus');
+    const filterPresencaLocalizacao = document.getElementById('filterPresencaLocalizacao');
     const clearFiltersPresenca = document.getElementById('clearFiltersPresenca');
     const resultCountPresenca = document.getElementById('resultCountPresenca');
     const presencaTable = document.querySelector('#presencaTable tbody');
@@ -662,6 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const startValue = filterPresencaStart ? filterPresencaStart.value : '';
         const endValue = filterPresencaEnd ? filterPresencaEnd.value : '';
         const statusValue = filterPresencaStatus ? normalizePresencaValue(filterPresencaStatus.value) : '';
+        const localizacaoValue = filterPresencaLocalizacao ? normalizePresencaValue(filterPresencaLocalizacao.value) : '';
         const rows = presencaTable.querySelectorAll('tr');
         let visibleCount = 0;
 
@@ -669,14 +671,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = normalizePresencaValue(row.cells[0]?.textContent || '');
             const statusKey = getPresencaStatusKey(row);
             const rowDate = row.dataset.presencaDate || '';
+            const localizacaoStatus = normalizePresencaValue(row.dataset.localizacaoStatus || 'sem_dados') || 'sem_dados';
 
             applyPresencaOperationalHighlight(row, statusKey);
 
             const matchesSearch = searchValue === '' || name.includes(searchValue);
             const matchesPeriod = matchesDateInterval(rowDate, startValue, endValue);
             const matchesStatus = statusValue === '' || statusKey === statusValue;
+            const matchesLocalizacao = localizacaoValue === '' || localizacaoStatus === localizacaoValue;
 
-            if (matchesSearch && matchesStatus && matchesPeriod) {
+            if (matchesSearch && matchesStatus && matchesPeriod && matchesLocalizacao) {
                 row.style.display = '';
                 visibleCount += 1;
             } else {
@@ -686,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (resultCountPresenca) resultCountPresenca.textContent = `${visibleCount} ${visibleCount === 1 ? 'resultado' : 'resultados'}`;
 
-        const hasFilters = searchValue || statusValue || startValue || endValue;
+        const hasFilters = searchValue || statusValue || localizacaoValue || startValue || endValue;
         if (clearFiltersPresenca) clearFiltersPresenca.style.display = hasFilters ? 'block' : 'none';
 
         updatePresencaSummaryCards(Array.from(rows), searchValue, startValue, endValue);
@@ -710,6 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
             filterPresencaStart?.value,
             filterPresencaEnd?.value,
             filterPresencaStatus?.value,
+            filterPresencaLocalizacao?.value,
         ].filter(Boolean).length;
         if (count > 0) {
             badge.textContent = String(count);
@@ -723,6 +728,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (filterPresencaStart) filterPresencaStart.addEventListener('change', filterPresencaTable);
     if (filterPresencaEnd) filterPresencaEnd.addEventListener('change', filterPresencaTable);
     if (filterPresencaStatus) filterPresencaStatus.addEventListener('change', filterPresencaTable);
+    if (filterPresencaLocalizacao) filterPresencaLocalizacao.addEventListener('change', filterPresencaTable);
 
     if (clearFiltersPresenca) {
         clearFiltersPresenca.addEventListener('click', function() {
@@ -730,6 +736,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filterPresencaStart) filterPresencaStart.value = '';
             if (filterPresencaEnd) filterPresencaEnd.value = '';
             if (filterPresencaStatus) filterPresencaStatus.value = '';
+            if (filterPresencaLocalizacao) filterPresencaLocalizacao.value = '';
             filterPresencaTable();
         });
     }

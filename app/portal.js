@@ -1469,20 +1469,39 @@ async function _pollTrocas() {
         function _obterLocalizacaoAtual() {
             return new Promise((resolve) => {
                 if (!navigator.geolocation) { resolve(null); return; }
+                // enableHighAccuracy:false usa localização de rede (quase instantânea) em vez de
+                // esperar por um "fix" de GPS preciso — suficiente para confirmar se está perto
+                // do estabelecimento, e não faz o funcionário esperar vários segundos a cada clique.
                 navigator.geolocation.getCurrentPosition(
                     (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
                     () => resolve(null),
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+                    { enableHighAccuracy: false, timeout: 2500, maximumAge: 60000 }
                 );
             });
         }
 
         async function _executarRegistoPonto(tipo, observacao) {
             const allPontoBtns = document.querySelectorAll('.btn-ponto-action');
-            allPontoBtns.forEach(b => { b.disabled = true; });
+            const originalHtmlByBtn = new Map();
+            allPontoBtns.forEach(b => {
+                originalHtmlByBtn.set(b, b.innerHTML);
+                b.disabled = true;
+                b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A registar...';
+            });
+            const _restaurarBotoes = () => {
+                allPontoBtns.forEach(b => {
+                    b.disabled = false;
+                    if (originalHtmlByBtn.has(b)) b.innerHTML = originalHtmlByBtn.get(b);
+                });
+            };
 
             try {
-                const localizacao = await _obterLocalizacaoAtual();
+                // A localização nunca bloqueia o registo: corre em paralelo com um limite curto,
+                // e se não chegar a tempo o ponto é registado sem ela (fica "sem_dados").
+                const localizacao = await Promise.race([
+                    _obterLocalizacaoAtual(),
+                    new Promise((resolve) => setTimeout(() => resolve(null), 1200))
+                ]);
                 const res = await fetch('registrar_ponto_session.php', {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -1507,12 +1526,12 @@ async function _pollTrocas() {
 
                 } else {
                     showError(data.message || 'Erro ao registar ponto');
-                    allPontoBtns.forEach(b => { b.disabled = false; });
+                    _restaurarBotoes();
                 }
             } catch (e) {
                 console.error(e);
                 showError('Erro de comunicação com o servidor');
-                allPontoBtns.forEach(b => { b.disabled = false; });
+                _restaurarBotoes();
             }
         }
 

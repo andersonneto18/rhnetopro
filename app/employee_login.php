@@ -54,7 +54,7 @@ unset($_SESSION['login_error']);
     </div>
 </div>
 
-<a href="../docs/manual-utilizador.html" target="_blank" rel="noopener" class="manual-link">
+<a href="../manualuserfuncionario/manual.html" target="_blank" rel="noopener" class="manual-link">
     <i class="fas fa-book"></i> Manual do Utilizador
 </a>
 

@@ -208,16 +208,16 @@
                 <div class="set-card">
                     <div class="set-card-top">
                         <div class="set-card-icon" style="background: rgba(16,185,129,.14); color: #34d399;">
-                            <i class="fas fa-clock"></i>
+                            <i class="fas fa-map-marker-alt"></i>
                         </div>
                     </div>
                     <h3 class="set-card-title">Localização do Estabelecimento</h3>
-                    <p class="set-card-desc">Defina o horário padrão para cálculo automático de atraso no módulo de presença.</p>
+                    <p class="set-card-desc">Defina a localização GPS e o horário do estabelecimento para confirmar presença no local e calcular atrasos automaticamente.</p>
                     <div class="set-card-footer">
                         <button type="button" class="set-btn set-btn--ghost"
                             onclick="document.getElementById('modalHorariosEstabelecimento').style.display='flex'">
-                            <i class="fas fa-clock"></i>
-                            <span>Configurar Horários</span>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Configurar Localização</span>
                         </button>
                     </div>
                 </div>

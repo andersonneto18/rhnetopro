@@ -461,6 +461,30 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Link para o Manual do Utilizador ── */
+.manual-link {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .5rem 1rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .92);
+    border: 1px solid var(--line);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .1);
+    color: var(--ink-700);
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color .15s, border-color .15s, transform .15s;
+}
+.manual-link:hover { color: var(--brand); border-color: var(--brand); transform: translateX(-50%) translateY(-1px); }
+.manual-link i { color: var(--brand); }
+
 /* ── Responsive (≤ 740 px) ── */
 @media (max-width: 740px) {
     body { padding: 0; align-items: flex-end; }

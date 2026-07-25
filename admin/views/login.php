@@ -174,7 +174,9 @@ $openSignUp = isset($_SESSION['register_error_message']) || isset($_SESSION['reg
     </div><!-- /.container -->
 </div><!-- /.page-wrapper -->
 
-
+<a href="../docs/manual-utilizador.html" target="_blank" rel="noopener" class="manual-link">
+    <i class="fas fa-book"></i> Manual do Utilizador
+</a>
 
 <script>
 (function () {

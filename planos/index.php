@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $companyName = $_SESSION['company_name'] ?? $_SESSION['client_name'] ?? 'RHNeto Pro';
 $planName = 'Plano Único Pro';
-$planPrice = '2,00';
+$planPrice = '14,00';
 $planBilling = 'por mês';
 $planFeatures = [
     'Funcionários ilimitados',

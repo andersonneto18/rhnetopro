@@ -173,7 +173,7 @@
                         </div>
                         <div class="set-row">
                             <span>Preço</span>
-                            <strong>2,00 € / mês</strong>
+                            <strong>14,00 € / mês</strong>
                         </div>
                         <?php if ($planStatusRaw === 'active' && $subscriptionRenewsAtIso !== ''): ?>
                         <div class="set-row">

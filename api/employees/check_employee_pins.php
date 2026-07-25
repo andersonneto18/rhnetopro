@@ -34,16 +34,17 @@ try {
     $params = $normalizedIds;
     $params[] = $clientId;
 
-    $stmt = $pdo->prepare("SELECT id, name, pin FROM employees WHERE id IN ($placeholders) AND client_id = ?");
+    $stmt = $pdo->prepare("SELECT id, name, pin, pin_hash FROM employees WHERE id IN ($placeholders) AND client_id = ?");
     $stmt->execute($params);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
     $employees = array_map(static function ($row) {
         $pin = trim((string)($row['pin'] ?? ''));
+        $pinHash = trim((string)($row['pin_hash'] ?? ''));
         return [
             'id' => (int)$row['id'],
             'name' => (string)$row['name'],
-            'has_pin' => $pin !== '',
+            'has_pin' => $pin !== '' || $pinHash !== '',
         ];
     }, $rows);
 

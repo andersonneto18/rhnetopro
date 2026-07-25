@@ -169,6 +169,7 @@ body {
 .field-wrap:focus-within > i { color: var(--brand); }
 
 .field-wrap input[type="text"],
+.field-wrap input[type="email"],
 .field-wrap input[type="password"] {
     width: 100%;
     border: 1px solid var(--line);

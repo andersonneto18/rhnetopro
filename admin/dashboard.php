@@ -2175,6 +2175,16 @@ try {
         $pdo->exec("ALTER TABLE registros_ponto ADD COLUMN localizacao_status VARCHAR(20) NULL AFTER distancia_metros");
     }
 
+    if (!$pdo->query("SHOW COLUMNS FROM clients LIKE 'company_address'")->fetch()) {
+        $pdo->exec("ALTER TABLE clients ADD COLUMN company_address VARCHAR(255) NULL AFTER client_name");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM clients LIKE 'company_nif'")->fetch()) {
+        $pdo->exec("ALTER TABLE clients ADD COLUMN company_nif VARCHAR(20) NULL AFTER company_address");
+    }
+    if (!$pdo->query("SHOW COLUMNS FROM clients LIKE 'company_logo'")->fetch()) {
+        $pdo->exec("ALTER TABLE clients ADD COLUMN company_logo VARCHAR(255) NULL AFTER company_nif");
+    }
+
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS employee_change_requests (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -2319,6 +2329,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// ===== Dados da Empresa (Definições) =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_company_data') {
+    $csrfTokenPost = (string)($_POST['csrf_token'] ?? '');
+    if (empty($_SESSION['csrf_token']) || !hash_equals((string)$_SESSION['csrf_token'], $csrfTokenPost)) {
+        header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=csrf');
+        exit;
+    }
+
+    $companyNamePost = trim((string)($_POST['company_name'] ?? ''));
+    $companyAddressPost = trim((string)($_POST['company_address'] ?? ''));
+    $companyNifPost = trim((string)($_POST['company_nif'] ?? ''));
+
+    if ($companyNamePost === '' || mb_strlen($companyNamePost) > 255) {
+        header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=nome_invalido');
+        exit;
+    }
+    if ($companyNifPost !== '' && !preg_match('/^\d{9}$/', $companyNifPost)) {
+        header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=nif_invalido');
+        exit;
+    }
+
+    try {
+        $companyLogoPath = null;
+        if (isset($_FILES['company_logo']) && $_FILES['company_logo']['error'] === UPLOAD_ERR_OK) {
+            $logoFile = $_FILES['company_logo'];
+            $logoExtension = strtolower(pathinfo($logoFile['name'], PATHINFO_EXTENSION));
+            $allowedLogoExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg'];
+
+            if (!in_array($logoExtension, $allowedLogoExtensions, true)) {
+                header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=logo_formato');
+                exit;
+            }
+            if ($logoFile['size'] > 2 * 1024 * 1024) {
+                header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=logo_tamanho');
+                exit;
+            }
+
+            $logoUploadDir = __DIR__ . '/../uploads/company/';
+            if (!is_dir($logoUploadDir)) {
+                mkdir($logoUploadDir, 0755, true);
+            }
+            $logoFileName = 'company_' . (int)$loggedInClientId . '_' . time() . '.' . $logoExtension;
+            if (move_uploaded_file($logoFile['tmp_name'], $logoUploadDir . $logoFileName)) {
+                $companyLogoPath = 'uploads/company/' . $logoFileName;
+            }
+        }
+
+        if ($companyLogoPath !== null) {
+            $stmtSaveCompany = $pdo->prepare(
+                'UPDATE clients SET client_name = ?, company_address = ?, company_nif = ?, company_logo = ? WHERE id = ?'
+            );
+            $stmtSaveCompany->execute([
+                $companyNamePost,
+                $companyAddressPost !== '' ? $companyAddressPost : null,
+                $companyNifPost !== '' ? $companyNifPost : null,
+                $companyLogoPath,
+                (int)$loggedInClientId,
+            ]);
+        } else {
+            $stmtSaveCompany = $pdo->prepare(
+                'UPDATE clients SET client_name = ?, company_address = ?, company_nif = ? WHERE id = ?'
+            );
+            $stmtSaveCompany->execute([
+                $companyNamePost,
+                $companyAddressPost !== '' ? $companyAddressPost : null,
+                $companyNifPost !== '' ? $companyNifPost : null,
+                (int)$loggedInClientId,
+            ]);
+        }
+
+        $_SESSION['client_name'] = $companyNamePost;
+        $_SESSION['company_name'] = $companyNamePost;
+
+        header('Location: dashboard.php?section=definicoes&empresa_saved=1');
+        exit;
+    } catch (Throwable $eSaveCompany) {
+        error_log('Erro ao salvar dados da empresa: ' . $eSaveCompany->getMessage());
+        header('Location: dashboard.php?section=definicoes&empresa_saved=0&empresa_reason=erro');
+        exit;
+    }
+}
+
 $adminUser = ['name' => '', 'email' => '', 'phone' => ''];
 try {
     $stmtAdminUser = $pdo->prepare('SELECT nome_completo, email, telefone FROM usuarios WHERE id = ? LIMIT 1');
@@ -2333,6 +2425,23 @@ try {
     }
 } catch (Throwable $eAdminUser) {
     error_log('Erro ao carregar perfil do administrador: ' . $eAdminUser->getMessage());
+}
+
+$companyData = [
+    'client_name' => '',
+    'company_address' => '',
+    'company_nif' => '',
+    'company_logo' => '',
+];
+try {
+    $stmtCompanyData = $pdo->prepare('SELECT client_name, company_address, company_nif, company_logo FROM clients WHERE id = ? LIMIT 1');
+    $stmtCompanyData->execute([(int)$loggedInClientId]);
+    $rowCompanyData = $stmtCompanyData->fetch(PDO::FETCH_ASSOC);
+    if ($rowCompanyData) {
+        $companyData = array_merge($companyData, array_map(static fn($v) => $v ?? '', $rowCompanyData));
+    }
+} catch (Throwable $eLoadCompanyData) {
+    error_log('Erro ao carregar dados da empresa: ' . $eLoadCompanyData->getMessage());
 }
 
 $estHorario = [

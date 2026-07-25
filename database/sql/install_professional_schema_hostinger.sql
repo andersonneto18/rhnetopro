@@ -40,6 +40,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE clients (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   client_name VARCHAR(255) NOT NULL,
+  company_address VARCHAR(255) DEFAULT NULL,
+  company_nif VARCHAR(20) DEFAULT NULL,
+  company_logo VARCHAR(255) DEFAULT NULL,
   subscription_status VARCHAR(20) DEFAULT 'trial',
   subscription_plan VARCHAR(50) DEFAULT NULL,
   subscription_start_date DATETIME DEFAULT NULL,

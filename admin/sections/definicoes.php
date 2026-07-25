@@ -32,6 +32,25 @@
             <?php endif; ?>
 
             <?php
+            $empresaSaveAttempted = isset($_GET['empresa_saved']);
+            $empresaSaved = $empresaSaveAttempted && $_GET['empresa_saved'] === '1';
+            $empresaSaveReasonMsgs = [
+                'nome_invalido' => 'Indique o nome da empresa (máx. 255 caracteres).',
+                'nif_invalido' => 'NIF inválido. Deve conter 9 dígitos.',
+                'logo_formato' => 'Formato de imagem inválido. Use JPG, PNG, GIF ou SVG.',
+                'logo_tamanho' => 'Logótipo demasiado grande. Tamanho máximo: 2MB.',
+                'csrf' => 'Sessão expirada. Recarregue a página e tente novamente.',
+                'erro' => 'Não foi possível guardar os dados da empresa.',
+            ];
+            ?>
+            <?php if ($empresaSaveAttempted): ?>
+            <div
+                style="margin:0 0 1rem; padding:.75rem .9rem; border-radius:10px; <?php echo $empresaSaved ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'; ?>">
+                <?php echo $empresaSaved ? 'Dados da empresa guardados com sucesso.' : htmlspecialchars($empresaSaveReasonMsgs[$_GET['empresa_reason'] ?? 'erro'] ?? $empresaSaveReasonMsgs['erro']); ?>
+            </div>
+            <?php endif; ?>
+
+            <?php
             $planStatusRaw = strtolower((string)($trialSubscriptionStatus ?? 'trial'));
             $planStatusLabel = 'Período de Teste';
             $planStatusColor = '#92400e';
@@ -239,19 +258,19 @@
                     </div>
                 </div>
 
-                <div class="set-card set-card--soon">
+                <div class="set-card">
                     <div class="set-card-top">
                         <div class="set-card-icon" style="background: rgba(20,184,166,.14); color: #2dd4bf;">
                             <i class="fas fa-building"></i>
                         </div>
-                        <span class="set-soon-tag">Em breve</span>
                     </div>
                     <h3 class="set-card-title">Dados da Empresa</h3>
                     <p class="set-card-desc">Configurar informações da empresa, logótipo e dados fiscais.</p>
                     <div class="set-card-footer">
-                        <button type="button" class="set-btn set-btn--ghost" disabled title="Funcionalidade ainda não disponível">
-                            <i class="fas fa-lock"></i>
-                            <span>Em breve</span>
+                        <button type="button" class="set-btn set-btn--ghost"
+                            onclick="document.getElementById('modalDadosEmpresa').style.display='flex'">
+                            <i class="fas fa-building"></i>
+                            <span>Configurar</span>
                         </button>
                     </div>
                 </div>
@@ -1040,6 +1059,81 @@
                 }, { enableHighAccuracy: true, timeout: 10000 });
             });
         }
+    })();
+    </script>
+
+    <div id="modalDadosEmpresa" class="modal"
+        style="display:none; align-items:flex-start; justify-content:center; padding:24px 16px 48px; overflow-y:auto;">
+        <div class="am-sheet" style="max-width:480px; margin-top:2.5rem;">
+            <button type="button" id="btnCloseDadosEmpresaModal" class="am-close" aria-label="Fechar">&times;</button>
+            <div class="am-header">
+                <div class="am-header-icon"><i class="fas fa-building"></i></div>
+                <div>
+                    <h2 class="am-title">Dados da Empresa</h2>
+                    <p class="am-subtitle">Informações que identificam o seu negócio</p>
+                </div>
+            </div>
+            <form method="post" action="dashboard.php?section=definicoes" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="save_company_data">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+                <div class="am-section">
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Nome da Empresa</label>
+                        <input class="am-inp" type="text" name="company_name"
+                            value="<?php echo htmlspecialchars($companyData['client_name'] ?? ''); ?>" maxlength="255" required>
+                    </div>
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Morada</label>
+                        <input class="am-inp" type="text" name="company_address"
+                            value="<?php echo htmlspecialchars($companyData['company_address'] ?? ''); ?>"
+                            placeholder="Rua, número, código postal, localidade">
+                    </div>
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">NIF</label>
+                        <input class="am-inp" type="text" name="company_nif" inputmode="numeric" maxlength="9"
+                            value="<?php echo htmlspecialchars($companyData['company_nif'] ?? ''); ?>" placeholder="9 dígitos">
+                    </div>
+                    <div class="am-f am-f-full">
+                        <label class="am-lbl">Logótipo</label>
+                        <?php if (!empty($companyData['company_logo'])): ?>
+                        <div style="margin-bottom:.6rem;">
+                            <img src="../<?php echo htmlspecialchars($companyData['company_logo']); ?>" alt="Logótipo atual"
+                                style="max-height:64px; max-width:100%; border-radius:8px; background:#fff; padding:.35rem;">
+                        </div>
+                        <?php endif; ?>
+                        <input class="am-inp" type="file" name="company_logo" accept=".jpg,.jpeg,.png,.gif,.svg">
+                        <small class="am-hint">JPG, PNG, GIF ou SVG — máx. 2MB.</small>
+                    </div>
+                </div>
+                <div class="am-footer">
+                    <button type="button" class="am-btn-cancel" id="btnCancelDadosEmpresaModal">Cancelar</button>
+                    <button type="submit" class="am-btn-submit">
+                        <i class="fas fa-save"></i> Guardar Dados
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+    (function() {
+        var modal = document.getElementById('modalDadosEmpresa');
+        if (!modal) return;
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        var btnClose = document.getElementById('btnCloseDadosEmpresaModal');
+        var btnCancel = document.getElementById('btnCancelDadosEmpresaModal');
+        if (btnClose) btnClose.addEventListener('click', closeModal);
+        if (btnCancel) btnCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        <?php if ($empresaSaveAttempted): ?>
+        modal.style.display = 'flex';
+        <?php endif; ?>
     })();
     </script>
 

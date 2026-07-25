@@ -50,13 +50,12 @@ unset($_SESSION['login_error']);
             <button type="submit" class="btn-primary">
                 <i class="fas fa-arrow-right-to-bracket"></i> Entrar no Portal
             </button>
+            <a href="../manualuserfuncionario/manual.html" target="_blank" rel="noopener" class="manual-link-inline">
+                <i class="fas fa-book"></i> Manual do Utilizador
+            </a>
         </form>
     </div>
 </div>
-
-<a href="../manualuserfuncionario/manual.html" target="_blank" rel="noopener" class="manual-link">
-    <i class="fas fa-book"></i> Manual do Utilizador
-</a>
 
 </body>
 </html>

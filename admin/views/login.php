@@ -100,6 +100,9 @@ $openSignUp = isset($_SESSION['register_error_message']) || isset($_SESSION['reg
                     <i class="fas fa-user-plus"></i> Criar conta
                 </button>
                 <p class="mobile-link">Já tem conta? <a href="#" id="mobileSignIn">Entrar</a></p>
+                <a href="../../manualadm/manual.html" target="_blank" rel="noopener" class="manual-link-inline">
+                    <i class="fas fa-book"></i> Manual do Utilizador
+                </a>
             </form>
         </div>
 
@@ -144,6 +147,9 @@ $openSignUp = isset($_SESSION['register_error_message']) || isset($_SESSION['reg
                     <i class="fas fa-arrow-right-to-bracket"></i> Entrar no painel
                 </button>
                 <p class="mobile-link">Não tem conta? <a href="#" id="mobileSignUp">Criar conta</a></p>
+                <a href="../../manualadm/manual.html" target="_blank" rel="noopener" class="manual-link-inline">
+                    <i class="fas fa-book"></i> Manual do Utilizador
+                </a>
             </form>
         </div>
 
@@ -173,10 +179,6 @@ $openSignUp = isset($_SESSION['register_error_message']) || isset($_SESSION['reg
 
     </div><!-- /.container -->
 </div><!-- /.page-wrapper -->
-
-<a href="../../manualadm/manual.html" target="_blank" rel="noopener" class="manual-link">
-    <i class="fas fa-book"></i> Manual do Utilizador
-</a>
 
 <script>
 (function () {

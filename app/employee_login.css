@@ -198,28 +198,22 @@ body {
 .btn-primary:hover  { filter: brightness(1.08); box-shadow: 0 10px 15px -3px rgba(37,99,235,.35), 0 4px 6px -4px rgba(37,99,235,.25); }
 .btn-primary:active { filter: brightness(.96); transform: translateY(1px); }
 
-.manual-link {
-    position: fixed;
-    left: 50%;
-    bottom: 18px;
-    transform: translateX(-50%);
-    z-index: 20;
-    display: inline-flex;
+.manual-link-inline {
+    display: flex;
     align-items: center;
-    gap: .45rem;
-    padding: .5rem 1rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .92);
-    border: 1px solid var(--line);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, .1);
-    color: var(--ink-700);
-    font-size: .8rem;
+    justify-content: center;
+    gap: .4rem;
+    margin: .9rem 0 0;
+    padding-top: .75rem;
+    border-top: 1px dashed var(--line);
+    color: var(--ink-500);
+    font-size: .78rem;
     font-weight: 600;
     text-decoration: none;
-    transition: color .15s, border-color .15s, transform .15s;
+    transition: color .15s;
 }
-.manual-link:hover { color: var(--brand); border-color: var(--brand); transform: translateX(-50%) translateY(-1px); }
-.manual-link i { color: var(--brand); }
+.manual-link-inline:hover { color: var(--brand); }
+.manual-link-inline i { color: var(--brand); }
 
 @media (max-width: 480px) {
     body { padding: 0; align-items: flex-end; }

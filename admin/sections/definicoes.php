@@ -1083,10 +1083,6 @@
         modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();
         });
-
-        <?php if ($empresaSaveAttempted): ?>
-        modal.style.display = 'flex';
-        <?php endif; ?>
     })();
     </script>
 

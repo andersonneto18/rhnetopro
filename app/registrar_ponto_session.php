@@ -203,24 +203,28 @@ try {
         $stmtCount->execute([$employee_id, $data_hoje]);
         $nPeriodos = (int)$stmtCount->fetchColumn() + 1;
 
+        // Regresso de uma pausa é a continuação de um dia já iniciado — não deve gerar
+        // uma nova solicitação de confirmação de presença para o admin a cada pausa.
+        $statusConfirmacaoInicial = $observacao === 'Regresso' ? 'confirmado' : 'pendente';
+
         // Inserir novo período (client_id obrigatório na tabela)
         $cols = $pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'observacao'")->fetch();
         $hasLocCols = (bool)$pdo->query("SHOW COLUMNS FROM registros_ponto LIKE 'ponto_latitude'")->fetch();
         if ($hasLocCols) {
             $stmtInsert = $pdo->prepare(
-                "INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada, observacao, ponto_latitude, ponto_longitude, distancia_metros, localizacao_status)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                "INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada, observacao, ponto_latitude, ponto_longitude, distancia_metros, localizacao_status, status_confirmacao)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
             $stmtInsert->execute([
                 $employee_id, $client_id, $data_hoje, $hora_atual, ($cols && $observacao !== '') ? $observacao : null,
-                $pontoLat, $pontoLng, $distanciaMetros, $localizacaoStatus,
+                $pontoLat, $pontoLng, $distanciaMetros, $localizacaoStatus, $statusConfirmacaoInicial,
             ]);
         } elseif ($cols && $observacao !== '') {
-            $stmtInsert = $pdo->prepare("INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada, observacao) VALUES (?, ?, ?, ?, ?)");
-            $stmtInsert->execute([$employee_id, $client_id, $data_hoje, $hora_atual, $observacao]);
+            $stmtInsert = $pdo->prepare("INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada, observacao, status_confirmacao) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtInsert->execute([$employee_id, $client_id, $data_hoje, $hora_atual, $observacao, $statusConfirmacaoInicial]);
         } else {
-            $stmtInsert = $pdo->prepare("INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada) VALUES (?, ?, ?, ?)");
-            $stmtInsert->execute([$employee_id, $client_id, $data_hoje, $hora_atual]);
+            $stmtInsert = $pdo->prepare("INSERT INTO registros_ponto (funcionario_id, client_id, data_registro, hora_entrada, status_confirmacao) VALUES (?, ?, ?, ?, ?)");
+            $stmtInsert->execute([$employee_id, $client_id, $data_hoje, $hora_atual, $statusConfirmacaoInicial]);
         }
 
         $message = $nPeriodos > 1

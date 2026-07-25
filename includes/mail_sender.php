@@ -103,17 +103,22 @@ HTML;
  * Corpo do email de boas-vindas: nome, restaurante, credenciais de acesso em
  * destaque e botão para aceder à app.
  */
-function renderWelcomeEmailBody(string $employeeName, string $clientName, string $pin, string $appLoginUrl, string $employeeEmail = ''): string
+function renderWelcomeEmailBody(string $employeeName, string $clientName, string $pin, string $appLoginUrl, string $employeeEmail = '', string $manualUrl = ''): string
 {
     $nome = htmlspecialchars($employeeName, ENT_QUOTES, 'UTF-8');
     $restaurante = htmlspecialchars($clientName, ENT_QUOTES, 'UTF-8');
     $pinHtml = htmlspecialchars($pin, ENT_QUOTES, 'UTF-8');
     $link = htmlspecialchars($appLoginUrl, ENT_QUOTES, 'UTF-8');
     $loginLabel = $employeeEmail !== '' ? htmlspecialchars($employeeEmail, ENT_QUOTES, 'UTF-8') : 'o seu email';
+    $manualLink = $manualUrl !== '' ? htmlspecialchars($manualUrl, ENT_QUOTES, 'UTF-8') : '';
+
+    $manualHtml = $manualLink !== ''
+        ? '<p style="margin:16px 0 0;font-size:13px;color:#64748b;">Primeira vez na app? Consulte o <a href="' . $manualLink . '" style="color:#2563eb;font-weight:700;text-decoration:none;">manual do utilizador</a>.</p>'
+        : '';
 
     return <<<HTML
 <h1 style="margin:0 0 6px;font-size:22px;color:#0f172a;">Bem-vindo(a), {$nome}!</h1>
-<p style="margin:0 0 24px;font-size:14px;line-height:1.5;color:#475569;">Já faz parte da equipa <strong>{$restaurante}</strong>. Use os dados abaixo para aceder à app e marcar presença, ver horários e muito mais.</p>
+<p style="margin:0 0 24px;font-size:14px;line-height:1.5;color:#475569;">Já faz parte da equipa <strong>{$restaurante}</strong>. Use os dados abaixo para aceder à app, gerir o seu turno, marcar presença e muito mais.</p>
 
 <div style="background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
 <p style="margin:0 0 10px;font-size:11px;color:#1d4ed8;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Os seus dados de acesso</p>
@@ -126,6 +131,7 @@ function renderWelcomeEmailBody(string $employeeName, string $clientName, string
 <a href="{$link}" style="display:inline-block;color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:12px 32px;">Aceder à App</a>
 </td></tr>
 </table>
+{$manualHtml}
 HTML;
 }
 

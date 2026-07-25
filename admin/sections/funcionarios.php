@@ -986,7 +986,7 @@
                             <span id="smsCharCounter" class="am-hint">160 restantes</span>
                         </div>
                         <span class="am-hint" id="smsTemplateHint" style="display:none;">
-                            Modelo com marcadores — {nome}, {email} e {pin} são substituídos automaticamente por funcionário.
+                            Modelo com marcadores — {nome}, {email}, {pin} e {manual_link} são substituídos automaticamente por funcionário.
                             A contagem de caracteres acima é só uma estimativa.
                         </span>
                     </div>

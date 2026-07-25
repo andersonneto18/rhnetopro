@@ -122,11 +122,11 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // ========== MODELO DE SMS DE BOAS-VINDAS ==========
-const WELCOME_SMS_TEMPLATE = 'Bem-vindo(a) {nome}! Equipa {restaurante}. Acesse a app: {link_app} — Login: {email} | PIN: {pin}';
+const WELCOME_SMS_TEMPLATE = 'Bem-vindo(a) {nome}! Já faz parte da equipa {restaurante}. Aceda à app para gerir o seu turno, marcar presença e mais: {link_app} — Login: {email} | PIN: {pin}. Manual do utilizador: {manual_link}';
 window.__smsPendingPins = window.__smsPendingPins || {};
 
 function usaModeloBoasVindas() {
-    return smsTextarea && /\{nome\}|\{pin\}|\{restaurante\}|\{link_app\}|\{email\}/.test(smsTextarea.value);
+    return smsTextarea && /\{nome\}|\{pin\}|\{restaurante\}|\{link_app\}|\{email\}|\{manual_link\}/.test(smsTextarea.value);
 }
 
 async function verificarEExibirPinsFaltantes() {

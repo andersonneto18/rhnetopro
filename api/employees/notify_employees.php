@@ -15,7 +15,16 @@ function buildAppLoginUrl(): string
     return $scheme . '://' . $host . $projectRoot . '/app/employee_login.php';
 }
 
-function personalizarMensagemSms(string $template, array $employee, string $clientName, string $appLoginUrl): string
+function buildManualUrl(): string
+{
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $scriptDir = str_replace('\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? '')));
+    $projectRoot = preg_replace('#/api/employees$#', '', $scriptDir);
+    return $scheme . '://' . $host . $projectRoot . '/manualuserfuncionario/manual.html';
+}
+
+function personalizarMensagemSms(string $template, array $employee, string $clientName, string $appLoginUrl, string $manualUrl = ''): string
 {
     $pin = trim((string)($employee['pin'] ?? ''));
     $email = trim((string)($employee['email'] ?? ''));
@@ -23,6 +32,7 @@ function personalizarMensagemSms(string $template, array $employee, string $clie
         '{nome}' => (string)($employee['name'] ?? 'Funcionário'),
         '{restaurante}' => $clientName,
         '{link_app}' => $appLoginUrl,
+        '{manual_link}' => $manualUrl,
         '{email}' => $email !== '' ? $email : '(peça ao administrador)',
         '{pin}' => $pin !== '' ? $pin : '(peça ao administrador)',
     ]);
@@ -150,10 +160,11 @@ try {
         $clientNameStmt->execute([$client_id]);
         $clientName = (string)($clientNameStmt->fetchColumn() ?: 'a equipa');
         $appLoginUrl = buildAppLoginUrl();
+        $manualUrl = buildManualUrl();
 
         foreach ($validEmployees as $employee) {
             $empId = (int)($employee['id'] ?? 0);
-            $personalizedMessages[$empId] = personalizarMensagemSms($message, $employee, $clientName, $appLoginUrl);
+            $personalizedMessages[$empId] = personalizarMensagemSms($message, $employee, $clientName, $appLoginUrl, $manualUrl);
 
             if ($sendToEmail) {
                 $pinParaEmail = trim((string)($employee['pin'] ?? ''));
@@ -162,7 +173,8 @@ try {
                     $clientName,
                     $pinParaEmail !== '' ? $pinParaEmail : '(peça ao administrador)',
                     $appLoginUrl,
-                    (string)($employee['email'] ?? '')
+                    (string)($employee['email'] ?? ''),
+                    $manualUrl
                 ));
             }
         }

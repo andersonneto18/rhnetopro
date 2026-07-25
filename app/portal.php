@@ -942,6 +942,10 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                 <i class="fas fa-umbrella-beach"></i>
                 Férias
             </button>
+            <button type="button" class="nav-btn" data-section="definicoes-section">
+                <i class="fas fa-sliders-h"></i>
+                Definições
+            </button>
         </nav>
 
         <!-- ===== HOME / DASHBOARD ===== -->

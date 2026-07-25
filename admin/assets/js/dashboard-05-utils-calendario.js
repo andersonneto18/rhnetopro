@@ -2197,9 +2197,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = cb.closest('tr');
             return {
                 name: cb.dataset.employeeName,
-                position: row.cells[4]?.textContent || '',
-                department: row.cells[5]?.textContent || '',
-                status: row.cells[6]?.textContent || ''
+                position: row.querySelector('.fr-role-pos')?.textContent.trim() || '—',
+                department: row.querySelector('.fr-role-dept')?.textContent.trim() || '—',
+                status: row.querySelector('.fr-td-status')?.textContent.replace(/\s+/g, ' ').trim() || ''
             };
         });
 

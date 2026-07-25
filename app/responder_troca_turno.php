@@ -75,7 +75,7 @@ try {
 
     if ((int)($reqRow['target_employee_id'] ?? 0) !== $employeeId) {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Você não tem permissão para responder esta solicitação.']);
+        echo json_encode(['success' => false, 'message' => 'Não tem permissão para responder a esta solicitação.']);
         exit;
     }
 

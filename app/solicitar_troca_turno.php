@@ -131,7 +131,7 @@ try {
 
     if ($requesterEmployeeId !== $employeeId) {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Você só pode solicitar troca usando um dos seus turnos.']);
+        echo json_encode(['success' => false, 'message' => 'Só pode solicitar troca usando um dos seus turnos.']);
         exit;
     }
 

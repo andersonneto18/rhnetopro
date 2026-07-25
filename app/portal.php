@@ -1891,7 +1891,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <p class="empty-state" id="swapIncomingEmptyState">Nenhum pedido pendente para você aprovar.</p>
+                            <p class="empty-state" id="swapIncomingEmptyState">Nenhum pedido pendente para aprovar.</p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -1939,7 +1939,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <p class="empty-state" id="swapSentEmptyState">Você ainda não enviou pedidos de troca.</p>
+                            <p class="empty-state" id="swapSentEmptyState">Ainda não enviou pedidos de troca.</p>
                         <?php endif; ?>
                     </div>
                 </div>

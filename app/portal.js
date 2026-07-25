@@ -1310,7 +1310,7 @@ async function cancelTurnoSwap(id, btn) {
         btn?.closest('.message-item')?.remove();
         const outList = document.getElementById('swapSentList');
         if (outList && !outList.querySelector('.message-item')) {
-            outList.innerHTML = '<p class="empty-state" id="swapSentEmptyState">Você ainda não enviou pedidos de troca.</p>';
+            outList.innerHTML = '<p class="empty-state" id="swapSentEmptyState">Ainda não enviou pedidos de troca.</p>';
         }
         _swapLastHash = null; // forçar re-render no próximo poll
     } catch (err) {
@@ -1390,7 +1390,7 @@ async function _pollTrocas() {
         const inList = document.getElementById('swapIncomingList');
         if (inList) {
             if (data.incoming.length === 0) {
-                inList.innerHTML = '<p class="empty-state" id="swapIncomingEmptyState">Nenhum pedido pendente para você aprovar.</p>';
+                inList.innerHTML = '<p class="empty-state" id="swapIncomingEmptyState">Nenhum pedido pendente para aprovar.</p>';
             } else {
                 inList.innerHTML = data.incoming.map(_buildSwapIncomingHtml).join('');
                 inList.querySelectorAll('.btn-turno-swap-decision').forEach((btn) => {
@@ -1407,7 +1407,7 @@ async function _pollTrocas() {
         const outList = document.getElementById('swapSentList');
         if (outList) {
             if (data.outgoing.length === 0) {
-                outList.innerHTML = '<p class="empty-state" id="swapSentEmptyState">Você ainda não enviou pedidos de troca.</p>';
+                outList.innerHTML = '<p class="empty-state" id="swapSentEmptyState">Ainda não enviou pedidos de troca.</p>';
             } else {
                 outList.innerHTML = data.outgoing.map(_buildSwapSentHtml).join('');
                 outList.querySelectorAll('.btn-cancel-swap').forEach((btn) => {

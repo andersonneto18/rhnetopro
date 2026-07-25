@@ -291,40 +291,6 @@
                     </div>
                 </div>
 
-                <div class="set-card set-card--soon">
-                    <div class="set-card-top">
-                        <div class="set-card-icon" style="background: rgba(245,158,11,.14); color: #fbbf24;">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <span class="set-soon-tag">Em breve</span>
-                    </div>
-                    <h3 class="set-card-title">Segurança e Permissões</h3>
-                    <p class="set-card-desc">Gerir permissões de utilizadores, funções e níveis de acesso ao sistema.</p>
-                    <div class="set-card-footer">
-                        <button type="button" class="set-btn set-btn--ghost" disabled title="Funcionalidade ainda não disponível">
-                            <i class="fas fa-lock"></i>
-                            <span>Em breve</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="set-card set-card--soon">
-                    <div class="set-card-top">
-                        <div class="set-card-icon" style="background: rgba(239,68,68,.14); color: #f87171;">
-                            <i class="fas fa-database"></i>
-                        </div>
-                        <span class="set-soon-tag">Em breve</span>
-                    </div>
-                    <h3 class="set-card-title">Cópia de Segurança e Dados</h3>
-                    <p class="set-card-desc">Gerir cópias de segurança e exportação de dados do sistema.</p>
-                    <div class="set-card-footer">
-                        <button type="button" class="set-btn set-btn--ghost" disabled title="Funcionalidade ainda não disponível">
-                            <i class="fas fa-lock"></i>
-                            <span>Em breve</span>
-                        </button>
-                    </div>
-                </div>
-
             </div>
 
             <div class="set-tip-bar">

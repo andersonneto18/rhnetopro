@@ -1,6 +1,6 @@
 <?php
 // Secção "Início" — incluída a partir de admin/dashboard.php (depende de $ADMIN_DIR, $pdo, $loggedInClientId,
-// $username, $turnosRelatorio, $estHorario, parseTurnoDays(), etc. já definidos lá).
+// $username, $companyData, $turnosRelatorio, $estHorario, parseTurnoDays(), etc. já definidos lá).
 
 // Pendências: contagens leves de coisas que precisam de ação do admin, para dar ao Início uma
 // função de "o que precisa da minha atenção hoje" além dos KPIs estáticos.
@@ -109,7 +109,7 @@ try {
                 <div class="frhd-left">
                     <div class="frhd-icon"><i class="fas fa-house-chimney"></i></div>
                     <div>
-                        <h2 class="frhd-title"><?php echo htmlspecialchars($username); ?></h2>
+                        <h2 class="frhd-title"><?php echo htmlspecialchars(($companyData['client_name'] ?? '') !== '' ? $companyData['client_name'] : $username); ?></h2>
                         <p class="frhd-sub"><?php
                             $diasPT = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
                             $mesesPT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];

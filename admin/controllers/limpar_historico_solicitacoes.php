@@ -60,6 +60,26 @@ try {
         );
     }
 
+    // Trocas de turno
+    if ($tableExists($pdo, 'turno_swap_requests')) {
+        $deleteByStatus(
+            $pdo,
+            'turno_swap_requests',
+            ['aprovada', 'aprovado', 'rejeitada', 'rejeitado', 'rejeitada_colega', 'rejeitado_colega'],
+            $clientId
+        );
+    }
+
+    // Férias
+    if ($tableExists($pdo, 'ferias')) {
+        $deleteByStatus(
+            $pdo,
+            'ferias',
+            ['aprovada', 'aprovado', 'rejeitada', 'rejeitado', 'recusada', 'recusado'],
+            $clientId
+        );
+    }
+
     echo json_encode(['success' => true]);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);

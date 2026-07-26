@@ -89,7 +89,7 @@ try {
                     <div class="fr-kpi-icon" style="background:rgba(167,139,250,.12);color:#a78bfa;"><i class="fas fa-euro-sign"></i></div>
                     <div class="fr-kpi-body">
                         <span class="fr-kpi-val" style="font-size:1.25rem;">€ <?php echo number_format((float)($folhaResumo['custo_total'] ?? 0), 2, ',', '.'); ?></span>
-                        <span class="fr-kpi-lbl">Custos Salariais</span>
+                        <span class="fr-kpi-lbl">Custos Salariais (Estimativa)</span>
                         <span class="fr-kpi-pct">este mês</span>
                     </div>
                 </div>

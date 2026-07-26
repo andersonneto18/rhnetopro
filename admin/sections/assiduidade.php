@@ -354,12 +354,11 @@ function formatAtrasoMinutos(int $min): string
                                        AND j.data_ocorrencia = unified.data_registro
                                      WHERE e.client_id = ? {$historyDateFiltersSql}
                                      ORDER BY unified.data_registro DESC, unified.funcionario_id DESC
-                                     LIMIT ? OFFSET ?"
+                                     LIMIT " . (int)$histPerPage . " OFFSET " . (int)$histOffset
                                 );
                                 $stmtHistoricoPresenca->execute(array_merge(
                                     [(int)$loggedInClientId, (int)$loggedInClientId, (int)$loggedInClientId],
-                                    $historyParamsBase,
-                                    [$histPerPage, $histOffset]
+                                    $historyParamsBase
                                 ));
                                 $historicoPresenca = $stmtHistoricoPresenca->fetchAll(PDO::FETCH_ASSOC) ?: [];
                             } catch (Exception $e) {

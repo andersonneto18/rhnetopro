@@ -59,14 +59,8 @@ if ($mode === 'replace' && $newMessage === '') {
     exit;
 }
 
-$dbHost = 'localhost';
-$dbName = 'sistema_cadastro';
-$dbUser = 'root';
-$dbPass = '';
-
 try {
-    $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName;charset=utf8", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    require_once '../../config/db_connection.php'; // expõe $pdo, já lê host/nome/user/senha do .env
 
     $validIds = [];
     $validPlaceholders = '';

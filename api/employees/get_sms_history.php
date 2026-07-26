@@ -17,14 +17,8 @@ if (!isset($_SESSION['user_id'], $_SESSION['client_id'])) {
 
 $clientId = (int) $_SESSION['client_id'];
 
-$dbHost = 'localhost';
-$dbName = 'sistema_cadastro';
-$dbUser = 'root';
-$dbPass = '';
-
 try {
-    $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName;charset=utf8", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    require_once '../../config/db_connection.php'; // expõe $pdo, já lê host/nome/user/senha do .env
 
     $hasSendChannelCol = false;
     try {

@@ -1695,7 +1695,7 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                     <button class="gorjeta-tab"        data-filter="pendente"  onclick="setGorjetaStatusFilter('pendente')">Pendentes</button>
                     <button class="gorjeta-tab"        data-filter="pago"      onclick="setGorjetaStatusFilter('pago')">Pagas</button>
                     <button class="gorjeta-tab"        data-filter="rejeitado" onclick="setGorjetaStatusFilter('rejeitado')">Rejeitadas</button>
-                    <button class="gorjeta-tab"        data-filter="cancelada" onclick="setGorjetaStatusFilter('cancelada')">Canceladas</button>
+                    <button class="gorjeta-tab"        data-filter="cancelado" onclick="setGorjetaStatusFilter('cancelado')">Canceladas</button>
                 </div>
 
                 <div id="gorjeta-list" data-total="<?= count($gorjetas) ?>" data-offset="<?= min(count($gorjetas), 10) ?>">

@@ -50,7 +50,7 @@ try {
         exit;
     }
 
-    $pdo->prepare("UPDATE gorjetas SET status = 'cancelada' WHERE id = ? AND client_id = ?")
+    $pdo->prepare("UPDATE gorjetas SET status = 'cancelado' WHERE id = ? AND client_id = ?")
         ->execute([$gorjetaId, $clientId]);
 
     echo json_encode(['success' => true, 'message' => 'Gorjeta cancelada.']);

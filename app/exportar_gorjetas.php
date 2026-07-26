@@ -27,7 +27,7 @@ $empCargo= htmlspecialchars($emp['position'] ?? '');
 
 $gorjetas   = [];
 $totalValor = 0.0;
-$countByStatus = ['pendente' => 0, 'pago' => 0, 'cancelada' => 0, 'rejeitado' => 0];
+$countByStatus = ['pendente' => 0, 'pago' => 0, 'cancelado' => 0, 'rejeitado' => 0];
 
 try {
     $checkGT = $pdo->query("SHOW TABLES LIKE 'gorjetas'");
@@ -81,7 +81,7 @@ $totalFmt = number_format($totalValor, 2, ',', '.') . ' €';
     .badge { display:inline-block; padding:2px 7px; border-radius:99px; font-size:10px; font-weight:700; }
     .pago      { background:#d1fae5; color:#059669; }
     .pendente  { background:#fef3c7; color:#b45309; }
-    .cancelada { background:#f1f5f9; color:#64748b; }
+    .cancelado { background:#f1f5f9; color:#64748b; }
     .rejeitado { background:#fee2e2; color:#dc2626; }
     .total-row td { font-weight:700; border-top:2px solid #334155; background:#f0fdf4; }
     .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e2e8f0; font-size:10px; color:#94a3b8; display:flex; justify-content:space-between; }
@@ -114,8 +114,8 @@ $totalFmt = number_format($totalValor, 2, ',', '.') . ' €';
     <?php if ($countByStatus['rejeitado'] > 0): ?>
     <div class="meta-item"><span>Rejeitadas</span><span><?= $countByStatus['rejeitado'] ?></span></div>
     <?php endif; ?>
-    <?php if ($countByStatus['cancelada'] > 0): ?>
-    <div class="meta-item"><span>Canceladas</span><span><?= $countByStatus['cancelada'] ?></span></div>
+    <?php if ($countByStatus['cancelado'] > 0): ?>
+    <div class="meta-item"><span>Canceladas</span><span><?= $countByStatus['cancelado'] ?></span></div>
     <?php endif; ?>
 </div>
 
@@ -136,7 +136,7 @@ $totalFmt = number_format($totalValor, 2, ',', '.') . ' €';
     <tbody>
     <?php foreach ($gorjetas as $g):
         $gs     = strtolower(trim((string)($g['status'] ?? 'pendente')));
-        $gCls   = $gs === 'pago' ? 'pago' : ($gs === 'pendente' ? 'pendente' : ($gs === 'rejeitado' ? 'rejeitado' : 'cancelada'));
+        $gCls   = $gs === 'pago' ? 'pago' : ($gs === 'pendente' ? 'pendente' : ($gs === 'rejeitado' ? 'rejeitado' : 'cancelado'));
         $gLbl   = $gs === 'pago' ? 'Pago' : ($gs === 'pendente' ? 'Pendente' : ($gs === 'rejeitado' ? 'Rejeitado' : ucfirst($gs)));
         $gData  = substr((string)($g['data'] ?? $g['data_registo'] ?? $g['created_at'] ?? ''), 0, 10);
         $gDataF = $gData ? date('d/m/Y', strtotime($gData)) : '—';

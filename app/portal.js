@@ -39,6 +39,8 @@ function showPortalSection(sectionId) {
     navButtons.forEach((button) => {
         button.classList.toggle('active', button.dataset.section === sectionId);
     });
+
+    try { sessionStorage.setItem('rhneto_portal_active_section', sectionId); } catch (e) {}
 }
 
 function closeMobilePortalNav() {
@@ -889,6 +891,14 @@ async function deleteSelectedSMS() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Mantém o funcionário na mesma secção sempre que a página recarrega (F5, etc.).
+    try {
+        const savedPortalSection = sessionStorage.getItem('rhneto_portal_active_section');
+        if (savedPortalSection && document.getElementById(savedPortalSection)) {
+            showPortalSection(savedPortalSection);
+        }
+    } catch (e) {}
+
     const menuBtn = document.getElementById('portal-menu-btn');
     const portalNav = document.getElementById('portal-nav');
 

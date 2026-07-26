@@ -739,9 +739,15 @@ while ($cur <= $fimDt && $cur <= $hojeDt) {
 
     // Status do dia
     $_lastIsOpen = $_lastRec && !empty($_lastRec['hora_entrada']) && empty($_lastRec['hora_saida']);
-    if (empty($dayRecords))                            $gridStatus = 'falta';
-    elseif ($_lastIsOpen && $dateStr !== $today)       $gridStatus = 'incompleto';
-    else                                               $gridStatus = 'presente';
+    if (empty($dayRecords)) {
+        // O dia de hoje ainda não terminou — sem registo ainda não é "falta",
+        // só se o funcionário chegar ao fim do dia sem marcar presença.
+        $gridStatus = ($dateStr === $today) ? 'aberto' : 'falta';
+    } elseif ($_lastIsOpen && $dateStr !== $today) {
+        $gridStatus = 'incompleto';
+    } else {
+        $gridStatus = 'presente';
+    }
 
     $cLbl = ''; $cCls = '';
     if ($turnoHorarioInicio && $hEnt) {
@@ -1395,6 +1401,8 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                     $badgeLbl = 'Presente';  $badgeCls = 'badge-success'; $displayStatus = 'presente';
                                 } elseif ($pStatus === 'incompleto') {
                                     $badgeLbl = 'Incompleto'; $badgeCls = 'badge-warning'; $displayStatus = 'incompleto';
+                                } elseif ($pStatus === 'aberto') {
+                                    $badgeLbl = 'Ainda por marcar'; $badgeCls = 'badge-neutral'; $displayStatus = 'aberto';
                                 } elseif ($jStatus === 'aprovada') {
                                     $badgeLbl = 'Aprovada';  $badgeCls = 'badge-success'; $displayStatus = 'just-aprovada';
                                 } elseif ($jStatus === 'rejeitada') {
@@ -1450,6 +1458,8 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                             <button class="btn-action btn-ver" data-row='<?= $rowDataJson ?>' onclick="verDetalhePresenca(this)">
                                                 <i class="fas fa-eye"></i> Ver
                                             </button>
+                                        <?php elseif ($displayStatus === 'aberto'): ?>
+                                            <span style="color:var(--neutral-500)">—</span>
                                         <?php elseif ($displayStatus === 'falta'): ?>
                                             <button class="btn-action btn-justificar" data-date="<?= $row['date'] ?>" data-fmt="<?= $row['date_fmt'] ?>" onclick="justificarFalta(this)">
                                                 <i class="fas fa-file-alt"></i> Justificar

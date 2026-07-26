@@ -3052,7 +3052,9 @@ function _normalizeRegistrosForCalendar(registros, mes) {
         const dow = new Date(ds).getDay(); // 0=Sun,6=Sat
         if (dow === 0 || dow === 6) continue; // skip weekends (not in grid)
         if (ds > today) continue;            // skip future
-        result.push(byDate[ds] || { date: ds, status: 'falta', horas: '', comp_lbl: '', comp_cls: '', just_status: '' });
+        // Hoje ainda não terminou — sem registo ainda não é "falta".
+        const fallbackStatus = (ds === today) ? 'aberto' : 'falta';
+        result.push(byDate[ds] || { date: ds, status: fallbackStatus, horas: '', comp_lbl: '', comp_cls: '', just_status: '' });
     }
     return result;
 }
@@ -3108,6 +3110,9 @@ function _renderCalendar(days, mes) {
             } else if (s === 'incompleto') {
                 cls     += ' cal-day--incomplete';
                 tooltip  = 'Incompleto';
+            } else if (s === 'aberto') {
+                cls     += ' cal-day--future';
+                tooltip  = 'Ainda por marcar';
             } else if (js === 'aprovada') {
                 cls     += ' cal-day--justified';
                 tooltip  = 'Justificada';

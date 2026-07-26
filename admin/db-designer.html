@@ -268,6 +268,7 @@ const RELATIONS = [
     ['sms_history', 'employee_id', 'employees', 'id'],
     ['atividades_recentes', 'employee_id', 'employees', 'id'],
     ['admin_password_resets', 'user_id', 'usuarios', 'id'],
+    ['employee_documents', 'uploaded_by', 'usuarios', 'id'],
 ];
 
 /* Ligações de posse: qualquer tabela com client_id aponta para clients.id */
@@ -332,6 +333,21 @@ function typeIcon(col) {
     return '<i class="db-col-icon"></i>';
 }
 
+const TYPE_LABELS_PT = {
+    int: 'inteiro',
+    string: 'texto',
+    text: 'texto longo',
+    date: 'data',
+    datetime: 'data/hora',
+    time: 'hora',
+    decimal: 'decimal',
+    boolean: 'booleano',
+    enum: 'opções',
+};
+function typeLabel(type) {
+    return TYPE_LABELS_PT[type] || type;
+}
+
 function renderTables() {
     Object.keys(TABLES).forEach(name => {
         const t = TABLES[name];
@@ -349,7 +365,7 @@ function renderTables() {
             <div class="db-col-row ${c.pk ? 'pk' : ''}" data-col="${c.name.toLowerCase()}">
                 ${typeIcon(c)}
                 <span class="db-col-name">${c.name}</span>
-                <span class="db-col-type">${c.type}</span>
+                <span class="db-col-type">${typeLabel(c.type)}</span>
             </div>
         `).join('');
 

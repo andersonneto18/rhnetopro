@@ -1323,14 +1323,16 @@ async function cancelTurnoSwap(id, btn) {
 function _buildSwapIncomingHtml(s) {
     const rTipo = escapeHTML((s.requester_turno_tipo || '-') + ' ' + (s.requester_horario_inicio || '').slice(0, 5) + '-' + (s.requester_horario_fim || '').slice(0, 5));
     const tTipo = escapeHTML((s.target_turno_tipo || '-') + ' ' + (s.target_horario_inicio || '').slice(0, 5) + '-' + (s.target_horario_fim || '').slice(0, 5));
+    const rDias = s.requester_dias ? `<br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> ${escapeHTML(s.requester_dias)}</small>` : '';
+    const tDias = s.target_dias ? `<br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> ${escapeHTML(s.target_dias)}</small>` : '';
     return `<div class="message-item">
         <div class="message-meta" style="margin-bottom:.35rem;">
             <span class="status-badge badge-warning">Pendente colega</span>
             <small>${escapeHTML(s.requester_name || 'Funcionário')}</small>
         </div>
         <p class="message-text" style="margin:0 0 .45rem 0;">
-            <strong>Turno solicitante:</strong> ${rTipo}<br>
-            <strong>Seu turno:</strong> ${tTipo}
+            <strong>Turno solicitante:</strong> ${rTipo}${rDias}<br>
+            <strong>Seu turno:</strong> ${tTipo}${tDias}
         </p>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
             <button type="button" class="btn btn-success btn-turno-swap-decision"
@@ -1356,6 +1358,8 @@ function _buildSwapSentHtml(s) {
 
     const rTipo = escapeHTML((s.requester_turno_tipo || '-') + ' ' + (s.requester_horario_inicio || '').slice(0, 5) + '-' + (s.requester_horario_fim || '').slice(0, 5));
     const tTipo = escapeHTML((s.target_turno_tipo || '-') + ' ' + (s.target_horario_inicio || '').slice(0, 5) + '-' + (s.target_horario_fim || '').slice(0, 5));
+    const rDias = s.requester_dias ? `<br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> ${escapeHTML(s.requester_dias)}</small>` : '';
+    const tDias = s.target_dias ? `<br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> ${escapeHTML(s.target_dias)}</small>` : '';
     const noteHtml = s.review_note
         ? `<p class="message-text" style="margin:.3rem 0 0;font-size:.8rem;opacity:.7"><i class="fas fa-comment"></i> ${escapeHTML(s.review_note)}</p>`
         : '';
@@ -1372,7 +1376,7 @@ function _buildSwapSentHtml(s) {
             <span class="status-badge ${badgeCls}">${label}</span>
             <small>${escapeHTML(s.target_name || 'Colega')}</small>
         </div>
-        <p class="message-text" style="margin:0;">${rTipo} ↔ ${tTipo}</p>
+        <p class="message-text" style="margin:0;">${rTipo}${rDias}<br>↔<br>${tTipo}${tDias}</p>
         ${noteHtml}
         ${cancelBtn}
     </div>`;

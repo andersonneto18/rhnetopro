@@ -1411,7 +1411,6 @@ body {
     color: #fff;
 }
 .gorjeta-mes-select {
-    margin-left: auto;
     background: var(--neutral-800, #1e293b);
     border: 1px solid var(--neutral-700, #334155);
     border-radius: 6px;
@@ -2507,7 +2506,6 @@ body {
 
 /* ── Exportar Gorjetas button ────────────────────────────────────── */
 .btn-export-gorjeta {
-    margin-left: auto;
     white-space: nowrap;
     font-size: .8rem;
     padding: .35rem .75rem;

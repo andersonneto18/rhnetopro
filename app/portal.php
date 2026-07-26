@@ -1680,15 +1680,17 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
             </div>
 
             <div class="card" style="margin-top: 1.5rem;">
-                <div class="card-header">
+                <div class="card-header" style="flex-wrap:wrap;gap:0.5rem">
                     <i class="fas fa-history"></i>
                     <h3>Histórico de Gorjetas</h3>
-                    <select id="gorjeta-mes-select" class="gorjeta-mes-select" onchange="setGorjetaMes(this.value)">
-                        <?php foreach ($gorjetaMesesOpcoes as $_opt): ?>
-                            <option value="<?= htmlspecialchars($_opt['value']) ?>"<?= $_opt['value'] === date('Y-m') ? ' selected' : '' ?>><?= htmlspecialchars($_opt['label']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <a id="gorjeta-export-btn" href="exportar_gorjetas.php?mes=<?= date('Y-m') ?>" class="btn btn-primary btn-export-gorjeta" target="_blank" rel="noopener"><i class="fas fa-download"></i> Exportar</a>
+                    <div class="history-header-actions">
+                        <select id="gorjeta-mes-select" class="gorjeta-mes-select" onchange="setGorjetaMes(this.value)">
+                            <?php foreach ($gorjetaMesesOpcoes as $_opt): ?>
+                                <option value="<?= htmlspecialchars($_opt['value']) ?>"<?= $_opt['value'] === date('Y-m') ? ' selected' : '' ?>><?= htmlspecialchars($_opt['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <a id="gorjeta-export-btn" href="exportar_gorjetas.php?mes=<?= date('Y-m') ?>" class="btn btn-primary btn-export-gorjeta" target="_blank" rel="noopener"><i class="fas fa-download"></i> Exportar</a>
+                    </div>
                 </div>
                 <div class="gorjeta-filter-tabs">
                     <button class="gorjeta-tab active" data-filter="all"       onclick="setGorjetaStatusFilter('all')">Todas</button>

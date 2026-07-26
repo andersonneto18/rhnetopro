@@ -35,9 +35,11 @@ try {
                 rt.turno_tipo AS requester_turno_tipo,
                 rt.horario_inicio AS requester_horario_inicio,
                 rt.horario_fim AS requester_horario_fim,
+                rt.dias_semana AS requester_dias,
                 tt.turno_tipo AS target_turno_tipo,
                 tt.horario_inicio AS target_horario_inicio,
-                tt.horario_fim AS target_horario_fim
+                tt.horario_fim AS target_horario_fim,
+                tt.dias_semana AS target_dias
          FROM turno_swap_requests r
          INNER JOIN employees er ON er.id = r.requester_employee_id
          INNER JOIN turnos rt ON rt.id = r.requester_turno_id
@@ -55,9 +57,11 @@ try {
                 rt.turno_tipo AS requester_turno_tipo,
                 rt.horario_inicio AS requester_horario_inicio,
                 rt.horario_fim AS requester_horario_fim,
+                rt.dias_semana AS requester_dias,
                 tt.turno_tipo AS target_turno_tipo,
                 tt.horario_inicio AS target_horario_inicio,
-                tt.horario_fim AS target_horario_fim
+                tt.horario_fim AS target_horario_fim,
+                tt.dias_semana AS target_dias
          FROM turno_swap_requests r
          INNER JOIN employees et ON et.id = r.target_employee_id
          INNER JOIN turnos rt ON rt.id = r.requester_turno_id

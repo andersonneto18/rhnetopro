@@ -537,6 +537,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function setTurnosPublicationBadge(status, total = 0) {
         if (!turnosPublicationBadge) return;
 
+        if (status === 'sem_dados') {
+            turnosPublicationBadge.style.display = 'none';
+            setTurnosPublicationControls(status, total);
+            return;
+        }
+
         let text = 'Sem período';
         let background = '#e2e8f0';
         let color = '#334155';
@@ -553,12 +559,9 @@ document.addEventListener('DOMContentLoaded', () => {
             text = `Sem publicação (${total})`;
             background = '#fef3c7';
             color = '#92400e';
-        } else if (status === 'sem_dados') {
-            text = 'Sem turnos';
-            background = '#fee2e2';
-            color = '#991b1b';
         }
 
+        turnosPublicationBadge.style.display = '';
         turnosPublicationBadge.textContent = text;
         turnosPublicationBadge.style.background = background;
         turnosPublicationBadge.style.color = color;

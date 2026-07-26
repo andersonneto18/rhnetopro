@@ -50,6 +50,21 @@
     }
     .sidebar-logo img { width: 36px; height: 36px; border-radius: 10px; }
     .sidebar-logo span { font-weight: 700; font-size: 1.05rem; }
+    .back-to-app {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 1.25rem;
+        padding: .6rem .75rem;
+        border-radius: 8px;
+        background: var(--brand);
+        color: #fff;
+        text-decoration: none;
+        font-size: .85rem;
+        font-weight: 600;
+        transition: background .15s;
+    }
+    .back-to-app:hover { background: var(--brand-dark); }
     .sidebar nav a {
         display: flex;
         align-items: center;
@@ -253,6 +268,9 @@
             <img src="../admin/views/images/rh1.png" alt="RHNeto Pro">
             <span>RHNeto Pro</span>
         </div>
+        <a href="../app/employee_login.php" class="back-to-app">
+            &larr; Voltar à App
+        </a>
         <nav>
             <a href="#entrar"><span class="num">1</span> Como entrar</a>
             <a href="#inicio"><span class="num">2</span> Início</a>

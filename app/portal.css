@@ -509,6 +509,16 @@ body {
     transition: background 0.2s ease;
 }
 
+/* Pedidos de troca de turno: badge/nome, detalhes do turno e botões empilham
+   verticalmente — em linha (o padrão de .message-item) espremia o parágrafo
+   dos horários numa coluna tão estreita que cada palavra quebrava letra a
+   letra no mobile. */
+#swapIncomingList .message-item,
+#swapSentList .message-item {
+    flex-direction: column;
+    align-items: stretch;
+}
+
 .message-content {
     flex: 1 1 0%;
     min-width: 0;

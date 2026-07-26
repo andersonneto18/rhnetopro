@@ -249,90 +249,8 @@ try {
         }
     }
 
-        // Fluxo rápido: permite aplicar status diretamente para ações explícitas de ativar/desativar.
-        $allowDirectStatusUpdate = false;
-        if (isset($data['status']) && $data['status'] !== '') {
-            $quickToggleRaw = mb_strtolower(trim((string)($data['quick_status_toggle'] ?? '')));
-            $isQuickToggle = in_array($quickToggleRaw, ['1', 'true', 'yes', 'on'], true);
-
-            $payloadKeys = array_keys($data);
-            $allowedQuickKeys = ['id', 'status', 'quick_status_toggle', 'approval_reason'];
-            $extraKeys = array_diff($payloadKeys, $allowedQuickKeys);
-            $hasOnlyStatusPayload = empty($extraKeys);
-
-            $currentStatusRaw = mb_strtolower(trim((string)($current['status'] ?? '')));
-            $currentStatusMap = [
-                'active' => 'active', 'ativo' => 'active',
-                'inactive' => 'inactive', 'inativo' => 'inactive',
-                'ferias' => 'ferias', 'férias' => 'ferias'
-            ];
-            $currentStatusNorm = $currentStatusMap[$currentStatusRaw] ?? $currentStatusRaw;
-
-            if (
-                $isQuickToggle
-                && $hasOnlyStatusPayload
-                && in_array($data['status'], ['active', 'inactive'], true)
-                && $data['status'] !== $currentStatusNorm
-            ) {
-                $allowDirectStatusUpdate = true;
-            }
-        }
-
-    // Detecta alterações críticas e cria pedido de aprovação
-    $criticalFields = ['status', 'salary_base', 'subsidio_alimentacao', 'bonus', 'contractType'];
-    $criticalPayload = [];
-
-    foreach ($criticalFields as $criticalField) {
-        if (!array_key_exists($criticalField, $data) || $data[$criticalField] === '') {
-            continue;
-        }
-
-        if ($criticalField === 'status' && $allowDirectStatusUpdate) {
-            // Ação rápida de ativar/desativar: aplica imediatamente sem passar por aprovação.
-            continue;
-        }
-
-        $newValue = $data[$criticalField];
-        $oldValue = $current[$criticalField] ?? null;
-
-        if (in_array($criticalField, ['salary_base', 'subsidio_alimentacao', 'bonus'], true)) {
-            $oldNum = (float)$oldValue;
-            $newNum = (float)$newValue;
-            if (abs($oldNum - $newNum) > 0.0001) {
-                $criticalPayload[$criticalField] = $newNum;
-            }
-            continue;
-        }
-
-        $oldText = trim((string)$oldValue);
-        $newText = trim((string)$newValue);
-        if ($oldText !== $newText) {
-            $criticalPayload[$criticalField] = $newText;
-        }
-    }
-
-    $approvalRequestId = null;
-    if (!empty($criticalPayload)) {
-        $approvalReason = trim((string)($data['approval_reason'] ?? ''));
-        if ($approvalReason === '') {
-            $approvalReason = 'Alteração crítica solicitada pelo administrador.';
-        }
-
-        $stmtReq = $pdo->prepare(
-            "INSERT INTO employee_change_requests
-            (client_id, employee_id, request_type, payload_json, reason, status, requested_by)
-            VALUES (?, ?, 'critical_update', ?, ?, 'pendente', ?)"
-        );
-        $stmtReq->execute([
-            $clientId,
-            $employeeId,
-            json_encode($criticalPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            $approvalReason,
-            (int)$_SESSION['user_id']
-        ]);
-        $approvalRequestId = (int)$pdo->lastInsertId();
-    }
-
+    // Alterações feitas pelo próprio admin aplicam-se sempre de imediato —
+    // não há um segundo utilizador para "aprovar" a própria ação do admin.
     $updates = [];
     $params = [];
     $dateFields = ['birthDate', 'startDate', 'endDate'];
@@ -340,14 +258,6 @@ try {
     foreach ($fields as $field) {
         if (!array_key_exists($field, $data)) {
             continue;
-        }
-
-        if (in_array($field, $criticalFields, true)) {
-            // Alterações críticas seguem por aprovação e não aplicam direto.
-            // Exceção: status em ação rápida de ativar/desativar.
-            if (!($field === 'status' && $allowDirectStatusUpdate)) {
-                continue;
-            }
         }
 
         if (in_array($field, $dateFields, true)) {
@@ -392,7 +302,7 @@ try {
         $appliedDirectly = true;
     }
 
-    if (!$appliedDirectly && $approvalRequestId === null) {
+    if (!$appliedDirectly) {
         echo json_encode(['success' => false, 'message' => 'Nenhum campo para atualizar']);
         exit;
     }
@@ -403,44 +313,22 @@ try {
         $empRow = $stmtName->fetch(PDO::FETCH_ASSOC);
         $empName = $empRow['name'] ?? ('#' . $employeeId);
 
-        if ($appliedDirectly) {
-            logActivity(
-                $pdo,
-                $clientId,
-                'Dados atualizados: ' . $empName,
-                'info',
-                'Atualização',
-                $employeeId
-            );
-        }
-
-        if ($approvalRequestId !== null) {
-            logActivity(
-                $pdo,
-                $clientId,
-                'Pedido de aprovação (alteração crítica): ' . $empName,
-                'warning',
-                'Pendente',
-                $employeeId
-            );
-        }
+        logActivity(
+            $pdo,
+            $clientId,
+            'Dados atualizados: ' . $empName,
+            'info',
+            'Atualização',
+            $employeeId
+        );
     } catch (Throwable $logErr) {
         error_log('update_employee log warning: ' . $logErr->getMessage());
     }
 
-    $message = 'Funcionário atualizado com sucesso';
-    if ($approvalRequestId !== null && $appliedDirectly) {
-        $message = 'Dados base atualizados e alteração crítica enviada para aprovação';
-    } elseif ($approvalRequestId !== null) {
-        $message = 'Alteração crítica enviada para aprovação';
-    }
-
     echo json_encode([
         'success' => true,
-        'message' => $message,
-        'profile_picture' => $profilePicturePath,
-        'approval_required' => $approvalRequestId !== null,
-        'approval_request_id' => $approvalRequestId
+        'message' => 'Funcionário atualizado com sucesso',
+        'profile_picture' => $profilePicturePath
     ]);
 } catch (Exception $e) {
     error_log('update_employee error: ' . $e->getMessage());

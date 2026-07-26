@@ -1134,56 +1134,64 @@
         updateFolhaFilterBadge();
     }
 
-    var searchInput = document.getElementById('searchFolhaEmployees');
-    var filtroStatus = document.getElementById('filtroStatusPagamento');
+    var searchInput;
+    var filtroStatus;
 
-    if (searchInput) {
-        searchInput.addEventListener('input', applyFolhaFilters);
-    }
-    if (filtroStatus) {
-        filtroStatus.addEventListener('change', applyFolhaFilters);
-    }
+    // O script é carregado no <head>, antes do HTML da secção (que só é
+    // renderizado no <body>) existir no DOM — sem esperar DOMContentLoaded,
+    // getElementById() devolve null aqui e os listeners nunca ficam ligados.
+    document.addEventListener('DOMContentLoaded', function () {
+        searchInput = document.getElementById('searchFolhaEmployees');
+        filtroStatus = document.getElementById('filtroStatusPagamento');
 
-    var clearFolhaBtn = document.getElementById('clearFolhaFiltersBtn');
-    if (clearFolhaBtn) {
-        clearFolhaBtn.addEventListener('click', function() {
-            if (searchInput) searchInput.value = '';
-            if (filtroStatus) filtroStatus.value = '';
-            applyFolhaFilters();
-        });
-    }
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFolhaFilters);
+        }
+        if (filtroStatus) {
+            filtroStatus.addEventListener('change', applyFolhaFilters);
+        }
 
-    var exportBtn = document.getElementById('btnExportFolhaCsv');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', function () {
-            var rows = Array.prototype.slice.call(document.querySelectorAll('#folha-pagamento-section tbody tr'));
-            var csv = ['Funcionario;Salario Base;Total Bruto;Liquido;Status Pagamento'];
-
-            rows.forEach(function (row) {
-                if (row.style.display === 'none') return;
-                var cells = row.querySelectorAll('td');
-                if (!cells || cells.length < 6) return;
-                var item = [
-                    (cells[0].textContent || '').trim(),
-                    (cells[1].textContent || '').trim(),
-                    (cells[2].textContent || '').trim(),
-                    (cells[3].textContent || '').trim(),
-                    (cells[4].textContent || '').trim(),
-                    (row.getAttribute('data-status-pagamento') || '').trim()
-                ].join(';');
-                csv.push(item);
+        var clearFolhaBtn = document.getElementById('clearFolhaFiltersBtn');
+        if (clearFolhaBtn) {
+            clearFolhaBtn.addEventListener('click', function() {
+                if (searchInput) searchInput.value = '';
+                if (filtroStatus) filtroStatus.value = '';
+                applyFolhaFilters();
             });
+        }
 
-            var blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            var a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'folha_pagamento.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        });
-    }
+        var exportBtn = document.getElementById('btnExportFolhaCsv');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function () {
+                var rows = Array.prototype.slice.call(document.querySelectorAll('#folha-pagamento-section tbody tr'));
+                var csv = ['Funcionario;Salario Base;Total Bruto;Liquido;Status Pagamento'];
+
+                rows.forEach(function (row) {
+                    if (row.style.display === 'none') return;
+                    var cells = row.querySelectorAll('td');
+                    if (!cells || cells.length < 6) return;
+                    var item = [
+                        (cells[0].textContent || '').trim(),
+                        (cells[1].textContent || '').trim(),
+                        (cells[2].textContent || '').trim(),
+                        (cells[3].textContent || '').trim(),
+                        (cells[4].textContent || '').trim(),
+                        (row.getAttribute('data-status-pagamento') || '').trim()
+                    ].join(';');
+                    csv.push(item);
+                });
+
+                var blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'folha_pagamento.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            });
+        }
+    });
 }());
 
 // ============================================================

@@ -339,6 +339,7 @@ function formatAtrasoMinutos(int $min): string
                                     "SELECT
                                         unified.funcionario_id,
                                         e.name AS funcionario_nome,
+                                        e.profile_picture AS funcionario_foto,
                                         unified.status,
                                         unified.data_registro,
                                         unified.hora_entrada,
@@ -438,7 +439,23 @@ function formatAtrasoMinutos(int $min): string
                                 data-history-date="<?php echo htmlspecialchars($dataHistIso); ?>"
                                 data-history-status-key="<?php echo htmlspecialchars($histStatusKey); ?>">
                                 <td style="font-weight: 600;">
-                                    <?php echo htmlspecialchars((string)($histRow['funcionario_nome'] ?? 'Funcionário')); ?>
+                                    <div class="fr-emp-cell">
+                                        <div class="fr-av" style="background:linear-gradient(135deg,#475569,#334155);">
+                                            <?php if (!empty($histRow['funcionario_foto'])): ?>
+                                            <img class="fr-av-img" src="../<?php echo htmlspecialchars((string)$histRow['funcionario_foto']); ?>"
+                                                alt="<?php echo htmlspecialchars((string)($histRow['funcionario_nome'] ?? '')); ?>">
+                                            <?php else: ?>
+                                            <?php
+                                                $histPartsName = preg_split('/\s+/', trim((string)($histRow['funcionario_nome'] ?? ''))) ?: [];
+                                                $histInitials = '';
+                                                if (!empty($histPartsName[0])) $histInitials .= mb_strtoupper(mb_substr($histPartsName[0], 0, 1));
+                                                if (count($histPartsName) > 1 && !empty($histPartsName[1])) $histInitials .= mb_strtoupper(mb_substr($histPartsName[1], 0, 1));
+                                                echo htmlspecialchars($histInitials ?: 'FN');
+                                            ?>
+                                            <?php endif; ?>
+                                        </div>
+                                        <span><?php echo htmlspecialchars((string)($histRow['funcionario_nome'] ?? 'Funcionário')); ?></span>
+                                    </div>
                                 </td>
                                 <td><?php echo htmlspecialchars($dataHistFmt); ?></td>
                                 <td><span class="status-badge <?php echo $histStatusClass; ?>"><?php echo htmlspecialchars($histStatusLabel); ?></span></td>

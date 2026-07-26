@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designer da Base de Dados — RHNeto Pro</title>
+<link rel="icon" type="image/png" href="views/images/rh1.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --bg: #0b1120;
+        --panel: #111a2e;
+        --panel-2: #0f1729;
+        --border: rgba(255,255,255,.09);
+        --text: #e2e8f0;
+        --text-dim: #94a3b8;
+        --text-faint: #64748b;
+
+        --c-fundacao: #a78bfa;
+        --c-funcionarios: #60a5fa;
+        --c-presenca: #fbbf24;
+        --c-turnos: #2dd4bf;
+        --c-folha: #34d399;
+        --c-sistema: #f87171;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+        margin: 0; padding: 0; height: 100%;
+        background: var(--bg); color: var(--text);
+        font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+        overflow: hidden;
+    }
+    .app { display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── Header ── */
+    .header {
+        padding: 1.1rem 1.5rem .9rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+        flex-shrink: 0;
+    }
+    .eyebrow {
+        font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+        color: #818cf8; text-transform: uppercase; margin-bottom: .4rem;
+    }
+    .header h1 { margin: 0 0 .35rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -.01em; }
+    .header p { margin: 0; color: var(--text-dim); font-size: .87rem; max-width: 900px; line-height: 1.5; }
+    .header code { background: rgba(255,255,255,.08); padding: 1px 6px; border-radius: 5px; font-size: .84em; }
+
+    /* ── Legend ── */
+    .legend {
+        display: flex; gap: .5rem; flex-wrap: wrap;
+        padding: .85rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+        flex-shrink: 0;
+    }
+    .legend-item {
+        display: inline-flex; align-items: center; gap: .45rem;
+        padding: .4rem .85rem; border-radius: 999px;
+        background: rgba(255,255,255,.05); border: 1px solid var(--border);
+        font-size: .8rem; font-weight: 600; color: var(--text-dim);
+        cursor: pointer; user-select: none; transition: all .15s;
+    }
+    .legend-item:hover { background: rgba(255,255,255,.09); color: var(--text); }
+    .legend-item.dimmed { opacity: .35; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+        display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+        padding: .7rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel-2);
+        flex-shrink: 0;
+    }
+    .tb-btn {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .48rem .9rem; border-radius: 8px;
+        background: rgba(255,255,255,.06); border: 1px solid var(--border);
+        color: var(--text); font-size: .82rem; font-weight: 600;
+        cursor: pointer; transition: all .15s;
+    }
+    .tb-btn:hover { background: rgba(255,255,255,.11); }
+    .tb-zoom { display: inline-flex; align-items: center; gap: .3rem; }
+    .tb-zoom-val { min-width: 44px; text-align: center; font-size: .8rem; color: var(--text-dim); font-weight: 700; }
+    .tb-sep { width: 1px; height: 22px; background: var(--border); }
+    .tb-check {
+        display: inline-flex; align-items: center; gap: .5rem;
+        font-size: .82rem; color: var(--text-dim); cursor: pointer; user-select: none;
+    }
+    .tb-check input { width: 15px; height: 15px; accent-color: #6366f1; cursor: pointer; }
+    .tb-search {
+        background: rgba(255,255,255,.06); border: 1px solid var(--border);
+        color: var(--text); border-radius: 8px; padding: .48rem .8rem;
+        font-size: .82rem; width: 220px; outline: none;
+    }
+    .tb-search:focus { border-color: #6366f1; }
+    .tb-search::placeholder { color: var(--text-faint); }
+    .tb-spacer { flex: 1; }
+    .tb-count { font-size: .78rem; color: var(--text-faint); }
+
+    /* ── Canvas ── */
+    .viewport {
+        position: relative; flex: 1; overflow: hidden;
+        background-image: radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
+        background-size: 22px 22px;
+        cursor: grab;
+    }
+    .viewport.panning { cursor: grabbing; }
+    .canvas {
+        position: absolute; top: 0; left: 0;
+        transform-origin: 0 0;
+        will-change: transform;
+    }
+    svg.edges { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+    .edge-path { fill: none; stroke-width: 1.6; opacity: .38; transition: opacity .15s, stroke-width .15s; }
+    .edge-path.owner { stroke-dasharray: 3 3; }
+    .edge-path.highlight { opacity: .95; stroke-width: 2.4; }
+    .edge-path.faded { opacity: .05; }
+
+    /* ── Table card ── */
+    .db-table {
+        position: absolute; top: 0; left: 0;
+        width: 250px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.35);
+        cursor: grab;
+        user-select: none;
+        transition: opacity .15s, box-shadow .15s, border-color .15s;
+    }
+    .db-table:active { cursor: grabbing; }
+    .db-table.faded { opacity: .22; }
+    .db-table.highlighted { border-color: var(--tbl-color); box-shadow: 0 0 0 2px var(--tbl-color), 0 10px 28px rgba(0,0,0,.45); z-index: 5; }
+    .db-table-head {
+        padding: .55rem .75rem;
+        font-size: .8rem; font-weight: 700;
+        color: #fff;
+        border-radius: 9px 9px 0 0;
+        background: var(--tbl-color);
+        display: flex; align-items: center; gap: .4rem;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .db-table-head i { font-size: .68rem; opacity: .85; }
+    .db-table-rows { padding: .3rem 0; }
+    .db-col-row {
+        display: flex; align-items: center; gap: .4rem;
+        padding: .22rem .75rem;
+        font-size: .715rem;
+        white-space: nowrap;
+    }
+    .db-col-row.pk { background: rgba(255,255,255,.04); }
+    .db-col-icon { width: 12px; text-align: center; flex-shrink: 0; font-size: .62rem; }
+    .db-col-icon.pk { color: #fbbf24; }
+    .db-col-icon.fk { color: #60a5fa; }
+    .db-col-name { flex: 1; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+    .db-col-row.pk .db-col-name { font-weight: 700; }
+    .db-col-type { color: var(--text-faint); font-size: .66rem; flex-shrink: 0; }
+
+    /* ── Hint ── */
+    .hint {
+        position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+        background: rgba(15,23,42,.9); border: 1px solid var(--border);
+        padding: .5rem 1rem; border-radius: 999px;
+        font-size: .76rem; color: var(--text-dim);
+        pointer-events: none; opacity: 0; transition: opacity .3s;
+        white-space: nowrap;
+    }
+    .hint.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="app">
+    <div class="header">
+        <div class="eyebrow">Documentação Técnica · Base de Dados</div>
+        <h1>Designer da Base de Dados — RHNeto Pro</h1>
+        <p>
+            Vista tipo "Desenhador" (como o phpMyAdmin), com as <strong id="tableCountLabel">28</strong> tabelas de
+            <code>rhnetopro</code> e as suas ligações reais, agrupadas por área do sistema. Arraste para mover,
+            use a roda do rato ou os botões para aproximar, e clique numa tabela para destacar só as ligações dela.
+        </p>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="toolbar">
+        <button class="tb-btn" id="btnFit"><i class="fas fa-expand"></i> Ajustar à janela</button>
+        <div class="tb-sep"></div>
+        <div class="tb-zoom">
+            <button class="tb-btn" id="btnZoomOut">−</button>
+            <span class="tb-zoom-val" id="zoomVal">100%</span>
+            <button class="tb-btn" id="btnZoomIn">+</button>
+        </div>
+        <div class="tb-sep"></div>
+        <label class="tb-check">
+            <input type="checkbox" id="chkOwnership">
+            Mostrar ligações de posse (client_id)
+        </label>
+        <div class="tb-spacer"></div>
+        <input type="text" class="tb-search" id="tbSearch" placeholder="Pesquisar tabela ou coluna...">
+    </div>
+
+    <div class="viewport" id="viewport">
+        <div class="canvas" id="canvas">
+            <svg class="edges" id="edgesSvg"></svg>
+        </div>
+        <div class="hint" id="hint">Clique numa tabela para destacar as ligações dela — clique de novo para limpar</div>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   Dados: tabelas, colunas e categorias (gerados a partir do
+   schema real via SHOW COLUMNS)
+   ============================================================ */
+const TABLES = {"admin_password_resets":{"category":"sistema","columns":[{"name":"id","type":"int","pk":true},{"name":"user_id","type":"int","pk":false},{"name":"email","type":"string","pk":false},{"name":"token_hash","type":"string","pk":false},{"name":"expires_at","type":"datetime","pk":false},{"name":"used_at","type":"datetime","pk":false},{"name":"ip_address","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"atividades_recentes":{"category":"sistema","columns":[{"name":"id","type":"int","pk":true},{"name":"title","type":"string","pk":false},{"name":"type","type":"string","pk":false},{"name":"status","type":"string","pk":false},{"name":"timestamp","type":"datetime","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false}]},"attendance_audit_logs":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false},{"name":"admin_user_id","type":"int","pk":false},{"name":"action","type":"string","pk":false},{"name":"target_date","type":"date","pk":false},{"name":"before_payload","type":"text","pk":false},{"name":"after_payload","type":"text","pk":false},{"name":"ip_address","type":"string","pk":false},{"name":"user_agent","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"clients":{"category":"fundacao","columns":[{"name":"id","type":"int","pk":true},{"name":"client_name","type":"string","pk":false},{"name":"company_address","type":"string","pk":false},{"name":"company_nif","type":"string","pk":false},{"name":"company_logo","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"subscription_status","type":"string","pk":false},{"name":"subscription_plan","type":"string","pk":false},{"name":"subscription_start_date","type":"datetime","pk":false},{"name":"subscription_end_date","type":"datetime","pk":false},{"name":"hotmart_transaction_id","type":"string","pk":false},{"name":"hotmart_subscriber_code","type":"string","pk":false},{"name":"trial_ends_at","type":"datetime","pk":false},{"name":"stripe_customer_id","type":"string","pk":false},{"name":"stripe_subscription_id","type":"string","pk":false}]},"employee_change_requests":{"category":"funcionarios","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false},{"name":"request_type","type":"string","pk":false},{"name":"payload_json","type":"text","pk":false},{"name":"reason","type":"text","pk":false},{"name":"status","type":"enum","pk":false},{"name":"requested_by","type":"int","pk":false},{"name":"reviewed_by","type":"int","pk":false},{"name":"reviewed_at","type":"datetime","pk":false},{"name":"review_note","type":"text","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"employee_documents":{"category":"funcionarios","columns":[{"name":"id","type":"int","pk":true},{"name":"employee_id","type":"int","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"document_name","type":"string","pk":false},{"name":"document_type","type":"string","pk":false},{"name":"file_path","type":"string","pk":false},{"name":"file_size","type":"int","pk":false},{"name":"file_extension","type":"string","pk":false},{"name":"uploaded_by","type":"int","pk":false},{"name":"description","type":"text","pk":false},{"name":"expiry_date","type":"date","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"employee_pin_resets":{"category":"funcionarios","columns":[{"name":"id","type":"int","pk":true},{"name":"employee_id","type":"int","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"email","type":"string","pk":false},{"name":"token_hash","type":"string","pk":false},{"name":"expires_at","type":"datetime","pk":false},{"name":"used_at","type":"datetime","pk":false},{"name":"ip_address","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"employees":{"category":"funcionarios","columns":[{"name":"id","type":"int","pk":true},{"name":"name","type":"string","pk":false},{"name":"position","type":"string","pk":false},{"name":"department","type":"string","pk":false},{"name":"email","type":"string","pk":false},{"name":"phone","type":"string","pk":false},{"name":"startDate","type":"date","pk":false},{"name":"endDate","type":"date","pk":false},{"name":"status","type":"string","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"pin_hash","type":"string","pk":false},{"name":"pin","type":"string","pk":false},{"name":"birthDate","type":"date","pk":false},{"name":"nif","type":"string","pk":false},{"name":"niss","type":"string","pk":false},{"name":"address","type":"text","pk":false},{"name":"emergencyContact","type":"string","pk":false},{"name":"contractType","type":"string","pk":false},{"name":"profile_picture","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false},{"name":"salary_base","type":"decimal","pk":false},{"name":"subsidio_alimentacao","type":"decimal","pk":false},{"name":"bonus","type":"decimal","pk":false},{"name":"vacation_days","type":"int","pk":false}]},"estabelecimento_horarios":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"hora_abertura","type":"time","pk":false},{"name":"hora_encerramento","type":"time","pk":false},{"name":"hora_entrada_padrao","type":"time","pk":false},{"name":"tolerancia_atraso_min","type":"int","pk":false},{"name":"latitude","type":"decimal","pk":false},{"name":"longitude","type":"decimal","pk":false},{"name":"raio_metros","type":"int","pk":false},{"name":"updated_by","type":"int","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"ferias":{"category":"sistema","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"funcionario_id","type":"int","pk":false},{"name":"data_inicio","type":"date","pk":false},{"name":"data_fim","type":"date","pk":false},{"name":"status","type":"string","pk":false},{"name":"motivo","type":"text","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false},{"name":"motivo_rejeicao","type":"string","pk":false}]},"folha_fechamentos_mensais":{"category":"folha","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"fiscal_year","type":"int","pk":false},{"name":"fiscal_month","type":"int","pk":false},{"name":"is_closed","type":"boolean","pk":false},{"name":"closed_by","type":"int","pk":false},{"name":"closed_at","type":"datetime","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"folha_pagamento":{"category":"folha","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false},{"name":"fiscal_year","type":"int","pk":false},{"name":"fiscal_month","type":"int","pk":false},{"name":"salario_base","type":"decimal","pk":false},{"name":"subsidio_alimentacao","type":"decimal","pk":false},{"name":"horas_extra","type":"decimal","pk":false},{"name":"bonus","type":"decimal","pk":false},{"name":"gorjetas","type":"decimal","pk":false},{"name":"salario_bruto","type":"decimal","pk":false},{"name":"base_seguranca_social","type":"decimal","pk":false},{"name":"ss_rate","type":"decimal","pk":false},{"name":"seguranca_social","type":"decimal","pk":false},{"name":"seguranca_social_empresa","type":"decimal","pk":false},{"name":"base_irs","type":"decimal","pk":false},{"name":"irs","type":"decimal","pk":false},{"name":"irs_rate_applied","type":"decimal","pk":false},{"name":"irs_parcela_abater","type":"decimal","pk":false},{"name":"irs_bracket_min","type":"decimal","pk":false},{"name":"irs_bracket_max","type":"decimal","pk":false},{"name":"irs_formula","type":"string","pk":false},{"name":"status_pagamento","type":"enum","pk":false},{"name":"data_pagamento","type":"datetime","pk":false},{"name":"total_descontos","type":"decimal","pk":false},{"name":"salario_liquido","type":"decimal","pk":false},{"name":"custo_total_empresa","type":"decimal","pk":false},{"name":"status","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"folha_pagamento_historico":{"category":"folha","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false},{"name":"fiscal_year","type":"int","pk":false},{"name":"fiscal_month","type":"int","pk":false},{"name":"snapshot_json","type":"text","pk":false},{"name":"snapshot_data_base64","type":"text","pk":false},{"name":"closed_at","type":"datetime","pk":false},{"name":"closed_by","type":"int","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"folha_variaveis_mensais":{"category":"folha","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false},{"name":"fiscal_year","type":"int","pk":false},{"name":"fiscal_month","type":"int","pk":false},{"name":"horas_extra","type":"decimal","pk":false},{"name":"horas_extra_1h","type":"decimal","pk":false},{"name":"horas_extra_seguintes","type":"decimal","pk":false},{"name":"horas_extra_descanso","type":"decimal","pk":false},{"name":"faltas_dias","type":"decimal","pk":false},{"name":"bonus","type":"decimal","pk":false},{"name":"subsidios_extra","type":"decimal","pk":false},{"name":"outros_descontos","type":"decimal","pk":false},{"name":"gorjeta_manual","type":"decimal","pk":false},{"name":"status","type":"string","pk":false},{"name":"is_locked","type":"boolean","pk":false},{"name":"updated_by","type":"int","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"gorjetas":{"category":"folha","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"valor","type":"decimal","pk":false},{"name":"data","type":"date","pk":false},{"name":"turno","type":"string","pk":false},{"name":"forma_pagamento","type":"string","pk":false},{"name":"origem","type":"string","pk":false},{"name":"status","type":"enum","pk":false},{"name":"observacao","type":"text","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"historico_alteracoes_ponto":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"data_registro","type":"date","pk":false},{"name":"tipo_alteracao","type":"string","pk":false},{"name":"motivo","type":"text","pk":false},{"name":"usuario_id","type":"int","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"justificativas_ausencia":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"data_ausencia","type":"date","pk":false},{"name":"motivo","type":"text","pk":false},{"name":"status","type":"enum","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"tipo","type":"string","pk":false},{"name":"documento","type":"string","pk":false}]},"justificativas_falta":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"data_falta","type":"date","pk":false},{"name":"tipo_justificativa","type":"string","pk":false},{"name":"descricao","type":"text","pk":false},{"name":"documento_path","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"justificativas_presenca":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false},{"name":"data_ocorrencia","type":"date","pk":false},{"name":"tipo","type":"enum","pk":false},{"name":"motivo","type":"text","pk":false},{"name":"anexo_path","type":"string","pk":false},{"name":"status","type":"enum","pk":false},{"name":"admin_observacao","type":"text","pk":false},{"name":"decidido_por","type":"int","pk":false},{"name":"decidido_em","type":"datetime","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"notificacoes":{"category":"sistema","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"mensagem","type":"text","pk":false},{"name":"data_envio","type":"datetime","pk":false},{"name":"status_lida","type":"boolean","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"lida","type":"int","pk":false},{"name":"send_channel","type":"string","pk":false}]},"payroll_settings":{"category":"folha","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"fiscal_year","type":"int","pk":false},{"name":"default_subsidios","type":"decimal","pk":false},{"name":"default_horas_extra","type":"decimal","pk":false},{"name":"default_bonus","type":"decimal","pk":false},{"name":"updated_by","type":"int","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false},{"name":"gorjetas_auto_split","type":"boolean","pk":false},{"name":"gorjetas_total_mes","type":"decimal","pk":false},{"name":"horas_semanais","type":"decimal","pk":false}]},"presencas":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"data_registro","type":"date","pk":false},{"name":"status","type":"string","pk":false},{"name":"obs","type":"text","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"registros_ponto":{"category":"presenca","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"data_registro","type":"date","pk":false},{"name":"hora_entrada","type":"time","pk":false},{"name":"hora_saida","type":"time","pk":false},{"name":"obs","type":"text","pk":false},{"name":"status_confirmacao","type":"enum","pk":false},{"name":"validado_admin","type":"boolean","pk":false},{"name":"status","type":"string","pk":false},{"name":"tipo_dia","type":"string","pk":false},{"name":"falta_tipo","type":"string","pk":false},{"name":"ponto_latitude","type":"decimal","pk":false},{"name":"ponto_longitude","type":"decimal","pk":false},{"name":"distancia_metros","type":"int","pk":false},{"name":"localizacao_status","type":"string","pk":false},{"name":"observacao","type":"text","pk":false},{"name":"created_at","type":"datetime","pk":false}]},"sms_history":{"category":"sistema","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"employee_id","type":"int","pk":false},{"name":"phone","type":"string","pk":false},{"name":"message","type":"text","pk":false},{"name":"provider","type":"string","pk":false},{"name":"provider_message_id","type":"string","pk":false},{"name":"status","type":"string","pk":false},{"name":"error_message","type":"text","pk":false},{"name":"sent_at","type":"datetime","pk":false}]},"turno_swap_requests":{"category":"turnos","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"requester_employee_id","type":"int","pk":false},{"name":"target_employee_id","type":"int","pk":false},{"name":"requester_turno_id","type":"int","pk":false},{"name":"target_turno_id","type":"int","pk":false},{"name":"requested_date","type":"date","pk":false},{"name":"reason","type":"text","pk":false},{"name":"status","type":"string","pk":false},{"name":"review_note","type":"text","pk":false},{"name":"reviewed_by","type":"int","pk":false},{"name":"reviewed_at","type":"datetime","pk":false},{"name":"requested_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"turnos":{"category":"turnos","columns":[{"name":"id","type":"int","pk":true},{"name":"funcionario_id","type":"int","pk":false},{"name":"turno_tipo","type":"string","pk":false},{"name":"horario_inicio","type":"time","pk":false},{"name":"horario_fim","type":"time","pk":false},{"name":"dias_semana","type":"string","pk":false},{"name":"data_inicio","type":"date","pk":false},{"name":"data_fim","type":"date","pk":false},{"name":"escala","type":"string","pk":false},{"name":"status","type":"string","pk":false},{"name":"gorjetas_base","type":"decimal","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"turnos_publicacoes":{"category":"turnos","columns":[{"name":"id","type":"int","pk":true},{"name":"client_id","type":"int","pk":false},{"name":"period_start","type":"date","pk":false},{"name":"period_end","type":"date","pk":false},{"name":"status","type":"string","pk":false},{"name":"published_by","type":"int","pk":false},{"name":"note","type":"string","pk":false},{"name":"created_at","type":"datetime","pk":false},{"name":"updated_at","type":"datetime","pk":false}]},"usuarios":{"category":"fundacao","columns":[{"name":"id","type":"int","pk":true},{"name":"nome_completo","type":"string","pk":false},{"name":"email","type":"string","pk":false},{"name":"telefone","type":"string","pk":false},{"name":"nif","type":"string","pk":false},{"name":"nome_usuario","type":"string","pk":false},{"name":"senha","type":"string","pk":false},{"name":"client_id","type":"int","pk":false},{"name":"profile_picture","type":"string","pk":false},{"name":"data_cadastro","type":"datetime","pk":false},{"name":"subscription_status","type":"string","pk":false},{"name":"subscription_plan","type":"string","pk":false},{"name":"subscription_start_date","type":"datetime","pk":false},{"name":"subscription_end_date","type":"datetime","pk":false},{"name":"hotmart_transaction_id","type":"string","pk":false},{"name":"hotmart_subscriber_code","type":"string","pk":false},{"name":"trial_ends_at","type":"datetime","pk":false},{"name":"stripe_customer_id","type":"string","pk":false},{"name":"stripe_subscription_id","type":"string","pk":false}]}};
+
+const CATEGORIES = {
+    fundacao:     { label: 'Fundação & SaaS',      color: '#a78bfa' },
+    funcionarios: { label: 'Funcionários',          color: '#60a5fa' },
+    presenca:     { label: 'Presença & Ponto',      color: '#fbbf24' },
+    turnos:       { label: 'Turnos',                color: '#2dd4bf' },
+    folha:        { label: 'Folha & Gorjetas',      color: '#34d399' },
+    sistema:      { label: 'Férias & Sistema',      color: '#f87171' },
+};
+const CATEGORY_ORDER = ['fundacao', 'funcionarios', 'presenca', 'turnos', 'folha', 'sistema'];
+const CATEGORY_COLS = { fundacao: 1, funcionarios: 2, presenca: 2, turnos: 1, folha: 2, sistema: 2 };
+
+/* Relações de negócio (não incluindo client_id -> clients.id, que é
+   tratado à parte como "ligação de posse", ligada/desligada pelo toggle). */
+const RELATIONS = [
+    ['employee_documents', 'employee_id', 'employees', 'id'],
+    ['employee_change_requests', 'employee_id', 'employees', 'id'],
+    ['employee_change_requests', 'requested_by', 'usuarios', 'id'],
+    ['employee_change_requests', 'reviewed_by', 'usuarios', 'id'],
+    ['employee_pin_resets', 'employee_id', 'employees', 'id'],
+    ['registros_ponto', 'funcionario_id', 'employees', 'id'],
+    ['presencas', 'funcionario_id', 'employees', 'id'],
+    ['attendance_audit_logs', 'employee_id', 'employees', 'id'],
+    ['attendance_audit_logs', 'admin_user_id', 'usuarios', 'id'],
+    ['historico_alteracoes_ponto', 'funcionario_id', 'employees', 'id'],
+    ['historico_alteracoes_ponto', 'usuario_id', 'usuarios', 'id'],
+    ['justificativas_presenca', 'employee_id', 'employees', 'id'],
+    ['justificativas_presenca', 'decidido_por', 'usuarios', 'id'],
+    ['justificativas_falta', 'funcionario_id', 'employees', 'id'],
+    ['justificativas_ausencia', 'funcionario_id', 'employees', 'id'],
+    ['estabelecimento_horarios', 'updated_by', 'usuarios', 'id'],
+    ['turnos', 'funcionario_id', 'employees', 'id'],
+    ['turnos_publicacoes', 'published_by', 'usuarios', 'id'],
+    ['turno_swap_requests', 'requester_employee_id', 'employees', 'id'],
+    ['turno_swap_requests', 'target_employee_id', 'employees', 'id'],
+    ['turno_swap_requests', 'requester_turno_id', 'turnos', 'id'],
+    ['turno_swap_requests', 'target_turno_id', 'turnos', 'id'],
+    ['turno_swap_requests', 'reviewed_by', 'usuarios', 'id'],
+    ['folha_pagamento', 'employee_id', 'employees', 'id'],
+    ['folha_variaveis_mensais', 'employee_id', 'employees', 'id'],
+    ['folha_variaveis_mensais', 'updated_by', 'usuarios', 'id'],
+    ['folha_fechamentos_mensais', 'closed_by', 'usuarios', 'id'],
+    ['folha_pagamento_historico', 'employee_id', 'employees', 'id'],
+    ['folha_pagamento_historico', 'closed_by', 'usuarios', 'id'],
+    ['payroll_settings', 'updated_by', 'usuarios', 'id'],
+    ['gorjetas', 'funcionario_id', 'employees', 'id'],
+    ['ferias', 'funcionario_id', 'employees', 'id'],
+    ['notificacoes', 'funcionario_id', 'employees', 'id'],
+    ['sms_history', 'employee_id', 'employees', 'id'],
+    ['atividades_recentes', 'employee_id', 'employees', 'id'],
+    ['admin_password_resets', 'user_id', 'usuarios', 'id'],
+];
+
+/* Ligações de posse: qualquer tabela com client_id aponta para clients.id */
+const OWNERSHIP_RELATIONS = Object.keys(TABLES)
+    .filter(t => t !== 'clients' && TABLES[t].columns.some(c => c.name === 'client_id'))
+    .map(t => [t, 'client_id', 'clients', 'id']);
+
+/* ============================================================
+   Layout: posiciona as tabelas em bandas por categoria
+   ============================================================ */
+const CARD_WIDTH = 250;
+const COL_GAP = 26;
+const BAND_GAP = 60;
+const ROW_GAP = 26;
+const TOP_PADDING = 30;
+
+function estimateHeight(table) {
+    return 40 + table.columns.length * 21 + 14;
+}
+
+function layout() {
+    let bandX = 40;
+    const positions = {};
+
+    CATEGORY_ORDER.forEach(cat => {
+        const tableNames = Object.keys(TABLES).filter(t => TABLES[t].category === cat);
+        const numCols = CATEGORY_COLS[cat] || 1;
+        const colY = new Array(numCols).fill(TOP_PADDING);
+
+        tableNames.forEach((name, i) => {
+            const col = i % numCols;
+            const x = bandX + col * (CARD_WIDTH + COL_GAP);
+            const y = colY[col];
+            positions[name] = { x, y };
+            colY[col] += estimateHeight(TABLES[name]) + ROW_GAP;
+        });
+
+        const bandWidth = numCols * CARD_WIDTH + (numCols - 1) * COL_GAP;
+        bandX += bandWidth + BAND_GAP;
+    });
+
+    return positions;
+}
+
+const positions = layout();
+
+/* ============================================================
+   Render
+   ============================================================ */
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('edgesSvg');
+const viewport = document.getElementById('viewport');
+
+let scale = 1;
+let panX = 40;
+let panY = 20;
+let highlightedTable = null;
+
+function typeIcon(col) {
+    if (col.pk) return '<i class="db-col-icon pk">🔑</i>';
+    if (/_id$|_by$|_por$/.test(col.name) && !col.pk) return '<i class="db-col-icon fk">↳</i>';
+    return '<i class="db-col-icon"></i>';
+}
+
+function renderTables() {
+    Object.keys(TABLES).forEach(name => {
+        const t = TABLES[name];
+        const pos = positions[name];
+        const color = CATEGORIES[t.category].color;
+
+        const el = document.createElement('div');
+        el.className = 'db-table';
+        el.id = 'tbl-' + name;
+        el.style.left = pos.x + 'px';
+        el.style.top = pos.y + 'px';
+        el.style.setProperty('--tbl-color', color);
+
+        const rowsHtml = t.columns.map(c => `
+            <div class="db-col-row ${c.pk ? 'pk' : ''}" data-col="${c.name.toLowerCase()}">
+                ${typeIcon(c)}
+                <span class="db-col-name">${c.name}</span>
+                <span class="db-col-type">${c.type}</span>
+            </div>
+        `).join('');
+
+        el.innerHTML = `
+            <div class="db-table-head"><i class="fas fa-table"></i> ${name}</div>
+            <div class="db-table-rows">${rowsHtml}</div>
+        `;
+        canvas.appendChild(el);
+        makeDraggable(el, name);
+    });
+}
+
+function tableAnchor(name) {
+    const el = document.getElementById('tbl-' + name);
+    const pos = positions[name];
+    return { x: pos.x, y: pos.y, w: el.offsetWidth, h: el.offsetHeight };
+}
+
+function edgeColor(fromTable) {
+    return CATEGORIES[TABLES[fromTable].category].color;
+}
+
+function drawEdges() {
+    const showOwnership = document.getElementById('chkOwnership').checked;
+    const rels = showOwnership ? RELATIONS.concat(OWNERSHIP_RELATIONS) : RELATIONS;
+
+    svg.innerHTML = '';
+    rels.forEach(([fromT, fromCol, toT, toCol]) => {
+        if (!positions[fromT] || !positions[toT]) return;
+        const a = tableAnchor(fromT);
+        const b = tableAnchor(toT);
+
+        const aCx = a.x + a.w / 2, aCy = a.y + a.h / 2;
+        const bCx = b.x + b.w / 2, bCy = b.y + b.h / 2;
+
+        const fromRight = aCx < bCx;
+        const x1 = fromRight ? a.x + a.w : a.x;
+        const y1 = aCy;
+        const x2 = fromRight ? b.x : b.x + b.w;
+        const y2 = bCy;
+
+        const dx = Math.max(60, Math.abs(x2 - x1) * 0.45);
+        const path = `M ${x1} ${y1} C ${x1 + (fromRight ? dx : -dx)} ${y1}, ${x2 + (fromRight ? -dx : dx)} ${y2}, ${x2} ${y2}`;
+
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        p.setAttribute('d', path);
+        p.setAttribute('class', 'edge-path' + (OWNERSHIP_RELATIONS.some(r => r[0] === fromT && r[1] === fromCol) ? ' owner' : ''));
+        p.setAttribute('stroke', edgeColor(fromT));
+        p.dataset.from = fromT;
+        p.dataset.to = toT;
+        svg.appendChild(p);
+    });
+
+    applyHighlight();
+}
+
+/* ============================================================
+   Highlight (clicar numa tabela destaca as ligações dela)
+   ============================================================ */
+function applyHighlight() {
+    const tables = document.querySelectorAll('.db-table');
+    const edges = document.querySelectorAll('.edge-path');
+
+    if (!highlightedTable) {
+        tables.forEach(t => t.classList.remove('faded', 'highlighted'));
+        edges.forEach(e => e.classList.remove('faded', 'highlight'));
+        return;
+    }
+
+    const connected = new Set([highlightedTable]);
+    edges.forEach(e => {
+        if (e.dataset.from === highlightedTable) connected.add(e.dataset.to);
+        if (e.dataset.to === highlightedTable) connected.add(e.dataset.from);
+    });
+
+    tables.forEach(t => {
+        const name = t.id.replace('tbl-', '');
+        t.classList.toggle('faded', !connected.has(name));
+        t.classList.toggle('highlighted', name === highlightedTable);
+    });
+    edges.forEach(e => {
+        const involved = e.dataset.from === highlightedTable || e.dataset.to === highlightedTable;
+        e.classList.toggle('highlight', involved);
+        e.classList.toggle('faded', !involved);
+    });
+}
+
+/* ============================================================
+   Drag de tabelas
+   ============================================================ */
+function makeDraggable(el, name) {
+    let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0, moved = false;
+
+    el.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        dragging = true; moved = false;
+        startX = e.clientX; startY = e.clientY;
+        origX = positions[name].x; origY = positions[name].y;
+        document.body.style.userSelect = 'none';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const dx = (e.clientX - startX) / scale;
+        const dy = (e.clientY - startY) / scale;
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
+        positions[name].x = origX + dx;
+        positions[name].y = origY + dy;
+        el.style.left = positions[name].x + 'px';
+        el.style.top = positions[name].y + 'px';
+        drawEdges();
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        document.body.style.userSelect = '';
+        if (!moved) {
+            highlightedTable = (highlightedTable === name) ? null : name;
+            applyHighlight();
+        }
+    });
+}
+
+/* ============================================================
+   Pan + Zoom do viewport
+   ============================================================ */
+function applyTransform() {
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    document.getElementById('zoomVal').textContent = Math.round(scale * 100) + '%';
+}
+
+let panning = false, panStartX = 0, panStartY = 0, panOrigX = 0, panOrigY = 0;
+viewport.addEventListener('mousedown', (e) => {
+    if (e.target !== viewport && e.target !== canvas && e.target.tagName !== 'svg') return;
+    panning = true;
+    viewport.classList.add('panning');
+    panStartX = e.clientX; panStartY = e.clientY;
+    panOrigX = panX; panOrigY = panY;
+});
+window.addEventListener('mousemove', (e) => {
+    if (!panning) return;
+    panX = panOrigX + (e.clientX - panStartX);
+    panY = panOrigY + (e.clientY - panStartY);
+    applyTransform();
+});
+window.addEventListener('mouseup', () => { panning = false; viewport.classList.remove('panning'); });
+
+viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = viewport.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const worldX = (mx - panX) / scale, worldY = (my - panY) / scale;
+    const delta = e.deltaY < 0 ? 1.1 : 0.9;
+    scale = Math.min(2.5, Math.max(0.25, scale * delta));
+    panX = mx - worldX * scale;
+    panY = my - worldY * scale;
+    applyTransform();
+}, { passive: false });
+
+document.getElementById('btnZoomIn').addEventListener('click', () => {
+    scale = Math.min(2.5, scale * 1.15);
+    applyTransform();
+});
+document.getElementById('btnZoomOut').addEventListener('click', () => {
+    scale = Math.max(0.25, scale * 0.87);
+    applyTransform();
+});
+
+function fitToWindow() {
+    const allX = Object.values(positions).map(p => p.x);
+    const allY = Object.values(positions).map(p => p.y);
+    let maxX = 0, maxY = 0;
+    Object.keys(positions).forEach(name => {
+        const a = tableAnchor(name);
+        maxX = Math.max(maxX, a.x + a.w);
+        maxY = Math.max(maxY, a.y + a.h);
+    });
+    const minX = Math.min(...allX), minY = Math.min(...allY);
+    const contentW = maxX - minX + 60, contentH = maxY - minY + 60;
+    const vpRect = viewport.getBoundingClientRect();
+    scale = Math.min(vpRect.width / contentW, vpRect.height / contentH, 1);
+    scale = Math.max(scale, 0.15);
+    panX = (vpRect.width - contentW * scale) / 2 - minX * scale + 30 * scale;
+    panY = 20;
+    applyTransform();
+}
+document.getElementById('btnFit').addEventListener('click', fitToWindow);
+
+/* ============================================================
+   Toggle ligações de posse
+   ============================================================ */
+document.getElementById('chkOwnership').addEventListener('change', drawEdges);
+
+/* ============================================================
+   Legenda (filtro visual por categoria)
+   ============================================================ */
+function renderLegend() {
+    const legend = document.getElementById('legend');
+    let dimmedCats = new Set();
+
+    CATEGORY_ORDER.forEach(cat => {
+        const info = CATEGORIES[cat];
+        const count = Object.values(TABLES).filter(t => t.category === cat).length;
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `<span class="legend-dot" style="background:${info.color}"></span> ${info.label} <span style="opacity:.6">(${count})</span>`;
+        item.addEventListener('click', () => {
+            if (dimmedCats.has(cat)) dimmedCats.delete(cat); else dimmedCats.add(cat);
+            item.classList.toggle('dimmed');
+            document.querySelectorAll('.db-table').forEach(t => {
+                const name = t.id.replace('tbl-', '');
+                const tCat = TABLES[name].category;
+                if (highlightedTable) return; // não interfere com o destaque por tabela
+                t.style.display = dimmedCats.has(tCat) ? 'none' : '';
+            });
+            drawEdges();
+        });
+        legend.appendChild(item);
+    });
+}
+
+/* ============================================================
+   Pesquisa
+   ============================================================ */
+document.getElementById('tbSearch').addEventListener('input', (e) => {
+    const term = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('.db-table').forEach(el => {
+        const name = el.id.replace('tbl-', '');
+        if (!term) { el.classList.remove('faded'); return; }
+        const matchesTable = name.toLowerCase().includes(term);
+        const matchesCol = TABLES[name].columns.some(c => c.name.toLowerCase().includes(term));
+        el.classList.toggle('faded', !(matchesTable || matchesCol));
+    });
+});
+
+/* ============================================================
+   Init
+   ============================================================ */
+document.getElementById('tableCountLabel').textContent = Object.keys(TABLES).length;
+renderLegend();
+renderTables();
+requestAnimationFrame(() => {
+    drawEdges();
+    fitToWindow();
+    setTimeout(() => {
+        const hint = document.getElementById('hint');
+        hint.classList.add('show');
+        setTimeout(() => hint.classList.remove('show'), 4000);
+    }, 600);
+});
+</script>
+</body>
+</html>

@@ -793,7 +793,26 @@ function formatAtrasoMinutos(int $min): string
                         }
                         $employeesPresenca = array_merge($employeesPresencaAtivos, $employeesPresencaFerias);
 
+                        // Prioridade de exibição: quem precisa de atenção (turno em curso, atrasado,
+                        // presente, falta) aparece primeiro; folga desce para dar lugar a esses casos,
+                        // e inativo/férias ficam sempre no fim.
+                        $presencaStatusPriority = [
+                            'em-aberto' => 0,
+                            'atrasado' => 1,
+                            'presente' => 2,
+                            'falta' => 3,
+                            'agendado' => 4,
+                            'nao-registrado' => 4,
+                            'invalidado' => 4,
+                            'sem-turno' => 5,
+                            'folga' => 6,
+                            'inativo' => 7,
+                            'ferias' => 8,
+                        ];
+                        $presencaRowsBuffer = [];
+
                         foreach ($employeesPresenca as $employee):
+                            ob_start();
                             // 1. Lógica para buscar o registro de ponto mais recente do funcionário
                             $stmt = $pdo->prepare("
                     SELECT id, status, hora_entrada, hora_saida, obs, status_confirmacao, tipo_dia, falta_tipo,
@@ -1257,7 +1276,18 @@ function formatAtrasoMinutos(int $min): string
                                 </div>
                             </td>
                         </tr>
-                        <?php endforeach; ?>
+                        <?php
+                            $presencaRowsBuffer[] = [
+                                'priority' => $presencaStatusPriority[$statusKey] ?? 4,
+                                'html' => ob_get_clean(),
+                            ];
+                        endforeach;
+
+                        usort($presencaRowsBuffer, fn($a, $b) => $a['priority'] <=> $b['priority']);
+                        foreach ($presencaRowsBuffer as $presencaRowBuffered) {
+                            echo $presencaRowBuffered['html'];
+                        }
+                        ?>
                     </tbody>
                 </table>
             </div>

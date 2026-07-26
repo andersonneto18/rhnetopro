@@ -435,7 +435,6 @@ function fireDashboardToast(variant, message) {
 
     Swal.fire({
         toast: true,
-        backdrop: false,
         icon: config.icon,
         title: message,
         position: 'top',

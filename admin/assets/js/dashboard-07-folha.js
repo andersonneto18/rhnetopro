@@ -533,6 +533,9 @@
         );
         if (!confirmed) return;
 
+        let successCount = 0;
+        let failCount = 0;
+
         for (const cb of selected) {
             const empId = cb.dataset.employeeId;
             if (!empId) continue;
@@ -549,18 +552,25 @@
                 });
                 const data = await parseJsonResponseSafe(res);
                 if (data.success) {
+                    successCount += 1;
                     const row = cb.closest('tr');
                     if (row) row.remove();
                 } else {
+                    failCount += 1;
                     showError(data.message || 'Erro ao excluir funcionario.');
                 }
             } catch (err) {
+                failCount += 1;
                 console.error('Erro ao excluir em lote:', err);
                 showError('Erro ao excluir funcionario.');
             }
         }
 
-        showSuccess('Funcionários excluídos com sucesso');
+        if (successCount > 0) {
+            showSuccess(`${successCount} funcionário${successCount !== 1 ? 's' : ''} excluído${successCount !== 1 ? 's' : ''} com sucesso`);
+        } else if (failCount === 0) {
+            showWarning('Nenhum funcionário foi excluído.');
+        }
         if (typeof window.clearBulkSelection === 'function') window.clearBulkSelection();
     }
 

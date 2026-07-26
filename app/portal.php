@@ -686,10 +686,25 @@ $fimDt     = new DateTime(date('Y-m-t'));
 $hojeDt    = new DateTime($today);
 $cur       = clone $mesDt;
 
+// Nunca avalia dias anteriores à contratação — um funcionário recém-criado
+// não pode ter "faltas" em dias em que ainda nem existia na equipa.
+$admissaoDt = null;
+if (!empty($employee['startDate'])) {
+    $admissaoTs = strtotime((string)$employee['startDate']);
+    if ($admissaoTs !== false) {
+        $admissaoDt = new DateTime(date('Y-m-d', $admissaoTs));
+    }
+}
+if ($admissaoDt && $admissaoDt > $mesDt) {
+    $cur = clone $admissaoDt;
+}
+
 while ($cur <= $fimDt && $cur <= $hojeDt) {
     $dateStr   = $cur->format('Y-m-d');
     $dow       = (int)$cur->format('w');
-    $isWorkday = empty($workingDayNums) || in_array($dow, $workingDayNums);
+    // Sem turno nenhum atribuído não há agenda para avaliar — nunca é "falta",
+    // só quando o turno existe mas não define dias (dias_semana vazio = todos os dias).
+    $isWorkday = $turnoRef && (empty($workingDayNums) || in_array($dow, $workingDayNums));
     $cur->modify('+1 day');
     if (!$isWorkday) continue;
 

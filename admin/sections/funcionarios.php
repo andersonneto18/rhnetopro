@@ -924,7 +924,7 @@
                             <i class="fas fa-times"></i> Limpar
                         </button>
 
-                        <button type="button" onclick="bulkDeleteSelected()" class="btn-danger">
+                        <button type="button" onclick="bulkDeleteSelected(event)" class="btn-danger">
                             <i class="fas fa-trash-alt"></i> Excluir
                         </button>
                     </div>

@@ -118,14 +118,28 @@ try {
         exit;
     }
 
-    // Verificação de presença apenas para registo do dia atual
+    // Verificação de presença apenas para registo do dia atual — usa registros_ponto
+    // (fonte real do ponto batido) em vez de "presencas", que o fluxo de marcação
+    // de ponto (registrar_ponto_session.php) nunca chega a preencher.
     if ($isToday) {
-        $stmtPresencaHoje = $pdo->prepare("SELECT status FROM presencas WHERE funcionario_id = ? AND DATE(data_registro) = CURDATE() ORDER BY id DESC LIMIT 1");
-        $stmtPresencaHoje->execute([$employeeId]);
-        $presencaHoje = $stmtPresencaHoje->fetch(PDO::FETCH_ASSOC);
-        $presencaStatus = mb_strtolower(trim((string)($presencaHoje['status'] ?? '')));
-        if (!in_array($presencaStatus, ['presente', 'atrasado'], true)) {
-            echo json_encode(['success' => false, 'message' => 'Só é possível registrar gorjeta quando o funcionário estiver presente.']);
+        $pontoCols = $pdo->query("SHOW COLUMNS FROM registros_ponto")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        $pontoDateCol = in_array('data_registro', $pontoCols, true) ? 'data_registro' : (in_array('data', $pontoCols, true) ? 'data' : null);
+
+        $estaPresente = false;
+        if ($pontoDateCol) {
+            $stmtPontoHoje = $pdo->prepare(
+                "SELECT hora_entrada, hora_saida FROM registros_ponto
+                 WHERE funcionario_id = ? AND DATE({$pontoDateCol}) = CURDATE()
+                   AND LOWER(COALESCE(status, '')) <> 'invalidado'
+                 ORDER BY id DESC LIMIT 1"
+            );
+            $stmtPontoHoje->execute([$employeeId]);
+            $pontoHoje = $stmtPontoHoje->fetch(PDO::FETCH_ASSOC);
+            $estaPresente = $pontoHoje && !empty($pontoHoje['hora_entrada']) && empty($pontoHoje['hora_saida']);
+        }
+
+        if (!$estaPresente) {
+            echo json_encode(['success' => false, 'message' => 'Só é possível registrar gorjeta quando o funcionário estiver presente (com entrada marcada e sem saída).']);
             exit;
         }
     }

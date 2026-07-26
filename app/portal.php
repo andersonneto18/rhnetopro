@@ -425,7 +425,12 @@ function formatAtrasoMinutos(int $min): string
 // Calculado aqui em cima (antes do "hero" de status) para poder destacar a Falta
 // já no topo do app, não só na secção de Presença.
 $alertaAtraso = null;
-if (!$pontoAberto && !$lastPonto && $turnoHorarioInicio) {
+$turnoRefCobreHoje = true;
+if (!empty($turnoRef['dias_semana'])) {
+    $diasTurnoRef = _parseDiasSemana((string)$turnoRef['dias_semana']);
+    $turnoRefCobreHoje = empty($diasTurnoRef) || in_array((int)date('w'), $diasTurnoRef, true);
+}
+if (!$pontoAberto && !$lastPonto && $turnoHorarioInicio && $turnoRefCobreHoje) {
     $agoraTs  = time();
     $inicioTs = strtotime('today ' . $turnoHorarioInicio);
     $fimTs    = $turnoHorarioFim !== '' ? strtotime('today ' . $turnoHorarioFim) : false;

@@ -1,8 +1,6 @@
 <?php
 date_default_timezone_set('Europe/Lisbon');
 header('Content-Type: application/json; charset=utf-8');
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 
 require_once '../../config/db_connection.php'; // deve expor $pdo (PDO)
 

@@ -192,8 +192,8 @@ try {
                 $stmtEnviadas = $pdo->prepare(
                         "SELECT r.id, r.requested_date, r.reason, r.requested_at, r.status,
                                         et.name AS target_name,
-                                        rt.turno_tipo AS requester_turno_tipo, rt.horario_inicio AS requester_horario_inicio, rt.horario_fim AS requester_horario_fim,
-                                        tt.turno_tipo AS target_turno_tipo, tt.horario_inicio AS target_horario_inicio, tt.horario_fim AS target_horario_fim
+                                        rt.turno_tipo AS requester_turno_tipo, rt.horario_inicio AS requester_horario_inicio, rt.horario_fim AS requester_horario_fim, rt.dias_semana AS requester_dias,
+                                        tt.turno_tipo AS target_turno_tipo, tt.horario_inicio AS target_horario_inicio, tt.horario_fim AS target_horario_fim, tt.dias_semana AS target_dias
                          FROM turno_swap_requests r
                          INNER JOIN employees et ON et.id = r.target_employee_id
                          INNER JOIN turnos rt ON rt.id = r.requester_turno_id
@@ -1912,9 +1912,15 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                     <p class="message-text" style="margin:0 0 .45rem 0;">
                                         <strong>Turno solicitante:</strong>
                                         <?php echo htmlspecialchars((string)($swapReq['requester_turno_tipo'] ?? '-') . ' ' . substr((string)($swapReq['requester_horario_inicio'] ?? ''), 0, 5) . '-' . substr((string)($swapReq['requester_horario_fim'] ?? ''), 0, 5)); ?>
+                                        <?php if (!empty($swapReq['requester_dias'])): ?>
+                                            <br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> <?php echo htmlspecialchars((string)$swapReq['requester_dias']); ?></small>
+                                        <?php endif; ?>
                                         <br>
                                         <strong>Seu turno:</strong>
                                         <?php echo htmlspecialchars((string)($swapReq['target_turno_tipo'] ?? '-') . ' ' . substr((string)($swapReq['target_horario_inicio'] ?? ''), 0, 5) . '-' . substr((string)($swapReq['target_horario_fim'] ?? ''), 0, 5)); ?>
+                                        <?php if (!empty($swapReq['target_dias'])): ?>
+                                            <br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> <?php echo htmlspecialchars((string)$swapReq['target_dias']); ?></small>
+                                        <?php endif; ?>
                                     </p>
                                     <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
                                         <button type="button" class="btn btn-success btn-turno-swap-decision" data-id="<?php echo (int)$swapReq['id']; ?>" data-decision="accept">
@@ -1962,8 +1968,14 @@ $totalFaltasMes = count(array_filter($attendanceGrid, function ($day) {
                                     </div>
                                     <p class="message-text" style="margin:0;">
                                         <?php echo htmlspecialchars((string)($swapSent['requester_turno_tipo'] ?? '-') . ' ' . substr((string)($swapSent['requester_horario_inicio'] ?? ''), 0, 5) . '-' . substr((string)($swapSent['requester_horario_fim'] ?? ''), 0, 5)); ?>
-                                        ↔
+                                        <?php if (!empty($swapSent['requester_dias'])): ?>
+                                            <br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> <?php echo htmlspecialchars((string)$swapSent['requester_dias']); ?></small>
+                                        <?php endif; ?>
+                                        <br>↔<br>
                                         <?php echo htmlspecialchars((string)($swapSent['target_turno_tipo'] ?? '-') . ' ' . substr((string)($swapSent['target_horario_inicio'] ?? ''), 0, 5) . '-' . substr((string)($swapSent['target_horario_fim'] ?? ''), 0, 5)); ?>
+                                        <?php if (!empty($swapSent['target_dias'])): ?>
+                                            <br><small style="opacity:.75"><i class="fas fa-calendar-week"></i> <?php echo htmlspecialchars((string)$swapSent['target_dias']); ?></small>
+                                        <?php endif; ?>
                                     </p>
                                     <?php if ($swapStatus === 'pendente_colega'): ?>
                                     <button type="button" class="btn btn-danger btn-cancel-swap"

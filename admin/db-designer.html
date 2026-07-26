@@ -106,6 +106,7 @@
         background-image: radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
         background-size: 22px 22px;
         cursor: grab;
+        touch-action: none;
     }
     .viewport.panning { cursor: grabbing; }
     .canvas {
@@ -129,6 +130,7 @@
         box-shadow: 0 8px 24px rgba(0,0,0,.35);
         cursor: grab;
         user-select: none;
+        touch-action: none;
         transition: opacity .15s, box-shadow .15s, border-color .15s;
     }
     .db-table:active { cursor: grabbing; }
@@ -457,18 +459,21 @@ function applyHighlight() {
    Drag de tabelas
    ============================================================ */
 function makeDraggable(el, name) {
-    let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0, moved = false;
+    let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0, moved = false, pointerId = null;
 
-    el.addEventListener('mousedown', (e) => {
+    el.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
+        e.preventDefault();
         dragging = true; moved = false;
+        pointerId = e.pointerId;
+        el.setPointerCapture(pointerId);
         startX = e.clientX; startY = e.clientY;
         origX = positions[name].x; origY = positions[name].y;
         document.body.style.userSelect = 'none';
     });
 
-    window.addEventListener('mousemove', (e) => {
-        if (!dragging) return;
+    el.addEventListener('pointermove', (e) => {
+        if (!dragging || e.pointerId !== pointerId) return;
         const dx = (e.clientX - startX) / scale;
         const dy = (e.clientY - startY) / scale;
         if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
@@ -479,15 +484,18 @@ function makeDraggable(el, name) {
         drawEdges();
     });
 
-    window.addEventListener('mouseup', () => {
-        if (!dragging) return;
+    function endDrag(e) {
+        if (!dragging || (e && e.pointerId !== pointerId)) return;
         dragging = false;
+        try { el.releasePointerCapture(pointerId); } catch (err) {}
         document.body.style.userSelect = '';
         if (!moved) {
             highlightedTable = (highlightedTable === name) ? null : name;
             applyHighlight();
         }
-    });
+    }
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
 }
 
 /* ============================================================
@@ -498,21 +506,29 @@ function applyTransform() {
     document.getElementById('zoomVal').textContent = Math.round(scale * 100) + '%';
 }
 
-let panning = false, panStartX = 0, panStartY = 0, panOrigX = 0, panOrigY = 0;
-viewport.addEventListener('mousedown', (e) => {
+let panning = false, panStartX = 0, panStartY = 0, panOrigX = 0, panOrigY = 0, panPointerId = null;
+viewport.addEventListener('pointerdown', (e) => {
     if (e.target !== viewport && e.target !== canvas && e.target.tagName !== 'svg') return;
     panning = true;
+    panPointerId = e.pointerId;
+    viewport.setPointerCapture(panPointerId);
     viewport.classList.add('panning');
     panStartX = e.clientX; panStartY = e.clientY;
     panOrigX = panX; panOrigY = panY;
 });
-window.addEventListener('mousemove', (e) => {
-    if (!panning) return;
+viewport.addEventListener('pointermove', (e) => {
+    if (!panning || e.pointerId !== panPointerId) return;
     panX = panOrigX + (e.clientX - panStartX);
     panY = panOrigY + (e.clientY - panStartY);
     applyTransform();
 });
-window.addEventListener('mouseup', () => { panning = false; viewport.classList.remove('panning'); });
+function endPan(e) {
+    if (e && e.pointerId !== panPointerId) return;
+    panning = false;
+    viewport.classList.remove('panning');
+}
+viewport.addEventListener('pointerup', endPan);
+viewport.addEventListener('pointercancel', endPan);
 
 viewport.addEventListener('wheel', (e) => {
     e.preventDefault();

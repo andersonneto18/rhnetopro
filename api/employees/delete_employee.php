@@ -29,19 +29,11 @@ $hardDelete = in_array((string)$hardDeleteRaw, ['1', 'true', 'yes'], true);
 
 if ($employee_id > 0) {
     $client_id = $_SESSION['client_id'];
-    
-    // Configurações do banco de dados
-    $db_host = 'localhost';
-    $db_name = 'sistema_cadastro'; 
-    $db_user = 'root';
-    $db_pass = '';
 
-    $conn = null;
+    require_once '../../config/db_connection.php'; // expõe $pdo, já lê host/nome/user/senha do .env
+    $conn = $pdo;
+
     try {
-        // Cria a conexão PDO
-        $conn = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
         // Inicia a transação
         $conn->beginTransaction();
 
@@ -95,6 +87,12 @@ if ($employee_id > 0) {
                 ['table' => 'registros_ponto', 'columns' => ['employee_id', 'funcionario_id']],
                 ['table' => 'employee_documents', 'columns' => ['employee_id', 'funcionario_id']],
                 ['table' => 'gorjetas', 'columns' => ['employee_id', 'funcionario_id']],
+                ['table' => 'ferias', 'columns' => ['funcionario_id', 'employee_id']],
+                ['table' => 'turno_swap_requests', 'columns' => ['requester_employee_id', 'target_employee_id']],
+                ['table' => 'justificativas_presenca', 'columns' => ['employee_id', 'funcionario_id']],
+                ['table' => 'justificativas', 'columns' => ['employee_id', 'funcionario_id']],
+                ['table' => 'folha_pagamento', 'columns' => ['employee_id', 'funcionario_id']],
+                ['table' => 'folha_variaveis_mensais', 'columns' => ['employee_id', 'funcionario_id']],
                 ['table' => 'notifications', 'columns' => ['employee_id', 'funcionario_id']],
                 ['table' => 'notificacoes', 'columns' => ['employee_id', 'funcionario_id']],
                 ['table' => 'sms_history', 'columns' => ['employee_id', 'funcionario_id']],

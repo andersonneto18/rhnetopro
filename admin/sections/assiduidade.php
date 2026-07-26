@@ -1225,6 +1225,10 @@ function formatAtrasoMinutos(int $min): string
                                 <span class="fr-presence" style="background:rgba(245,158,11,.12); color:#f59e0b;" title="Marcação fora do raio do estabelecimento">
                                     <i class="fas fa-location-dot"></i> Fora do local<?php echo $distMetros !== null ? ' (' . $distMetros . 'm)' : ''; ?>
                                 </span>
+                                <?php elseif (!empty($registro['hora_entrada'])): ?>
+                                <span class="fr-presence" style="background:rgba(100,116,139,.12); color:#64748b;" title="Não foi possível obter a localização no momento da marcação">
+                                    <i class="fas fa-location-slash"></i> Não localizado
+                                </span>
                                 <?php endif; ?>
                             </td>
 
